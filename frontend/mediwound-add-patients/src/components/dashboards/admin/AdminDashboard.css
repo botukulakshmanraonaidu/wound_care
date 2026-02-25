@@ -1,0 +1,323 @@
+/* Reusing general dashboard variables and grid from Dashboard.css, 
+   but adding specific Admin component styles here */
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.admin-stats-grid .stat-card {
+    min-width: 0 !important;
+    /* Allow shrinking in 3-col grid */
+}
+
+/* Header & Breadcrumbs */
+.admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Pushes the button "more down" relative to the breadcrumbs */
+    margin-bottom: 20px;
+}
+
+.breadcrumbs {
+    font-size: 13px;
+    color: #64748B;
+    margin-bottom: 8px;
+}
+
+.breadcrumbs span {
+    color: #94A3B8;
+    margin: 0 8px;
+}
+
+.admin-title h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 4px 0;
+}
+
+.admin-subtitle {
+    color: #64748B;
+    font-size: 14px;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    /* Substantially increased size */
+    border-radius: 12px;
+    font-size: 18px;
+    /* Jumbo font size */
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 15px;
+    /* Pushed down as requested */
+}
+
+.btn-export:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.btn-export:active {
+    transform: translateY(0);
+}
+
+/* Logs Table */
+.logs-table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.logs-table th {
+    text-align: left;
+    color: #64748B;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.logs-table td {
+    padding: 12px;
+    color: #0F172A;
+    border-bottom: 1px solid #F1F5F9;
+    font-weight: 500;
+}
+
+.logs-table tr:last-child td {
+    border-bottom: none;
+}
+
+.user-cell {
+    font-weight: 600;
+}
+
+/* Severity Badges */
+.badge {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.badge-info {
+    background: #EFF6FF;
+    color: #3B82F6;
+}
+
+.badge-warning {
+    background: #FFFBEB;
+    color: #D97706;
+}
+
+.badge-success {
+    background: #F0FDF4;
+    color: #22C55E;
+}
+
+.badge-error {
+    background: #FEF2F2;
+    color: #EF4444;
+}
+
+/* Live Indicator */
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #F0FDF4;
+    border: 1px solid #DCFCE7;
+    padding: 4px 10px;
+    border-radius: 99px;
+    transition: all 0.3s ease;
+}
+
+.live-indicator .dot {
+    width: 6px;
+    height: 6px;
+    background: #22C55E;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.live-indicator .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #166534;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.live-indicator.syncing {
+    background: #EFF6FF;
+    border-color: #DBEAFE;
+    opacity: 0.7;
+}
+
+.live-indicator.syncing .dot {
+    background: #3B82F6;
+    animation: pulse 1.5s infinite;
+}
+
+.live-indicator.syncing .label {
+    color: #1E40AF;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.3);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.donut-chart-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.donut-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.donut-center-text .percent {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0F172A;
+    display: block;
+    line-height: 1;
+}
+
+.donut-center-text .label {
+    font-size: 11px;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.storage-legend {
+    width: 100%;
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #334155;
+    font-weight: 500;
+}
+
+.legend-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.dot-blue {
+    background: #0F172A;
+}
+
+/* Dark blue */
+.dot-light-blue {
+    background: #3B82F6;
+}
+
+.dot-gray {
+    background: #E2E8F0;
+}
+
+.legend-value {
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.btn-manage {
+    width: 100%;
+    margin-top: 24px;
+    padding: 10px;
+    border: 1px solid #E2E8F0;
+    background: white;
+    color: #0F172A;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-manage:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+/* Scrollable Container for Activity Logs */
+.admin-logs-scroll-container {
+    padding: 0 16px 16px;
+    max-height: 480px;
+    /* Constrain height for grid balance */
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar for premium feel */
+.admin-logs-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.admin-logs-scroll-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.admin-logs-scroll-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.admin-logs-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

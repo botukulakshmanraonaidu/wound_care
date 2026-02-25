@@ -1,0 +1,83 @@
+﻿python.exe : 
+Creating test 
+database for alias 
+'default'...
+At line:1 char:1
++ & "d:\AI project\Ai
+-MediWound\backend\ve
+nv\Scripts\python.exe
+" manage ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Creatin   
+ g test d...as 'd    
+efault'...:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+
+...Validation 
+errors: {'room': [Err
+orDetail(string='This
+ field is 
+required.', 
+code='required')]}
+F..
+=====================
+=====================
+=====================
+=======
+FAIL: test_create_pat
+ient_auto_assignment 
+(tests.PatientTests.t
+est_create_patient_au
+to_assignment)
+Verify that a 
+patient created by a 
+doctor is 
+auto-assigned to 
+that doctor.
+---------------------
+---------------------
+---------------------
+-------
+Traceback (most 
+recent call last):
+  File "D:\AI project
+\Ai-MediWound\backend
+\Ai_wound\addpatient\
+tests.py", line 66, 
+in test_create_patien
+t_auto_assignment
+    self.assertEqual(
+response.status_code,
+ status.HTTP_201_CREA
+TED)
+    ~~~~~~~~~~~~~~~~^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
+^^^^
+AssertionError: 400 
+!= 201
+
+---------------------
+---------------------
+---------------------
+-------
+Ran 6 tests in 
+13.824s
+
+FAILED (failures=1)
+Destroying test 
+database for alias 
+'default'...
+
+Found 6 test(s).
+System check identified no issues (0 silenced).

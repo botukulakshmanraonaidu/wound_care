@@ -1,0 +1,502 @@
+[
+    {
+        "id": 1,
+        "firstName": "John",
+        "lastName": "Doe",
+        "mrn": "MRN-001234",
+        "dob": "1980-05-15",
+        "gender": "Male",
+        "admissionDate": "2023-10-25",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 2,
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "mrn": "MRN-001235",
+        "dob": "1992-08-22",
+        "gender": "Female",
+        "admissionDate": "2023-10-26",
+        "ward": "ICU"
+    },
+    {
+        "id": 3,
+        "firstName": "Robert",
+        "lastName": "Johnson",
+        "mrn": "MRN-001236",
+        "dob": "1975-03-10",
+        "gender": "Male",
+        "admissionDate": "2023-10-27",
+        "ward": "General Ward"
+    },
+    {
+        "id": 4,
+        "firstName": "Emily",
+        "lastName": "Davis",
+        "mrn": "MRN-001237",
+        "dob": "1988-11-05",
+        "gender": "Female",
+        "admissionDate": "2023-10-28",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 5,
+        "firstName": "Michael",
+        "lastName": "Wilson",
+        "mrn": "MRN-001238",
+        "dob": "1965-01-30",
+        "gender": "Male",
+        "admissionDate": "2023-10-29",
+        "ward": "ICU"
+    },
+    {
+        "id": 6,
+        "firstName": "Sarah",
+        "lastName": "Brown",
+        "mrn": "MRN-001239",
+        "dob": "1990-07-14",
+        "gender": "Female",
+        "admissionDate": "2023-10-30",
+        "ward": "General Ward"
+    },
+    {
+        "id": 7,
+        "firstName": "David",
+        "lastName": "Miller",
+        "mrn": "MRN-001240",
+        "dob": "1982-12-01",
+        "gender": "Male",
+        "admissionDate": "2023-10-31",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 8,
+        "firstName": "Jessica",
+        "lastName": "Taylor",
+        "mrn": "MRN-001241",
+        "dob": "1995-04-18",
+        "gender": "Female",
+        "admissionDate": "2023-11-01",
+        "ward": "ICU"
+    },
+    {
+        "id": 9,
+        "firstName": "James",
+        "lastName": "Anderson",
+        "mrn": "MRN-001242",
+        "dob": "1978-09-22",
+        "gender": "Male",
+        "admissionDate": "2023-11-02",
+        "ward": "General Ward"
+    },
+    {
+        "id": 10,
+        "firstName": "Laura",
+        "lastName": "Thomas",
+        "mrn": "MRN-001243",
+        "dob": "1987-02-11",
+        "gender": "Female",
+        "admissionDate": "2023-11-03",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 11,
+        "firstName": "Daniel",
+        "lastName": "Jackson",
+        "mrn": "MRN-001244",
+        "dob": "1993-06-30",
+        "gender": "Male",
+        "admissionDate": "2023-11-04",
+        "ward": "ICU"
+    },
+    {
+        "id": 12,
+        "firstName": "Megan",
+        "lastName": "White",
+        "mrn": "MRN-001245",
+        "dob": "1985-08-19",
+        "gender": "Female",
+        "admissionDate": "2023-11-05",
+        "ward": "General Ward"
+    },
+    {
+        "id": 13,
+        "firstName": "Matthew",
+        "lastName": "Harris",
+        "mrn": "MRN-001246",
+        "dob": "1972-11-25",
+        "gender": "Male",
+        "admissionDate": "2023-11-06",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 14,
+        "firstName": "Amanda",
+        "lastName": "Martin",
+        "mrn": "MRN-001247",
+        "dob": "1998-03-05",
+        "gender": "Female",
+        "admissionDate": "2023-11-07",
+        "ward": "ICU"
+    },
+    {
+        "id": 15,
+        "firstName": "Joshua",
+        "lastName": "Thompson",
+        "mrn": "MRN-001248",
+        "dob": "1989-10-12",
+        "gender": "Male",
+        "admissionDate": "2023-11-08",
+        "ward": "General Ward"
+    },
+    {
+        "id": 16,
+        "firstName": "Sophia",
+        "lastName": "Garcia",
+        "mrn": "MRN-001249",
+        "dob": "1991-05-28",
+        "gender": "Female",
+        "admissionDate": "2023-11-09",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 17,
+        "firstName": "Andrew",
+        "lastName": "Martinez",
+        "mrn": "MRN-001250",
+        "dob": "1983-01-17",
+        "gender": "Male",
+        "admissionDate": "2023-11-10",
+        "ward": "ICU"
+    },
+    {
+        "id": 18,
+        "firstName": "Olivia",
+        "lastName": "Robinson",
+        "mrn": "MRN-001251",
+        "dob": "1996-09-08",
+        "gender": "Female",
+        "admissionDate": "2023-11-11",
+        "ward": "General Ward"
+    },
+    {
+        "id": 19,
+        "firstName": "Ryan",
+        "lastName": "Clark",
+        "mrn": "MRN-001252",
+        "dob": "1976-07-23",
+        "gender": "Male",
+        "admissionDate": "2023-11-12",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 20,
+        "firstName": "Grace",
+        "lastName": "Rodriguez",
+        "mrn": "MRN-001253",
+        "dob": "1984-04-02",
+        "gender": "Female",
+        "admissionDate": "2023-11-13",
+        "ward": "ICU"
+    },
+    {
+        "id": 21,
+        "firstName": "Christopher",
+        "lastName": "Lewis",
+        "mrn": "MRN-001254",
+        "dob": "1999-12-15",
+        "gender": "Male",
+        "admissionDate": "2023-11-14",
+        "ward": "General Ward"
+    },
+    {
+        "id": 22,
+        "firstName": "Chloe",
+        "lastName": "Lee",
+        "mrn": "MRN-001255",
+        "dob": "1986-06-09",
+        "gender": "Female",
+        "admissionDate": "2023-11-15",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 23,
+        "firstName": "Anthony",
+        "lastName": "Walker",
+        "mrn": "MRN-001256",
+        "dob": "1979-02-27",
+        "gender": "Male",
+        "admissionDate": "2023-11-16",
+        "ward": "ICU"
+    },
+    {
+        "id": 24,
+        "firstName": "Ella",
+        "lastName": "Hall",
+        "mrn": "MRN-001257",
+        "dob": "1994-11-18",
+        "gender": "Female",
+        "admissionDate": "2023-11-17",
+        "ward": "General Ward"
+    },
+    {
+        "id": 25,
+        "firstName": "Kevin",
+        "lastName": "Allen",
+        "mrn": "MRN-001258",
+        "dob": "1981-08-31",
+        "gender": "Male",
+        "admissionDate": "2023-11-18",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 26,
+        "firstName": "Natalie",
+        "lastName": "Young",
+        "mrn": "MRN-001259",
+        "dob": "1997-03-24",
+        "gender": "Female",
+        "admissionDate": "2023-11-19",
+        "ward": "ICU"
+    },
+    {
+        "id": 27,
+        "firstName": "Brandon",
+        "lastName": "Hernandez",
+        "mrn": "MRN-001260",
+        "dob": "1974-10-06",
+        "gender": "Male",
+        "admissionDate": "2023-11-20",
+        "ward": "General Ward"
+    },
+    {
+        "id": 28,
+        "firstName": "Victoria",
+        "lastName": "King",
+        "mrn": "MRN-001261",
+        "dob": "1988-05-13",
+        "gender": "Female",
+        "admissionDate": "2023-11-21",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 29,
+        "firstName": "Samuel",
+        "lastName": "Wright",
+        "mrn": "MRN-001262",
+        "dob": "1992-01-29",
+        "gender": "Male",
+        "admissionDate": "2023-11-22",
+        "ward": "ICU"
+    },
+    {
+        "id": 30,
+        "firstName": "Ava",
+        "lastName": "Lopez",
+        "mrn": "MRN-001263",
+        "dob": "1980-09-04",
+        "gender": "Female",
+        "admissionDate": "2023-11-23",
+        "ward": "General Ward"
+    },
+    {
+        "id": 31,
+        "firstName": "Jason",
+        "lastName": "Hill",
+        "mrn": "MRN-001264",
+        "dob": "1977-04-20",
+        "gender": "Male",
+        "admissionDate": "2023-11-24",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 32,
+        "firstName": "Mia",
+        "lastName": "Scott",
+        "mrn": "MRN-001265",
+        "dob": "1995-12-11",
+        "gender": "Female",
+        "admissionDate": "2023-11-25",
+        "ward": "ICU"
+    },
+    {
+        "id": 33,
+        "firstName": "Justin",
+        "lastName": "Green",
+        "mrn": "MRN-001266",
+        "dob": "1985-07-26",
+        "gender": "Male",
+        "admissionDate": "2023-11-26",
+        "ward": "General Ward"
+    },
+    {
+        "id": 34,
+        "firstName": "Lily",
+        "lastName": "Adams",
+        "mrn": "MRN-001267",
+        "dob": "1990-02-14",
+        "gender": "Female",
+        "admissionDate": "2023-11-27",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 35,
+        "firstName": "Brian",
+        "lastName": "Baker",
+        "mrn": "MRN-001268",
+        "dob": "1973-11-09",
+        "gender": "Male",
+        "admissionDate": "2023-11-28",
+        "ward": "ICU"
+    },
+    {
+        "id": 36,
+        "firstName": "Zoe",
+        "lastName": "Gonzalez",
+        "mrn": "MRN-001269",
+        "dob": "1998-06-21",
+        "gender": "Female",
+        "admissionDate": "2023-11-29",
+        "ward": "General Ward"
+    },
+    {
+        "id": 37,
+        "firstName": "Eric",
+        "lastName": "Nelson",
+        "mrn": "MRN-001270",
+        "dob": "1982-01-08",
+        "gender": "Male",
+        "admissionDate": "2023-11-30",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 38,
+        "firstName": "Hannah",
+        "lastName": "Carter",
+        "mrn": "MRN-001271",
+        "dob": "1993-08-30",
+        "gender": "Female",
+        "admissionDate": "2023-12-01",
+        "ward": "ICU"
+    },
+    {
+        "id": 39,
+        "firstName": "Steven",
+        "lastName": "Mitchell",
+        "mrn": "MRN-001272",
+        "dob": "1975-05-17",
+        "gender": "Male",
+        "admissionDate": "2023-12-02",
+        "ward": "General Ward"
+    },
+    {
+        "id": 40,
+        "firstName": "Lillian",
+        "lastName": "Perez",
+        "mrn": "MRN-001273",
+        "dob": "1989-12-25",
+        "gender": "Female",
+        "admissionDate": "2023-12-03",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 41,
+        "firstName": "Patrick",
+        "lastName": "Roberts",
+        "mrn": "MRN-001274",
+        "dob": "1984-03-03",
+        "gender": "Male",
+        "admissionDate": "2023-12-04",
+        "ward": "ICU"
+    },
+    {
+        "id": 42,
+        "firstName": "Addison",
+        "lastName": "Turner",
+        "mrn": "MRN-001275",
+        "dob": "1996-10-18",
+        "gender": "Female",
+        "admissionDate": "2023-12-05",
+        "ward": "General Ward"
+    },
+    {
+        "id": 43,
+        "firstName": "Mark",
+        "lastName": "Phillips",
+        "mrn": "MRN-001276",
+        "dob": "1978-06-12",
+        "gender": "Male",
+        "admissionDate": "2023-12-06",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 44,
+        "firstName": "Brooklyn",
+        "lastName": "Campbell",
+        "mrn": "MRN-001277",
+        "dob": "1991-01-21",
+        "gender": "Female",
+        "admissionDate": "2023-12-07",
+        "ward": "ICU"
+    },
+    {
+        "id": 45,
+        "firstName": "Timothy",
+        "lastName": "Parker",
+        "mrn": "MRN-001278",
+        "dob": "1987-09-06",
+        "gender": "Male",
+        "admissionDate": "2023-12-08",
+        "ward": "General Ward"
+    },
+    {
+        "id": 46,
+        "firstName": "Samantha",
+        "lastName": "Evans",
+        "mrn": "MRN-001279",
+        "dob": "1994-04-15",
+        "gender": "Female",
+        "admissionDate": "2023-12-09",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 47,
+        "firstName": "Edward",
+        "lastName": "Edwards",
+        "mrn": "MRN-001280",
+        "dob": "1971-12-29",
+        "gender": "Male",
+        "admissionDate": "2023-12-10",
+        "ward": "ICU"
+    },
+    {
+        "id": 48,
+        "firstName": "Leah",
+        "lastName": "Collins",
+        "mrn": "MRN-001281",
+        "dob": "1986-07-07",
+        "gender": "Female",
+        "admissionDate": "2023-12-11",
+        "ward": "General Ward"
+    },
+    {
+        "id": 49,
+        "firstName": "Alexander",
+        "lastName": "Stewart",
+        "mrn": "MRN-001282",
+        "dob": "1983-02-16",
+        "gender": "Male",
+        "admissionDate": "2023-12-12",
+        "ward": "Burn Unit"
+    },
+    {
+        "id": 50,
+        "firstName": "Stella",
+        "lastName": "Sanchez",
+        "mrn": "MRN-001283",
+        "dob": "1999-11-20",
+        "gender": "Female",
+        "admissionDate": "2023-12-13",
+        "ward": "ICU"
+    }
+]

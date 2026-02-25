@@ -1,0 +1,36 @@
+# Backend (Django) Requirements
+Django==6.0.2
+djangorestframework==3.15.2
+# Cloudinary Storage
+cloudinary==1.41.0
+django-cloudinary-storage==0.3.0
+
+# ML Service Integration
+fastapi==0.131.0
+uvicorn[standard]==0.41.0
+python-multipart==0.0.20
+numpy==2.4.2
+opencv-python-headless==4.13.0.86
+httpx==0.27.0
+supabase==2.9.0
+postgrest==0.17.0
+django-cors-headers==4.6.0
+Pillow==10.4.0
+mysqlclient==2.2.4
+djangorestframework-simplejwt==5.3.1
+python-dotenv==1.2.1
+requests==2.32.5
+# xhtml2pdf 0.2.16 supports python-bidi 0.4.x (pure-Python, no Rust required)
+xhtml2pdf==0.2.16
+python-bidi==0.4.2
+reportlab==4.4.0
+scipy==1.17.1
+scikit-image==0.26.0
+
+# Production
+gunicorn==21.2.0
+whitenoise==6.7.0
+# Database — support both Render Postgres (DATABASE_URL) and MySQL
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+

@@ -1,0 +1,465 @@
+.patient-list-container {
+    padding: 12px 24px;
+    background-color: #F8FAFC;
+}
+
+/* Header */
+.page-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748B;
+    margin-bottom: 8px;
+}
+
+.breadcrumb-item.link {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.breadcrumb-item.link:hover {
+    color: #3B82F6;
+}
+
+.breadcrumb-separator {
+    color: #CBD5E1;
+}
+
+.page-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 2px 0;
+    letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+    font-size: 14px;
+    color: #64748B;
+    margin: 0;
+}
+
+/* Content Card */
+.content-card {
+    background: white;
+    border-radius: 16px;
+    /* Increased radius */
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+    overflow: hidden;
+}
+
+/* Toolbar */
+.table-toolbar {
+    padding: 16px 20px;
+    border-bottom: 1px solid #F1F5F9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background: white;
+}
+
+.search-box {
+    position: relative;
+    max-width: 360px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 4px 12px;
+    transition: all 0.2s ease;
+}
+
+.search-box:focus-within {
+    border-color: #3B82F6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    color: #94A3B8;
+    pointer-events: none;
+    margin-right: 8px;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px 0;
+    font-size: 13px;
+    color: #0F172A;
+    outline: none;
+    box-shadow: none;
+}
+
+.search-input:focus {
+    outline: none;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.search-input::placeholder {
+    color: #94A3B8;
+}
+
+/* Filter Dropdown (Integrated) */
+.filter-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.filter-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #94A3B8;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 4px;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: #E2E8F0;
+    color: #3B82F6;
+}
+
+.filter-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 180px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    padding: 6px;
+    animation: slideDown 0.15s ease-out;
+}
+
+.filter-menu-header {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #F1F5F9;
+    margin-bottom: 4px;
+}
+
+.filter-menu-item {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: #334155;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.filter-menu-item:hover {
+    background: #F8FAFC;
+    color: #3B82F6;
+}
+
+.filter-menu-item.selected {
+    background: #EFF6FF;
+    color: #3B82F6;
+    font-weight: 600;
+}
+
+/* Table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.data-table th {
+    padding: 12px 20px;
+    background: #F8FAFC;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.data-table td {
+    padding: 12px 20px;
+    /* Reduced vertical padding for density */
+    border-bottom: 1px solid #F1F5F9;
+    font-size: 13px;
+    /* Clean, slightly smaller font */
+    color: #334155;
+    vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr {
+    transition: background-color 0.1s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: #F8FAFC;
+    /* Subtle hover row */
+}
+
+.font-medium {
+    font-weight: 600;
+    color: #0F172A;
+}
+
+/* Badges */
+.badge {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    /* Pill shape */
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.badge-burn-unit {
+    background: #FEF2F2;
+    color: #EF4444;
+    border: 1px solid #FECACA;
+}
+
+.badge-icu {
+    background: #F0FDF4;
+    color: #16A34A;
+    border: 1px solid #DCFCE7;
+}
+
+.badge-general-ward {
+    background: #EFF6FF;
+    color: #3B82F6;
+    border: 1px solid #DBEAFE;
+}
+
+.badge-gray {
+    background: #F1F5F9;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+}
+
+/* Status */
+.status-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.status-text::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-text.active {
+    color: #15803D;
+}
+
+.status-text.active::before {
+    background: #22C55E;
+    box-shadow: 0 0 0 2px #DCFCE7;
+}
+
+.status-text.discharged {
+    color: #64748B;
+}
+
+.status-text.discharged::before {
+    background: #94A3B8;
+}
+
+.status-text.critical {
+    color: #B91C1C;
+}
+
+.status-text.critical::before {
+    background: #EF4444;
+    box-shadow: 0 0 0 2px #FEE2E2;
+}
+
+/* Actions */
+.text-right {
+    text-align: right;
+}
+
+.actions-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-icon-link {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #64748B;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-icon-link:hover {
+    background: #F1F5F9;
+    color: #3B82F6;
+}
+
+.btn-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: #3B82F6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.btn-link:hover {
+    background: #EFF6FF;
+}
+
+/* Filter Dropdown */
+.filter-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 200px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+    padding: 8px 0;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-dropdown-header {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-dropdown-divider {
+    height: 1px;
+    background: #F1F5F9;
+    margin: 4px 0;
+}
+
+.filter-section {
+    padding: 4px 0;
+}
+
+.filter-section-title {
+    padding: 4px 16px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94A3B8;
+    text-transform: uppercase;
+}
+
+.filter-option {
+    width: 100%;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    color: #334155;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.filter-option:hover {
+    background: #F8FAFC;
+    color: #3B82F6;
+}
+
+.filter-option.selected {
+    background: #EFF6FF;
+    color: #3B82F6;
+    font-weight: 600;
+}
+
+.option-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #CBD5E1;
+}
+
+.filter-option.selected .option-dot {
+    background: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}

@@ -1,0 +1,481 @@
+.assessments-container {
+    padding: 12px 24px;
+    background-color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.assessments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.header-info h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+}
+
+.header-info p {
+    font-size: 13px;
+    color: #64748B;
+    margin: 0;
+}
+
+.new-assessment-header-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.new-assessment-header-btn:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+/* Dashboard-style Stats Row */
+.assessments-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.assessment-stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.assessment-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-blue {
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
+.icon-green {
+    background: #F0FDF4;
+    color: #10B981;
+}
+
+.icon-red {
+    background: #FEF2F2;
+    color: #EF4444;
+}
+
+.icon-purple {
+    background: #F5F3FF;
+    color: #8B5CF6;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748B;
+    margin-bottom: 2px;
+}
+
+.stat-subtext {
+    font-size: 11px;
+    color: #94A3B8;
+}
+
+.assessments-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 600px;
+    position: relative;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.search-box:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    color: #94A3B8;
+    margin: 0;
+}
+
+.search-box input {
+    border: none;
+    padding: 8px 12px 8px 36px;
+    width: 100%;
+    font-size: 13px;
+    outline: none;
+    color: #0F172A;
+    background: transparent;
+}
+
+.search-box input::placeholder {
+    color: #94A3B8;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date-filter,
+.more-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.date-filter:hover,
+.more-filters-btn:hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+}
+
+.assessments-table-wrapper {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    /* Prevent horizontal scrolling */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.assessments-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: fixed;
+    /* Force table to respect container width */
+}
+
+.assessments-table th {
+    background-color: #f8fafc;
+    padding: 10px 8px;
+    /* Reduced from 16px horizontal */
+    font-size: 11px;
+    /* Reduced from 12px */
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    letter-spacing: 0.05em;
+}
+
+.assessments-table td {
+    padding: 10px 8px;
+    /* Reduced from 12px 16px */
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.assessments-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Date Cell */
+.date-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.date-icon {
+    color: #94a3b8;
+}
+
+.date-time {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-text {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.time-text {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* Patient Cell */
+.patient-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.patient-name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 15px;
+}
+
+.patient-mrn {
+    font-size: 12px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 4px;
+}
+
+/* Wound Cell */
+.wound-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.wound-location {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.wound-type {
+    font-size: 11px;
+    /* Reduced from 12px */
+    color: #64748B;
+}
+
+/* Dimensions Cell */
+.dimensions-grid {
+    display: flex;
+    gap: 16px;
+}
+
+.dim-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.dim-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 2px;
+}
+
+.dim-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Tissue Cell */
+.tissue-progress {
+    width: 100px;
+    /* Reduced from 140px for better fit */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tissue-label {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.progress-bar-container {
+    height: 8px;
+    background-color: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.progress-fill.healing {
+    background-color: #10b981;
+}
+
+.progress-fill.deteriorating {
+    background-color: #ef4444;
+}
+
+.tissue-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1e293b;
+    align-self: flex-end;
+}
+
+/* Status Cell */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-badge.healing {
+    background-color: #ecfdf5;
+    color: #059669;
+}
+
+.status-badge.deteriorating {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+/* Actions Cell */
+.action-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.view-report-pill-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #EFF6FF;
+    color: #2563EB;
+    border: 1px solid #BFDBFE;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-report-pill-btn:hover {
+    background: #2563EB;
+    color: #fff;
+    border-color: #2563EB;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+.view-report-pill-btn span {
+    font-size: 12px;
+}
+
+.assessments-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.results-count {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+}
+
+.pagination-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+}

@@ -1,0 +1,53 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node / React
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Vite
+*.pnpm-debug.log*
+.vite/
+
+# Python
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+verify_auth.py
+seed_nurse_data.py
+update_patient_statuses.py
+test_assignment_system.py
+debug_logs_result.txt
+verify_logout_result.txt
+verify_nurse_result.txt
