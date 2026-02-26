@@ -35,6 +35,8 @@ function Settings() {
         highContrast: false,
     });
 
+    const [passwordUpdatedAt, setPasswordUpdatedAt] = useState(null);
+
     const menuItems = [
         { id: 'profile', label: 'My Profile', icon: User },
         { id: 'security', label: 'Security & Login', icon: Shield },
@@ -47,7 +49,7 @@ function Settings() {
         const fetchProfile = async () => {
             try {
                 const res = await getProfile();
-                const { full_name, role, job_title, specialization, bio } = res.data;
+                const { full_name, role, job_title, specialization, bio, password_updated_at } = res.data;
                 setFormData(prev => ({
                     ...prev,
                     full_name: full_name || '',
@@ -55,6 +57,7 @@ function Settings() {
                     specialization: specialization || '',
                     bio: bio || ''
                 }));
+                setPasswordUpdatedAt(password_updated_at);
             } catch (err) {
                 console.error("Failed to fetch profile", err);
             }
@@ -87,11 +90,16 @@ function Settings() {
             const updateData = { full_name, bio };
             if (password) updateData.password = password;
 
-            await updateProfile(updateData);
+            const response = await updateProfile(updateData);
             setMessage("Profile updated successfully");
 
             localStorage.setItem("userName", full_name);
             window.dispatchEvent(new Event('storage'));
+
+            if (password) {
+                // Update local time immediately if password was changed
+                setPasswordUpdatedAt(new Date().toISOString());
+            }
 
             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
         } catch (err) {
@@ -100,6 +108,18 @@ function Settings() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Helper to format the relative time for password change
+    const getPasswordRelativeTime = () => {
+        if (!passwordUpdatedAt) return "Never updated";
+        const lastDate = new Date(passwordUpdatedAt);
+        const diffMs = new Date() - lastDate;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return "Changed today";
+        if (diffDays === 1) return "Changed 1 day ago";
+        return `Changed ${diffDays} days ago`;
     };
 
     return (
@@ -250,9 +270,14 @@ function Settings() {
                                 <div className="setting-item">
                                     <div className="setting-info">
                                         <p className="setting-label">Change password</p>
-                                        <p className="setting-description">Last changed 30 days ago</p>
+                                        <p className="setting-description">{getPasswordRelativeTime()}</p>
                                     </div>
-                                    <button className="btn-secondary">Update</button>
+                                    <button
+                                        className="btn-secondary"
+                                        onClick={() => setActiveTab('profile')}
+                                    >
+                                        Update
+                                    </button>
                                 </div>
                             </div>
 

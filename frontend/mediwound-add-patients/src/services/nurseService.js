@@ -22,6 +22,16 @@ export const nurseService = {
         }
     },
 
+    createTask: async (data) => {
+        try {
+            const response = await NurseAPI.post('tasks/', data);
+            return response.data;
+        } catch (error) {
+            console.error('Error creating nurse task:', error);
+            throw error;
+        }
+    },
+
     // Announcements
     getAnnouncements: async () => {
         try {
@@ -71,6 +81,16 @@ export const nurseService = {
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
             return { active_patients: 0, doc_due: 0, scans: 0, completed: 0 };
+        }
+    },
+
+    getRecentDocumentation: async () => {
+        try {
+            const response = await NurseAPI.get('shifts/get_recent_documentation/');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching recent documentation:', error);
+            return [];
         }
     }
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, FileText, Camera, CheckCircle2, Clock, Activity, CheckCircle, AlertCircle, Bell, RefreshCw } from 'lucide-react';
+import { User, FileText, Camera, CheckCircle2, Clock, Activity, CheckCircle, AlertCircle, Bell, RefreshCw, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../../../services/patientService';
 import { nurseService } from '../../../services/nurseService';
@@ -186,6 +186,100 @@ const StaffAnnouncements = ({ refreshTrigger }) => {
   );
 };
 
+/* ─── Create Task Modal ─── */
+const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
+  const [title, setTitle] = useState('');
+  const [dueTime, setDueTime] = useState('Today, 05:00 PM');
+  const [patients, setPatients] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      patientService.getPatients('my').then(setPatients);
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await nurseService.createTask({
+        title,
+        due_time: dueTime,
+        patient: selectedPatient || null,
+        status: 'pending'
+      });
+      onCreated();
+      onClose();
+      setTitle('');
+      setSelectedPatient('');
+    } catch (err) {
+      console.error('Failed to create task:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+        <div className="modal-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Plus size={18} className="header-icon-blue" />
+            <h3 className="nurse-section-title" style={{ marginBottom: 0 }}>Create New Task</h3>
+          </div>
+          <button className="close-btn" onClick={onClose}>&times;</button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '20px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>TASK TITLE</label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="e.g. Change dressings"
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>DUE TIME</label>
+            <input
+              type="text"
+              value={dueTime}
+              onChange={e => setDueTime(e.target.value)}
+              placeholder="e.g. Today, 05:00 PM"
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
+            />
+          </div>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>PATIENT (OPTIONAL)</label>
+            <select
+              value={selectedPatient}
+              onChange={e => setSelectedPatient(e.target.value)}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
+            >
+              <option value="">No patient linked</option>
+              {patients.map(p => (
+                <option key={p.id} value={p.id}>{p.firstName} {p.lastName}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button type="button" className="nurse-btn-outline" style={{ flex: 1 }} onClick={onClose}>Cancel</button>
+            <button type="submit" className="nurse-btn-primary" style={{ flex: 1 }} disabled={loading}>
+              {loading ? 'Creating...' : 'Create Task'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 /* ─── Main Dashboard ─── */
 const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
   const navigate = useNavigate();
@@ -193,6 +287,7 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
   const [stats, setStats] = useState({ active_patients: 0, doc_due: 0, scans: 0, completed: 0, unread_count: 0 });
   const [loading, setLoading] = useState(true);
   const [isAlertsModalOpen, setIsAlertsModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loadingAlerts, setLoadingAlerts] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -240,12 +335,13 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
     try {
       const newStats = await nurseService.getStats();
       setStats(newStats);
-      setLastUpdated(new Date());
+      const now = new Date();
+      setLastUpdated(now);
 
       // Save to cache
       sessionStorage.setItem(cacheKey, JSON.stringify({
         data: { stats: newStats },
-        timestamp: Date.now()
+        timestamp: now.getTime()
       }));
     } catch (err) {
       console.error('Failed to fetch nurse stats:', err);
@@ -260,7 +356,9 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
   }, [externalSearchQuery]);
 
   useEffect(() => {
-    fetchDashboardData();
+    if (user) {
+      fetchDashboardData();
+    }
 
     // Set up 60-second polling
     const interval = setInterval(() => {
@@ -293,11 +391,14 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
           </div>
         </div>
         <div className="nurse-header-actions">
-          <div className="refresh-status">
+          <div className="refresh-status" onClick={() => fetchDashboardData(true)} style={{ cursor: 'pointer' }}>
             {isRefreshing ? (
               <RefreshCw size={12} className="refresh-spin" />
             ) : (
-              <span className="last-updated">Last sync: {lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <RefreshCw size={10} />
+                <span className="last-updated">Sync: {lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}</span>
+              </div>
             )}
           </div>
           <button className="nurse-btn-outline nurse-alerts-btn" onClick={openAlerts}>
@@ -352,9 +453,19 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
       {/* Main Content */}
       <div className="nurse-content-grid">
         <div className="nurse-card">
-          <div className="nurse-card-header">
-            <CheckCircle2 size={14} className="header-icon-blue" />
-            <h3 className="nurse-section-title">TASKS &amp; RESPONSIBILITIES</h3>
+          <div className="nurse-card-header" style={{ justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckCircle2 size={14} className="header-icon-blue" />
+              <h3 className="nurse-section-title">TASKS &amp; RESPONSIBILITIES</h3>
+            </div>
+            <button
+              className="nurse-btn-outline"
+              style={{ padding: '4px 8px', fontSize: '10px' }}
+              onClick={() => setIsTaskModalOpen(true)}
+            >
+              <Plus size={12} />
+              <span>ADD TASK</span>
+            </button>
           </div>
           <ShiftTaskList refreshTrigger={lastUpdated} />
         </div>
@@ -417,6 +528,13 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
           </div>
         </div>
       )}
+
+      {/* Add Task Modal */}
+      <CreateTaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onCreated={() => fetchDashboardData(true)}
+      />
     </div>
   );
 };
