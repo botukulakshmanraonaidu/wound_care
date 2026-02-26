@@ -148,12 +148,21 @@ def login_api(request):
         logger.warning("DEBUG: Missing email or password")
         return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
 
+    # Diagnostic check: Does the user even exist in this DB?
+    try:
+        from admin_page.models import Admin
+        db_user_exists = Admin.objects.filter(email=email).exists()
+        logger.info(f"DEBUG: Internal DB check for [{email}]: exists={db_user_exists}")
+    except Exception as check_err:
+        logger.error(f"DEBUG: Could not check user existence: {check_err}")
+
     try:
         user = authenticate(username=email, password=password)
     except Exception as db_err:
         logger.error(f"DATABASE ERROR during login for [{email}]: {db_err}")
         return Response({
-            "error": f"Server database error: {str(db_err)}"
+            "error": f"Server database error: {str(db_err)}",
+            "details": "This usually means the server cannot connect to Supabase."
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     logger.info(f"DEBUG: Authenticate result for [{email}]: {user}")
