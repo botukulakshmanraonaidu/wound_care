@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')  # Required — no insecure fallback in pro
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Added wound-analysis-cl7c.onrender.com for production deployment
+# Added wound-analysis-cl7c.onrender.com for production deployment (Trigger 1)
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,wound-analysis-cl7c.onrender.com').split(',')
 
 # Dynamically add Render's external hostname if available
