@@ -298,7 +298,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://wound-analysis-cl7c.onrender.com",
-    "https://cheery-muffin-649bae.netlify.app"
+    "https://woundcare1.netlify.app"
 ]
 
 # Ensure the Render hostname itself is trusted for CSRF if it's not already
