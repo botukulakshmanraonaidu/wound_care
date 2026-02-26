@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../../API/adminApi';
-import { HardDrive, Upload, FileText, Trash2, PieChart, File, Folder } from 'lucide-react';
+import { adminService } from '../../../services/adminService';
+import { HardDrive, Upload, FileText, Trash2, PieChart, File, Folder, RefreshCw } from 'lucide-react';
 import './Storage.css';
 
 function Storage() {
@@ -10,34 +11,41 @@ function Storage() {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
 
-    const fetchData = async () => {
+    const fetchData = async (refresh = false) => {
         setLoading(true);
         setError(null);
         try {
-            const [statsRes, filesRes] = await Promise.all([
-                adminApi.getSystemStats(), // Reusing system stats which includes some distribution
-                adminApi.getFiles()
+            const params = refresh ? { refresh: 'true' } : {};
+
+            // Re-fetch all data
+            const [statsRes, filesData] = await Promise.all([
+                adminApi.getSystemStats(params),
+                adminApi.getFiles(params)
             ]);
 
-            // Attempt to get specific storage stats if separate
             try {
-                const storageRes = await adminApi.getStorageStats();
-                setStats(storageRes.data);
+                // Fetch storage stats with refresh params
+                const storageData = await adminApi.getStorageStats(params);
+                setStats(storageData.data);
             } catch (sErr) {
-                console.warn('Detailed storage stats not available', sErr);
-                // Fallback using data from system stats
+                console.warn('Detailed storage stats fetch failed', sErr);
+                // Don't fail the whole page, just show zeros for this part
                 setStats({
                     used_storage_bytes: 0,
                     used_percentage: 0,
-                    total_storage_bytes: 10 * 1024 * 1024 * 1024
+                    total_storage_bytes: 10 * 1024 * 1024 * 1024,
+                    breakdown: []
                 });
             }
 
-            const filesData = filesRes.data;
-            setFiles(Array.isArray(filesData) ? filesData : (filesData.results || []));
+            const filesList = filesData.data;
+            setFiles(Array.isArray(filesList) ? filesList : (filesList.results || []));
         } catch (error) {
             console.error('Failed to load storage data', error);
-            setError(`Failed to connect to storage service: ${error.message}`);
+            const msg = error.response ?
+                `Server Error (${error.response.status}): ${JSON.stringify(error.response.data)}` :
+                `Connection Error: ${error.message}. Please check if the production Backend is reachable.`;
+            setError(msg);
         } finally {
             setLoading(false);
         }
@@ -46,6 +54,10 @@ function Storage() {
     useEffect(() => {
         fetchData();
     }, []);
+
+    const handleRefresh = () => {
+        fetchData(true);
+    };
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
@@ -83,7 +95,32 @@ function Storage() {
 
     return (
         <div className="storage-container">
-            <h2 className="page-title">Storage Management</h2>
+            <div className="page-header-flex">
+                <h2 className="page-title">Storage Management</h2>
+                <button
+                    className={`btn-refresh ${loading ? 'spinning' : ''}`}
+                    onClick={handleRefresh}
+                    disabled={loading}
+                    title="Refresh Storage Stats"
+                >
+                    <RefreshCw size={18} />
+                    <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
+            </div>
+
+            {error && (
+                <div className="storage-error-alert" style={{
+                    background: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    color: '#991b1b',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    marginBottom: '20px',
+                    fontSize: '14px'
+                }}>
+                    <strong>Update Error:</strong> {error}
+                </div>
+            )}
 
             {/* Stats Cards */}
             <div className="stats-grid">

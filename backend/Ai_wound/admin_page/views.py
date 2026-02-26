@@ -198,12 +198,16 @@ class SystemStorageStatsAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated, isAdminRole]
 
     def get(self, request):
-        # Cache for 1 hour
-        cache_key = 'system_storage_stats'
-        stats = cache.get(cache_key)
+        # Allow manual cache refresh via query parameter
+        should_refresh = request.query_params.get('refresh', 'false').lower() == 'true'
         
-        if stats:
-            return Response(stats)
+        # Cache for 1 minute (60 seconds) - reduced from 1 hour for better UX
+        cache_key = 'system_storage_stats'
+        
+        if not should_refresh:
+            stats = cache.get(cache_key)
+            if stats:
+                return Response(stats)
             
         from django.conf import settings
         
@@ -233,16 +237,24 @@ class SystemStorageStatsAPIView(APIView):
                 
                 # Fetch usage summary
                 usage = cloudinary.api.usage()
-                cloud_storage_bytes = usage.get('resources', {}).get('usage', 0)
                 
-                # More direct image count (recent resources)
-                resources = cloudinary.api.resources(type="upload", max_results=1)
-                image_count = resources.get('total_count', 0)
+                # Cloudinary keys: 'storage' for bytes, 'objects' for count
+                cloud_storage_bytes = usage.get('storage', {}).get('usage', 0)
+                image_count = usage.get('objects', {}).get('usage', 0)
+                
+                # If usage is 0, try a direct count as fallback
+                if image_count == 0:
+                    resources = cloudinary.api.resources(type="upload", max_results=1)
+                    image_count = resources.get('total_count', 0)
         except Exception as e:
-            print(f"Error fetching Cloudinary stats: {e}")
+            import logging
+            logging.getLogger(__name__).error(f"Error fetching Cloudinary stats: {e}")
 
         # 3. Local Media Stats (Fallback/Reports)
         local_reports_size = get_directory_size(os.path.join(settings.MEDIA_ROOT, 'assessment_reports'))
+        
+        # 4. System File Stats (Local/Cloud synced)
+        # Add size of local system files if any (though most are in Media root already)
         
         # Total storage calculation
         total_used = db_size_bytes + cloud_storage_bytes + local_reports_size
@@ -253,7 +265,7 @@ class SystemStorageStatsAPIView(APIView):
             "total_storage_bytes": app_quota,
             "free_storage_bytes": max(0, app_quota - total_used),
             "used_percentage": min(100, (total_used / app_quota) * 100) if app_quota > 0 else 0,
-            "file_count": image_count,
+            "file_count": max(image_count, SystemFile.objects.count()), # Use whichever is higher/more accurate
             "breakdown": [
                 {
                     "category": "Supabase (Patient Records)", 
@@ -276,8 +288,8 @@ class SystemStorageStatsAPIView(APIView):
             ]
         }
         
-        # Store in cache for 1 hour (3600 seconds)
-        cache.set(cache_key, stats, 3600)
+        # Store in cache for 1 minute (60 seconds)
+        cache.set(cache_key, stats, 60)
         return Response(stats)
 
     def format_size(self, size_bytes):
@@ -292,12 +304,16 @@ class SystemStatsAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated, isAdminRole]
 
     def get(self, request):
+        # Allow manual cache refresh
+        should_refresh = request.query_params.get('refresh', 'false').lower() == 'true'
+        
         # Cache for 10 minutes
         cache_key = 'system_overview_stats'
-        stats = cache.get(cache_key)
         
-        if stats:
-            return Response(stats)
+        if not should_refresh:
+            stats = cache.get(cache_key)
+            if stats:
+                return Response(stats)
             
         total_users = Admin.objects.count()
         role_counts = Admin.objects.values('role_type').annotate(count=Count('role_type'))

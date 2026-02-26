@@ -99,3 +99,17 @@ class ShiftLogViewSet(viewsets.ModelViewSet):
             "unread_count": unread_notifications,
             "last_updated": timezone.now().isoformat()
         })
+
+    @action(detail=False, methods=['get'])
+    def get_recent_documentation(self, request):
+        user = request.user
+        if user.role_type != 'nurse':
+            return Response({"error": "Only nurses can access this"}, status=status.HTTP_403_FORBIDDEN)
+            
+        from addpatient.models import Assessment
+        from addpatient.serializers import AssessmentSerializer
+        
+        # Get last 5 assessments by this nurse
+        recent = Assessment.objects.filter(assessed_by=user).order_by('-created_at')[:5]
+        serializer = AssessmentSerializer(recent, many=True)
+        return Response(serializer.data)

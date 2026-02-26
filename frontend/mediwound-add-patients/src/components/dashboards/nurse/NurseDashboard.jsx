@@ -12,14 +12,32 @@ const ShiftTaskList = ({ refreshTrigger }) => {
 
   useEffect(() => {
     nurseService.getTasks().then(data => {
-      setTasks(data);
+      const dynamicTasks = Array.isArray(data) ? data : [];
+      const staticTasks = [
+        { id: 'static-1', title: 'Morning Vital Signs Check', status: 'pending', due_time: '08:00 AM' },
+        { id: 'static-2', title: 'Administer Morning Medications', status: 'pending', due_time: '09:00 AM' },
+        { id: 'static-3', title: 'Wound Dressing Changes', status: 'pending', due_time: '11:00 AM' },
+        { id: 'static-4', title: 'Review Patient Charts', status: 'pending', due_time: '02:00 PM' }
+      ];
+      setTasks([...staticTasks, ...dynamicTasks]);
+    }).catch(err => {
+      console.error('Failed to fetch tasks:', err);
     }).finally(() => setLoading(false));
   }, [refreshTrigger]);
 
   const toggle = async (id, current) => {
     const next = current === 'completed' ? 'pending' : 'completed';
-    await nurseService.updateTaskStatus(id, next);
     setTasks(prev => prev.map(t => t.id === id ? { ...t, status: next } : t));
+
+    // Only call API for dynamic tasks
+    if (!String(id).startsWith('static-')) {
+      try {
+        await nurseService.updateTaskStatus(id, next);
+      } catch (err) {
+        console.error('Failed to update task status:', err);
+        setTasks(prev => prev.map(t => t.id === id ? { ...t, status: current } : t));
+      }
+    }
   };
 
   if (loading) return <p className="nurse-empty-state">Loading tasks...</p>;

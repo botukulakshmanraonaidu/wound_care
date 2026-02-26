@@ -207,34 +207,22 @@ def logout_api(request):
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def profile_api(request):
+    from admin_page.serializers import AdminUserSerializer
     user = request.user  # Instance of Admin
     
     if request.method == 'GET':
-        return Response({
-            "id": user.id,
-            "email": user.email,
-            "full_name": getattr(user, 'full_name', ''),
-            "role": getattr(user, 'role_type', 'doctor'),
-            "access_level": getattr(user, 'access_level', 'Limited'),
-            "job_title": getattr(user, 'job_title', ''),
-            "specialization": getattr(user, 'specialization', ''),
-            "is_active": user.is_active,
-        })
+        serializer = AdminUserSerializer(user)
+        return Response(serializer.data)
     
     elif request.method == 'PATCH':
-        data = request.data
-        user.full_name = data.get('full_name', user.full_name)
-        
-        password = data.get('password')
-        if password:
-            user.set_password(password)
-            
-        user.save()
-        
-        return Response({
-            "message": "Profile updated successfully",
-            "full_name": user.full_name
-        }, status=status.HTTP_200_OK)
+        serializer = AdminUserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Profile updated successfully",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserSignupView(views.APIView):
     def post(self, request):

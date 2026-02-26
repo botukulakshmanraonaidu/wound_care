@@ -78,8 +78,9 @@ export const adminApi = {
     getActivityLogs: (params) => AdminAPI.get("logs/", { params }),
 
     // Dashboard Stats
-    getSystemStats: () => AdminAPI.get("stats/"),
-    getStorageStats: () => AdminAPI.get("storage-stats/"),
+    getSystemStats: (params) => AdminAPI.get("stats/", { params }),
+    getStorageStats: (params) => AdminAPI.get("storage-stats/", { params }),
+    getFiles: (params) => AdminAPI.get("files/", { params }),
 };
 
 export default adminApi;

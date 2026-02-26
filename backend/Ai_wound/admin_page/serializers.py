@@ -71,15 +71,17 @@ class ActivityLogSerializer(serializers.ModelSerializer):
 
 class AdminUserSerializer(serializers.ModelSerializer):
     """For listing and updating users"""
+    role = serializers.CharField(source='role_type', read_only=True)
+    
     class Meta:
         model = Admin
         fields = [
-            'id', 'full_name', 'email', 'role_type', 'job_title', 
+            'id', 'full_name', 'email', 'role', 'role_type', 'job_title', 
             'department', 'specialization', 'license_id', 
             'ward', 'shift', 'access_level', 
-            'created_at', 'password', 'raw_password', 'bio', 'is_staff', 'is_superuser'
+            'created_at', 'password_updated_at', 'password', 'raw_password', 'bio', 'is_staff', 'is_superuser'
         ]
-        read_only_fields = ['id', 'created_at', 'raw_password']
+        read_only_fields = ['id', 'created_at', 'password_updated_at', 'raw_password']
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
@@ -89,8 +91,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
+            from django.utils import timezone
             instance.raw_password = password # UPDATE PLAIN TEXT
             instance.set_password(password) # UPDATE HASHED
+            instance.password_updated_at = timezone.now()
         instance.save()
         return instance
 

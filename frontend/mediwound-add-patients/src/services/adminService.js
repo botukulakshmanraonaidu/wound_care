@@ -14,9 +14,9 @@ export const adminService = {
     },
 
     // --- System Stats ---
-    getSystemStats: async () => {
+    getSystemStats: async (params) => {
         try {
-            const response = await AuthAPI.get('/admin_page/stats/');
+            const response = await AuthAPI.get('/admin_page/stats/', { params });
             return response.data;
         } catch (error) {
             console.error('Error fetching system stats:', error);
@@ -25,9 +25,9 @@ export const adminService = {
     },
 
     // --- Storage & Files ---
-    getStorageStats: async () => {
+    getStorageStats: async (params) => {
         try {
-            const response = await AuthAPI.get('/admin_page/storage-stats/');
+            const response = await AuthAPI.get('/admin_page/storage-stats/', { params });
             return response.data;
         } catch (error) {
             console.error('Error fetching storage stats:', error);
