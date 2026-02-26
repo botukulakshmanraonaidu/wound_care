@@ -157,10 +157,17 @@ class SystemFileViewSet(viewsets.ModelViewSet):
         
     def perform_destroy(self, instance):
         file_name = instance.name
-        # Also delete the actual file
+        # Delete the actual file — safe for both local and Cloudinary storage
         if instance.file:
-            if os.path.isfile(instance.file.path):
-                os.remove(instance.file.path)
+            try:
+                # .path only works for local filesystem storage
+                # Cloudinary raises NotImplementedError for .path
+                local_path = instance.file.path
+                if os.path.isfile(local_path):
+                    os.remove(local_path)
+            except (NotImplementedError, ValueError, AttributeError):
+                # Remote/cloud storage (Cloudinary) — no local file to delete
+                pass
         instance.delete()
         
         log_activity(

@@ -280,7 +280,9 @@ def sync_assessment_image_to_system_files(sender, instance, created, **kwargs):
     if created and instance.full_image:
         from admin_page.models import SystemFile
         
-        # Calculate size string
+        # Calculate size string — use try/except for Cloudinary remote files
+        # where .size may raise NotImplementedError or require a network call
+        size_str = "Unknown"
         try:
             size_bytes = instance.full_image.size
             if size_bytes < 1024:
@@ -289,19 +291,26 @@ def sync_assessment_image_to_system_files(sender, instance, created, **kwargs):
                 size_str = f"{size_bytes / 1024:.1f} KB"
             else:
                 size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-        except:
+        except (NotImplementedError, AttributeError, Exception):
             size_str = "Unknown"
             
-        # Get extension
-        ext = os.path.splitext(instance.full_image.name)[1].upper().replace('.', '') or 'IMG'
-        
-        SystemFile.objects.create(
-            name=f"Wound Image - {instance.assessment.patient.first_name} {instance.assessment.patient.last_name} (#{instance.assessment.id})",
-            file=instance.full_image,
-            uploaded_by=instance.assessment.assessed_by,
-            size=size_str,
-            file_type=ext
-        )
+        # Get extension from file name
+        try:
+            ext = os.path.splitext(instance.full_image.name)[1].upper().replace('.', '') or 'IMG'
+        except Exception:
+            ext = 'IMG'
+
+        try:
+            SystemFile.objects.create(
+                name=f"Wound Image - {instance.assessment.patient.first_name} {instance.assessment.patient.last_name} (#{instance.assessment.id})",
+                file=instance.full_image,
+                uploaded_by=instance.assessment.assessed_by,
+                size=size_str,
+                file_type=ext
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to sync AssessmentImage to SystemFile: {e}")
 
 @receiver(post_save, sender=Assessment)
 def sync_assessment_report_to_system_files(sender, instance, **kwargs):
@@ -312,8 +321,9 @@ def sync_assessment_report_to_system_files(sender, instance, **kwargs):
         
         # Avoid duplicate entries for the same report
         report_name = f"Report - {instance.patient.first_name} {instance.patient.last_name} ({instance.created_at.date()})"
-        if not SystemFile.objects.filter(name=report_name, file=instance.report_file).exists():
-            # Calculate size string
+        if not SystemFile.objects.filter(name=report_name).exists():
+            # Calculate size string — safe for both local and Cloudinary remote files
+            size_str = "Unknown"
             try:
                 size_bytes = instance.report_file.size
                 if size_bytes < 1024:
@@ -322,13 +332,17 @@ def sync_assessment_report_to_system_files(sender, instance, **kwargs):
                     size_str = f"{size_bytes / 1024:.1f} KB"
                 else:
                     size_str = f"{size_bytes / (1024 * 1024):.1f} MB"
-            except:
+            except (NotImplementedError, AttributeError, Exception):
                 size_str = "Unknown"
-                
-            SystemFile.objects.create(
-                name=report_name,
-                file=instance.report_file,
-                uploaded_by=instance.assessed_by,
-                size=size_str,
-                file_type="PDF"
-            )
+
+            try:
+                SystemFile.objects.create(
+                    name=report_name,
+                    file=instance.report_file,
+                    uploaded_by=instance.assessed_by,
+                    size=size_str,
+                    file_type="PDF"
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to sync Assessment report to SystemFile: {e}")

@@ -68,7 +68,9 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         (latest.healing_index !== null && parseFloat(latest.healing_index) < 50)
                     );
 
-                    return isStaticCritical || isAssessmentCritical;
+                    // User requested: only ICU ward patients should be considered as critical cases
+                    const isICUWard = p.ward && p.ward.toLowerCase().includes('icu');
+                    return isICUWard && (isStaticCritical || isAssessmentCritical);
                 });
 
                 // 5. Calculate Healing Rate and Distribution
@@ -83,19 +85,15 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
 
                 Object.keys(patientAssessments).forEach(pid => {
                     const assessments = patientAssessments[pid].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                    if (assessments.length >= 2) {
+                    if (assessments.length > 0) {
                         totalAssessed++;
                         const latest = assessments[0];
-                        const previous = assessments[1];
 
-                        const latestArea = (parseFloat(latest.length || 0) * parseFloat(latest.width || 0));
-                        const previousArea = (parseFloat(previous.length || 0) * parseFloat(previous.width || 0));
+                        const hIndex = parseFloat(latest.healing_index || 0);
+                        const redRate = parseFloat(latest.reduction_rate || 0);
 
-                        const latestIndex = parseFloat(latest.healing_index || 0);
-                        const previousIndex = parseFloat(previous.healing_index || 0);
-
-                        // Improved if area reduced OR index improved
-                        if ((latestArea < previousArea && previousArea > 0) || (latestIndex > previousIndex)) {
+                        // Count as improving if index is healthy OR area has reduced (from reports)
+                        if (hIndex >= 50 || redRate > 0) {
                             improvingCount++;
                         }
                     }

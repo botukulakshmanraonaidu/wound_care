@@ -169,6 +169,10 @@ class PatientTaskSerializer(serializers.ModelSerializer):
         fields = ['id', 'patient', 'title', 'due', 'scheduled_date', 'completed', 'created_at']
 
 class AssessmentImageSerializer(serializers.ModelSerializer):
+    # use_url=True ensures full Cloudinary URLs are returned, not relative paths
+    full_image = serializers.ImageField(use_url=True)
+    selected_area_image = serializers.ImageField(use_url=True, allow_null=True, required=False)
+
     class Meta:
         from .models import AssessmentImage
         model = AssessmentImage

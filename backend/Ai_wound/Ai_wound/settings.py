@@ -50,9 +50,26 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
 
-# Use Cloudinary for media files if credentials are provided
+# Explicitly configure Cloudinary SDK so credentials are active at upload time
 if all(CLOUDINARY_STORAGE.values()):
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    import cloudinary
+    cloudinary.config(
+        cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.getenv('CLOUDINARY_API_KEY'),
+        api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+        secure=True
+    )
+    # Django 4.2+ / 6.0: Use STORAGES dict (DEFAULT_FILE_STORAGE was REMOVED in Django 6.0)
+    STORAGES = {
+        "default": {
+            # Custom storage using official Cloudinary SDK — compatible with Django 6.0
+            # Bypasses django-cloudinary-storage which doesn't support Django 6.0
+            "BACKEND": "Ai_wound.storage_backends.CloudinaryMediaStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 # Cache Configuration (Reduces Supabase Reads)
 CACHES = {
@@ -124,8 +141,7 @@ INSTALLED_APPS = [
     'addpatient.apps.AddpatientConfig',
     'admin_page',
     'nurse_page',
-    'cloudinary_storage',
-    'cloudinary',
+    'cloudinary',  # Official Cloudinary SDK (used by storage_backends.py)
 ]
 
 MIDDLEWARE = [
@@ -245,11 +261,16 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
-# WhiteNoise: compress & cache static files with hashed filenames
-# Only use CompressedManifestStaticFilesStorage in production —
-# it requires 'collectstatic' to be run first (not available in local dev).
+# WhiteNoise: compress & cache static files with hashed filenames in production.
+# STATICFILES_STORAGE was removed in Django 6.0 — update the STORAGES dict instead.
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    # If STORAGES was already defined (Cloudinary active), update the staticfiles key.
+    # Otherwise define it fresh with WhiteNoise for staticfiles.
+    _storages = globals().get('STORAGES', {})
+    _storages['staticfiles'] = {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    }
+    STORAGES = _storages
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

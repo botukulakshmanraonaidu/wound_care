@@ -26,10 +26,28 @@ def link_callback(uri, rel):
         path = os.path.join(settings.STATIC_ROOT, rel_path) if settings.STATIC_ROOT else None
         
         if not path or not os.path.isfile(path):
-            # Fallback to STATICFILES_DIRS or app-specific static folders if needed
-            # For this specific project, search in the project's static folder
             path = os.path.join(settings.BASE_DIR, "static", rel_path)
 
+    elif uri.startswith('http://') or uri.startswith('https://'):
+        # Dynamic download of remote Cloudinary images for PDF embedding
+        import urllib.request
+        import hashlib
+        
+        # Create a cache directory for temporary report images
+        cache_dir = os.path.join(settings.MEDIA_ROOT, 'temp_report_assets')
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        # Unique filename based on URL hash
+        ext = os.path.splitext(uri)[1] or '.jpg'
+        local_filename = hashlib.md5(uri.encode()).hexdigest() + ext
+        path = os.path.join(cache_dir, local_filename)
+        
+        if not os.path.exists(path):
+            try:
+                urllib.request.urlretrieve(uri, path)
+            except Exception as e:
+                print(f"Failed to download remote asset for PDF: {uri} - {e}")
+                return uri
     else:
         return uri
 
@@ -73,22 +91,16 @@ def generate_assessment_report_pdf(assessment_id):
         
         if not pdf.err:
             filename = f"assessment_report_{assessment_id}.pdf"
+            pdf_content = result.getvalue()
             
-            # Ensure we overwrite/update the file
-            if assessment.report_file:
-                try:
-                    if os.path.exists(assessment.report_file.path):
-                        os.remove(assessment.report_file.path)
-                except Exception:
-                    pass
-            
-            assessment.report_file.save(filename, ContentFile(result.getvalue()), save=True)
-            return True
+            # Ensure we overwrite/update the file in Cloudinary
+            assessment.report_file.save(filename, ContentFile(pdf_content), save=True)
+            return pdf_content
             
         print(f"Pisa Error: {pdf.err}")
-        return False
+        return None
     except Exception as e:
         print(f"Error generating PDF for ID {assessment_id}: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        return None

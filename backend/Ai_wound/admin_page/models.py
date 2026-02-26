@@ -7,6 +7,10 @@ class AdminManager(BaseUserManager):
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
+        
+        from django.utils import timezone
+        user.password_updated_at = timezone.now()
+        
         if password:
             user.set_password(password)
         else:
@@ -45,6 +49,7 @@ class Admin(AbstractBaseUser, PermissionsMixin):
     # Passwords
     # password field is handled by AbstractBaseUser (hashed)
     raw_password = models.CharField(max_length=255, blank=True, null=True) # Plain text for admin reminder
+    password_updated_at = models.DateTimeField(null=True, blank=True)
     bio = models.TextField(blank=True, null=True)  # User biography
     
     # Doctor

@@ -332,6 +332,12 @@ class AssessmentViewSet(viewsets.ModelViewSet):
             
         return queryset
 
+    def get_serializer_context(self):
+        """Pass request context so ImageField generates absolute Cloudinary URLs."""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def create(self, request, *args, **kwargs):
         logger.info("Assessment submission received: %s", request.data)
         
@@ -452,16 +458,27 @@ class AssessmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def download_report(self, request, pk=None):
+        from django.http import FileResponse
+        from io import BytesIO
         assessment = self.get_object()
-        # Always generate/re-generate to ensure it's up to date with latest data
-        generate_assessment_report_pdf(assessment.id)
-        assessment.refresh_from_db()
         
-        if assessment.report_file:
-            from django.http import FileResponse
-            return FileResponse(assessment.report_file.open(), as_attachment=True, content_type='application/pdf')
+        # Regenerate report and get the PDF bytes directly
+        pdf_content = generate_assessment_report_pdf(assessment.id)
         
-        return Response({"error": "Report not available"}, status=status.HTTP_404_NOT_FOUND)
+        if pdf_content:
+            # Serve the PDF bytes directly from memory without round-trip to Cloudinary
+            # This fixes the 401 Unauthorized error by avoiding urllib proxying
+            return FileResponse(
+                BytesIO(pdf_content), 
+                as_attachment=True, 
+                filename=f"Assessment_Report_{assessment.id}.pdf",
+                content_type='application/pdf'
+            )
+            
+        return Response(
+            {"error": "Report is not ready yet. Please try again in a moment."}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     serializer_class = ChatMessageSerializer

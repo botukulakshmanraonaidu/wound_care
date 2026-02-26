@@ -78,6 +78,7 @@ function ReportPreview() {
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
+                window.URL.revokeObjectURL(url);
             } else {
                 alert("Report is not ready yet. Please try again in a moment.");
             }

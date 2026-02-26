@@ -343,6 +343,7 @@ const PatientProfile = ({ patient, onBack, onNewAssessment, onEditPatient, user,
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
+                window.URL.revokeObjectURL(url);
             } else {
                 alert("Report is not ready yet. Generating it now...");
             }

@@ -1,9 +1,10 @@
 # Backend (Django) Requirements
 Django==6.0.2
 djangorestframework==3.15.2
-# Cloudinary Storage
+# Cloudinary Storage (official SDK — used by Ai_wound/storage_backends.py)
 cloudinary==1.41.0
-django-cloudinary-storage==0.3.0
+# django-cloudinary-storage removed: incompatible with Django 6.0 (STORAGES API not supported)
+# Replaced by custom CloudinaryMediaStorage in Ai_wound/storage_backends.py
 
 # ML Service Integration
 fastapi==0.131.0
