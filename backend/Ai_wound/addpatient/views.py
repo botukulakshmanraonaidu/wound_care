@@ -148,7 +148,14 @@ def login_api(request):
         logger.warning("DEBUG: Missing email or password")
         return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = authenticate(username=email, password=password)
+    try:
+        user = authenticate(username=email, password=password)
+    except Exception as db_err:
+        logger.error(f"DATABASE ERROR during login for [{email}]: {db_err}")
+        return Response({
+            "error": f"Server database error: {str(db_err)}"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
     logger.info(f"DEBUG: Authenticate result for [{email}]: {user}")
 
     if user:

@@ -1,8 +1,9 @@
 import axios from "axios";
+import { getApiBaseUrl } from "./apiConfig";
 
 const AdminAPI = axios.create({
-    // Prefers VITE_API_BASE_URL from .env, fallback to empty string (current domain)
-    baseURL: `${import.meta.env.VITE_API_BASE_URL || ""}/admin_page/`,
+    // Uses centralized config — switchable at runtime
+    baseURL: `${getApiBaseUrl()}/admin_page/`,
     headers: {
         "Content-Type": "application/json",
     },
@@ -34,8 +35,7 @@ AdminAPI.interceptors.response.use(
                 const refreshToken = localStorage.getItem("refresh_token");
                 if (!refreshToken) throw new Error("No refresh token");
 
-                // Use Render production backend for token refresh
-                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL || "https://wound-analysis.onrender.com"}/patient/api/auth/token/refresh/`, {
+                const response = await axios.post(`${getApiBaseUrl()}/patient/api/auth/token/refresh/`, {
                     refresh: refreshToken,
                 });
 

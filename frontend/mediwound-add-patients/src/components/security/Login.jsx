@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { loginUser } from "../../API/authApi";
+import ServerToggle from "../common/ServerToggle";
 
 const Login = ({ onLogin }) => {
   // 🔹 State for form fields
@@ -165,6 +166,11 @@ const Login = ({ onLogin }) => {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+      </div>
+
+      {/* Server Toggle */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+        <ServerToggle />
       </div>
     </div>
   );

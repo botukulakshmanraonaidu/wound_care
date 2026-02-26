@@ -31,8 +31,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')  # Required — no insecure fallback in pro
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Added wound-analysis.onrender.com for production deployment
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,wound-analysis.onrender.com').split(',')
+# Added wound-analysis-cl7c.onrender.com for production deployment
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,wound-analysis-cl7c.onrender.com').split(',')
 
 # Dynamically add Render's external hostname if available
 render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -115,7 +115,7 @@ else:
         "http://localhost:5173", 
         "http://127.0.0.1:5173", 
         "http://localhost:3000",
-        "https://wound-analysis.onrender.com",
+        "https://wound-analysis-cl7c.onrender.com",
         "https://cheery-muffin-649bae.netlify.app"
     ]
 CORS_ALLOW_CREDENTIALS = True
@@ -199,6 +199,13 @@ if _database_url:
     if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
         if 'OPTIONS' in DATABASES['default'] and 'charset' in DATABASES['default']['OPTIONS']:
             del DATABASES['default']['OPTIONS']['charset']
+    # Add connection timeout and Supabase pooler compatibility
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS']['connect_timeout'] = 10
+    # Supabase Transaction Pooler does NOT support prepared statements
+    if 'pooler.supabase.com' in _database_url:
+        DATABASES['default']['OPTIONS']['options'] = '-c search_path=public'
+        DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 else:
     # Use individual environment variables (Supabase or local)
     DATABASES = {

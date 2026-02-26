@@ -1,7 +1,8 @@
 import axios from "axios";
+import { getApiBaseUrl } from "./apiConfig";
 
 const AuthAPI = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL || ""}/patient/`,
+  baseURL: `${getApiBaseUrl()}/patient/`,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -35,8 +36,7 @@ AuthAPI.interceptors.response.use(
         if (!refreshToken) throw new Error("No refresh token");
 
         // Use environment-based base URL for token refresh
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
-        const response = await axios.post(`${baseUrl}/patient/api/auth/token/refresh/`, {
+        const response = await axios.post(`${getApiBaseUrl()}/patient/api/auth/token/refresh/`, {
           refresh: refreshToken,
         });
 
