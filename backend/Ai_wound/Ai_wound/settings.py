@@ -293,9 +293,13 @@ SESSION_COOKIE_SECURE = not DEBUG   # True in production (HTTPS), False locally
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_SAVE_EVERY_REQUEST = True
 
-# CSRF Trusted Origins — matches CORS_ALLOWED_ORIGINS
-# Added Render and Netlify hosts
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+# CSRF Trusted Origins
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://wound-analysis-cl7c.onrender.com",
+    "https://cheery-muffin-649bae.netlify.app"
+]
 
 # Ensure the Render hostname itself is trusted for CSRF if it's not already
 if render_external_hostname:
