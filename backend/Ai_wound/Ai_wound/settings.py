@@ -106,18 +106,8 @@ SIMPLE_JWT = {
 }
 
 
-# CORS settings
-_cors_origins_env = os.getenv('CORS_ALLOWED_ORIGINS', '')
-if _cors_origins_env:
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins_env.split(',') if o.strip()]
-else:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:5173", 
-        "http://127.0.0.1:5173", 
-        "http://localhost:3000",
-        "https://wound-analysis-cl7c.onrender.com",
-        "https://cheery-muffin-649bae.netlify.app"
-    ]
+# CORS settings - Forcefully allow all origins to unblock Render deployment
+CORS_ALLOW_ALL_ORIGINS = True 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept', 'accept-encoding', 'authorization',

@@ -16,7 +16,15 @@ const STORAGE_KEY = "api_server_mode";
  * Get the current server mode ("local" or "live").
  */
 export const getServerMode = () => {
-    return localStorage.getItem(STORAGE_KEY) || "local";
+    const savedMode = localStorage.getItem(STORAGE_KEY);
+    if (savedMode) return savedMode;
+
+    // Default logic: If running on localhost, default to 'local'. 
+    // If running on Netlify/Production, default to 'live'.
+    const isLocalhost = window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+    return isLocalhost ? "local" : "live";
 };
 
 /**
