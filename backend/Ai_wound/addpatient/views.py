@@ -388,7 +388,12 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 # Use the first image for ML analysis
                 first_image = assessment.images.first()
                 if first_image and first_image.full_image:
-                    ml_url = "http://localhost:8001/analyze-wound"
+                    import os
+                    ml_url = os.getenv("ML_SERVICE_URL", "http://localhost:8001/analyze-wound")
+                    # Ensure URL ends with the endpoint if only base is provided
+                    if not ml_url.endswith("/analyze-wound"):
+                        ml_url = f"{ml_url.rstrip('/')}/analyze-wound"
+                        
                     with first_image.full_image.open('rb') as img_file:
                         files = {'file': (first_image.full_image.name, img_file, 'image/jpeg')}
                         response = requests.post(ml_url, files=files, timeout=10)
