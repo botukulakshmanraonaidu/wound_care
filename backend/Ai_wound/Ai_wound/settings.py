@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')  # Required — no insecure fallback in pro
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Added wound-analysis-cl7c.onrender.com for production deployment (Trigger 1)
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,wound-analysis-cl7c.onrender.com').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver,wound-analysis-cl7c.onrender.com,woundanalysis.netlify.app').split(',')
 
 # Dynamically add Render's external hostname if available
 render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -108,6 +108,13 @@ SIMPLE_JWT = {
 
 # CORS settings - Forcefully allow all origins to unblock Render deployment
 CORS_ALLOW_ALL_ORIGINS = True 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://wound-analysis-cl7c.onrender.com",
+    "https://woundcare1.netlify.app",
+    "https://woundanalysis.netlify.app",
+]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept', 'accept-encoding', 'authorization',
@@ -189,13 +196,16 @@ if _database_url:
     if DATABASES['default'].get('ENGINE') == 'django.db.backends.postgresql':
         if 'OPTIONS' in DATABASES['default'] and 'charset' in DATABASES['default']['OPTIONS']:
             del DATABASES['default']['OPTIONS']['charset']
-    # Add connection timeout and Supabase pooler compatibility
+    # Add connection timeout and Supabase compatibility
     DATABASES['default'].setdefault('OPTIONS', {})
-    DATABASES['default']['OPTIONS']['connect_timeout'] = 10
-    # Supabase Transaction Pooler does NOT support prepared statements
-    if 'pooler.supabase.com' in _database_url:
+    DATABASES['default']['OPTIONS']['connect_timeout'] = 15
+    
+    # Supabase-specific optimizations (applies to both Pooler and Direct)
+    if 'supabase.co' in _database_url or 'supabase.com' in _database_url:
         DATABASES['default']['OPTIONS']['options'] = '-c search_path=public'
-        DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+        # Transaction Pooler does NOT support prepared statements
+        if 'pooler' in _database_url:
+            DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 else:
     # Use individual environment variables (Supabase or local)
     DATABASES = {
@@ -298,7 +308,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://wound-analysis-cl7c.onrender.com",
-    "https://woundcare1.netlify.app"
+    "https://woundcare1.netlify.app",
+    "https://woundanalysis.netlify.app"
 ]
 
 # Ensure the Render hostname itself is trusted for CSRF if it's not already
