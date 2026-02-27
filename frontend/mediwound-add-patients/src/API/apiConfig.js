@@ -8,7 +8,7 @@ const SERVERS = {
     local: "http://localhost:8000",
     live: "https://wound-care.onrender.com",
     ml_local: "http://localhost:8001",
-    ml_live: import.meta.env.VITE_ML_API_URL || "http://localhost:8001",
+    ml_live: import.meta.env.VITE_ML_API_URL || import.meta.env.VITE_FASTAPI_URL || "http://localhost:8001",
 };
 
 // Key used in localStorage

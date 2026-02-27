@@ -112,7 +112,8 @@ const WoundAssessmentDashboard = () => {
             }
         } catch (error) {
             console.error("AI Analysis failed", error);
-            setAnalysisError("Could not connect to ML Service. Please check if FastAPI is running on port 8001.");
+            const targetUrl = `${getMlBaseUrl()}/analyze-wound`;
+            setAnalysisError(`Could not connect to ML Service at ${targetUrl}. Please check if the service is running and CORS is allowed.`);
         } finally {
             setIsAnalyzing(false);
         }
