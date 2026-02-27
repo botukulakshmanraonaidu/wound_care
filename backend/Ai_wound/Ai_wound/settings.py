@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+print("\n" + "="*50)
+print("--- LOADING DJANGO SETTINGS (VERSION 1.0.2) ---")
+print("="*50 + "\n")
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
