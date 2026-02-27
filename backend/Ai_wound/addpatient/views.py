@@ -200,7 +200,9 @@ def login_api(request):
         }, status=status.HTTP_200_OK)
     else:
         logger.warning(f"Authentication failed for email: {email}")
-        return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        response = Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
+        response['X-Debug-Version'] = '1.0.1-cors-fix'
+        return response
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
