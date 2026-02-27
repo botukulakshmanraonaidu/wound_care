@@ -6,7 +6,7 @@
 
 const SERVERS = {
     local: "http://localhost:8000",
-    live: "https://wound-analysis-cl7c.onrender.com",
+    live: "https://wound-care.onrender.com",
 };
 
 // Key used in localStorage

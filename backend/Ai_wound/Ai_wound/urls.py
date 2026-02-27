@@ -24,5 +24,4 @@ urlpatterns = [
     path('patient/', include('addpatient.urls')),
     path('admin_page/', include('admin_page.urls')),
     path('nurse_page/', include('nurse_page.urls')),
-    path('version/', lambda r: __import__('django.http').HttpResponse('1.0.2-cors-fix')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
