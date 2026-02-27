@@ -3,6 +3,7 @@ import { Upload, X, Camera, Info, AlertCircle, Save, ChevronLeft, ZoomIn, ZoomOu
 import { useNavigate } from 'react-router-dom';
 import { ANTERIOR_REGIONS, POSTERIOR_REGIONS } from './bodyRegions';
 import AuthAPI from '../../../../API/authApi';
+import { getMlBaseUrl } from '../../../../API/apiConfig';
 import { API_BASE_URL } from './config';
 import './Clinicalportal.css';
 
@@ -76,7 +77,7 @@ const WoundAssessmentDashboard = () => {
             const uploadData = new FormData();
             uploadData.append('file', blob, 'wound.jpg');
 
-            const mlResponse = await fetch('http://localhost:8001/analyze-wound', {
+            const mlResponse = await fetch(`${getMlBaseUrl()}/analyze-wound`, {
                 method: 'POST',
                 body: uploadData
             });

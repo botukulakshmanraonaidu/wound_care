@@ -7,6 +7,8 @@
 const SERVERS = {
     local: "http://localhost:8000",
     live: "https://wound-care.onrender.com",
+    ml_local: "http://localhost:8001",
+    ml_live: import.meta.env.VITE_ML_API_URL || "http://localhost:8001",
 };
 
 // Key used in localStorage
@@ -45,6 +47,14 @@ export const getApiBaseUrl = () => {
 };
 
 /**
+ * Get the current ML base URL based on the selected mode.
+ */
+export const getMlBaseUrl = () => {
+    const mode = getServerMode();
+    return mode === "live" ? SERVERS.ml_live : SERVERS.ml_local;
+};
+
+/**
  * Get the available server options (for UI display).
  */
 export const getServerOptions = () => {
@@ -54,4 +64,4 @@ export const getServerOptions = () => {
     ];
 };
 
-export default { getApiBaseUrl, getServerMode, setServerMode, getServerOptions };
+export default { getApiBaseUrl, getMlBaseUrl, getServerMode, setServerMode, getServerOptions };
