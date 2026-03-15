@@ -37,7 +37,8 @@ class CreateAdminAPIView(APIView):
                 user_email=request.data.get('admin_email', 'system'), # Should be from request.user
                 action='CREATE',
                 target_user=user.full_name,
-                description=f"Created user {user.full_name} with role {user.role_type}"
+                description=f"Created user {user.full_name} with role {user.role_type}",
+                ip_address=request.META.get('REMOTE_ADDR')
             )
             return Response(
                 {"message": "User Registered Successfully"},
@@ -63,7 +64,8 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             user_email=self.request.data.get('admin_email', 'system'),
             action='UPDATE',
             target_user=user.full_name,
-            description=f"Updated user {user.full_name}"
+            description=f"Updated user {user.full_name}",
+            ip_address=self.request.META.get('REMOTE_ADDR')
         )
 
     def perform_destroy(self, instance):
@@ -78,7 +80,8 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             user_email=self.request.data.get('admin_email', 'system'),
             action='DELETE',
             target_user=name,
-            description=f"Deleted user {name}"
+            description=f"Deleted user {name}",
+            ip_address=self.request.META.get('REMOTE_ADDR')
         )
 
 class ActivityLogViewSet(viewsets.ModelViewSet):
@@ -117,8 +120,19 @@ class ActivityLogViewSet(viewsets.ModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
+        # 1. Filter the queryset first (dates, action, severity)
         queryset = self.filter_queryset(self.get_queryset())
 
+        # 2. Check for limit parameter (Optimization for Dashboard)
+        limit = request.query_params.get('limit')
+        if limit:
+            try:
+                limit = int(limit)
+                queryset = queryset[:limit]
+            except (ValueError, TypeError):
+                pass
+
+        # 3. Check for DRF pagination (Standard for full logs page)
         page = self.paginate_queryset(queryset)
         if page is not None:
             # Prefetch users for the current page
@@ -128,11 +142,15 @@ class ActivityLogViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(page, many=True, context={'request': request, 'user_map': user_map})
             return self.get_paginated_response(serializer.data)
 
-        # Prefetch users for the whole queryset (if not paginated)
-        emails = {log.user_email for log in queryset if log.user_email}
+        # 4. If not paginated but potentially filtered/sliced
+        # Convert to list to evaluate slicing if any
+        logs_list = list(queryset) if limit else queryset
+        
+        # Prefetch users for the evaluated list
+        emails = {log.user_email for log in logs_list if log.user_email}
         user_map = {u.email: u.full_name for u in Admin.objects.filter(email__in=emails).only('email', 'full_name')}
         
-        serializer = self.get_serializer(queryset, many=True, context={'request': request, 'user_map': user_map})
+        serializer = self.get_serializer(logs_list, many=True, context={'request': request, 'user_map': user_map})
         return Response(serializer.data)
 
 from .models import SystemFile
@@ -152,7 +170,8 @@ class SystemFileViewSet(viewsets.ModelViewSet):
             action='CREATE',
             target_user=instance.name,
             description=f"Uploaded file: {instance.name} ({instance.size})",
-            severity='INFO'
+            severity='INFO',
+            ip_address=self.request.META.get('REMOTE_ADDR')
         )
         
     def perform_destroy(self, instance):
@@ -175,7 +194,8 @@ class SystemFileViewSet(viewsets.ModelViewSet):
             action='DELETE',
             target_user=file_name,
             description=f"Deleted file: {file_name}",
-            severity='WARNING'
+            severity='WARNING',
+            ip_address=self.request.META.get('REMOTE_ADDR')
         )
 
 def get_directory_size(path):

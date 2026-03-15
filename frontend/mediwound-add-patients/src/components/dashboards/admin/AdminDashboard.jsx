@@ -10,8 +10,11 @@ import '../doctor/Dashboard.css'; // Reuse base styles
 import './AdminDashboard.css';    // Admin specific styles
 import ChangeBoard from './ChangeBoard';
 import { adminApi } from '../../../API/adminApi';
+import AuthAPI from '../../../API/authApi';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
         total_users: '...',
         system_uptime: '...',
@@ -25,23 +28,29 @@ const AdminDashboard = () => {
         free_storage_bytes: 0,
         breakdown: []
     });
+    const [recentAssessments, setRecentAssessments] = useState([]);
+    const [recentPatients, setRecentPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [lastUpdated, setLastUpdated] = useState(new Date());
+    const [statsLastUpdated, setStatsLastUpdated] = useState(new Date());
 
     const fetchAllStats = async (isPoll = false) => {
         try {
             if (!isPoll) setLoading(true);
             else setRefreshing(true);
 
-            const [sysRes, storageRes] = await Promise.all([
+            const [sysRes, storageRes, assessmentsRes, patientsRes] = await Promise.all([
                 adminApi.getSystemStats(),
-                adminApi.getStorageStats()
+                adminApi.getStorageStats(),
+                AuthAPI.get('api/assessments/?filter=recent_hour&limit=5'),
+                AuthAPI.get('api/patients/?filter=recent_hour&limit=5')
             ]);
 
+            setRecentAssessments(assessmentsRes.data || []);
+            setRecentPatients(patientsRes.data || []);
             setStats(sysRes.data);
             setStorage(storageRes.data);
-            setLastUpdated(new Date());
+            setStatsLastUpdated(new Date());
             setLoading(false);
             setRefreshing(false);
         } catch (error) {
@@ -93,7 +102,7 @@ const AdminDashboard = () => {
                         <p className="admin-subtitle">
                             Monitor system health and clinical data.
                             <span style={{ marginLeft: '12px', fontSize: '11px', color: '#94A3B8' }}>
-                                Last updated: {lastUpdated.toLocaleTimeString()}
+                                Last updated: {statsLastUpdated.toLocaleTimeString()}
                             </span>
                         </p>
                     </div>
@@ -154,8 +163,78 @@ const AdminDashboard = () => {
 
             {/* Main Content Grid: Logs & Storage */}
             <div className="dashboard-grid">
-                {/* Left Column: System Logs / Change Board */}
+                {/* Left Column: Clinical Oversight */}
                 <div className="dashboard-col-left">
+                    <div className="content-card" style={{ marginBottom: '24px' }}>
+                        <div className="card-header">
+                            <div className="card-title-wrapper">
+                                <Users size={18} className="text-blue" style={{ marginRight: '8px' }} />
+                                <div className="card-title">Admitted in Last Hour</div>
+                            </div>
+                            <a href="/patients" className="btn-link-blue" style={{ color: '#3B82F6', fontSize: '12px', fontWeight: 600 }}>View Directory</a>
+                        </div>
+                        <div className="admin-patients-list">
+                            {recentPatients.length > 0 ? recentPatients.map((patient) => (
+                                <div key={patient.id} className="patient-row-mini">
+                                    <div className="p-info">
+                                        <div className="p-name">{patient.first_name} {patient.last_name}</div>
+                                        <div className="p-mrn">MRN: {patient.mrn}</div>
+                                    </div>
+                                    <div className="p-details">
+                                        <div className="p-ward">{patient.ward_department || patient.ward || 'General'}</div>
+                                        <div className="p-status">{patient.status || 'Active'}</div>
+                                    </div>
+                                    <div className="p-actions">
+                                        <div className="p-date">{new Date(patient.admission_date).toLocaleDateString()}</div>
+                                        <button 
+                                            className="btn-view-small"
+                                            onClick={() => navigate(`/patients/profile/${patient.id}`)}
+                                        >
+                                            Profile
+                                        </button>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="empty-state">No recent patients admitted.</div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="content-card" style={{ marginBottom: '24px' }}>
+                        <div className="card-header">
+                            <div className="card-title-wrapper">
+                                <Activity size={18} className="text-blue" style={{ marginRight: '8px' }} />
+                                <div className="card-title">Assessments in Last Hour</div>
+                            </div>
+                            <span className="badge badge-blue">System Wide</span>
+                        </div>
+                        <div className="admin-assessments-list">
+                            {recentAssessments.length > 0 ? recentAssessments.map((assess) => (
+                                <div key={assess.id} className="assessment-row-mini">
+                                    <div className="assess-patient-info">
+                                        <div className="assess-patient-name">{assess.patient_name || 'Unknown Patient'}</div>
+                                        <div className="assess-patient-mrn">MRN: {assess.mrn || 'N/A'}</div>
+                                    </div>
+                                    <div className="assess-details-mini">
+                                        <div className="assess-type">{assess.wound_type}</div>
+                                        <div className="assess-stage">{assess.wound_stage}</div>
+                                    </div>
+                                    <div className="assess-meta-mini">
+                                        <div className="assess-date">{new Date(assess.created_at).toLocaleDateString()}</div>
+                                        <button 
+                                            className="btn-view-small"
+                                            onClick={() => navigate('/reports', { state: { assessment: assess } })}
+                                        >
+                                            View
+                                        </button>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div className="empty-state">No recent assessments recorded.</div>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="content-card">
                         <div className="card-header">
                             <div className="card-title-wrapper">

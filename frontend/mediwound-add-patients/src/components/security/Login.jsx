@@ -169,9 +169,9 @@ const Login = ({ onLogin }) => {
       </div>
 
       {/* Server Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+      {/* <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
         <ServerToggle />
-      </div>
+      </div> */}
     </div>
   );
 };

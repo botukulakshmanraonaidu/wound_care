@@ -40,7 +40,9 @@ const mapFromBackend = (data) => ({
     emergencyContactName: data.emergency_contact_name,
     emergencyContactNumber: data.emergency_contact_number,
     assignedDoctor: data.assigned_doctor,
-    assignedNurse: data.assigned_nurse
+    assignedNurse: data.assigned_nurse,
+    created_at: data.created_at,
+    updated_at: data.updated_at
 });
 
 export const patientService = {
@@ -82,6 +84,16 @@ export const patientService = {
             return mapFromBackend(response.data);
         } catch (error) {
             console.error('Error updating patient:', error);
+            throw error;
+        }
+    },
+
+    deletePatient: async (id) => {
+        try {
+            await AuthAPI.delete(`api/patients/${id}/`);
+            return true;
+        } catch (error) {
+            console.error('Error deleting patient:', error);
             throw error;
         }
     },

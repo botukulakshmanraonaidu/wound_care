@@ -14,6 +14,7 @@ class Patient(models.Model):
     room_bed_number = models.CharField(max_length=50)
     assigning_physician = models.CharField(max_length=100)
     primary_diagnosis = models.TextField()
+    medical_history = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, default='Active')
     
     # Contact Information

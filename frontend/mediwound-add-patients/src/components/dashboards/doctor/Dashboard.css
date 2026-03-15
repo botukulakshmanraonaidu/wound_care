@@ -463,3 +463,77 @@
     text-align: center;
     margin-top: 24px;
 }
+
+/* Appointments Card Styles */
+.appointments-list {
+    margin-top: 10px;
+}
+
+.mini-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.mini-table th {
+    text-align: left;
+    font-size: 11px;
+    color: #64748B;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-bottom: 2px solid #F1F5F9;
+}
+
+.mini-table td {
+    padding: 12px;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+}
+
+.mini-table tr:last-child td {
+    border-bottom: none;
+}
+
+.patient-mini-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.p-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F172A;
+}
+
+.p-mrn {
+    font-size: 11px;
+    color: #64748B;
+}
+
+.badge-mini {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.badge-mini.opd { background: #E0F2FE; color: #0369A1; }
+.badge-mini.follow_up { background: #DCFCE7; color: #15803D; }
+.badge-mini.emergency { background: #FEE2E2; color: #B91C1C; }
+.badge-mini.ward { background: #F3E8FF; color: #7E22CE; }
+
+.btn-view-mini {
+    padding: 4px 10px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-view-mini:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}

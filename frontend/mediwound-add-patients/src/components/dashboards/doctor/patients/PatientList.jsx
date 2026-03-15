@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, ChevronRight, Filter } from 'lucide-react';
+import { Plus, Eye, ChevronRight, Filter, Trash2, AlertTriangle, X } from 'lucide-react';
 import { patientService } from '../../../../services/patientService';
 import './PatientList.css';
 
@@ -9,12 +9,13 @@ const PatientList = () => {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeFilter, setActiveFilter] = useState('all');
+    const userRole = localStorage.getItem('userRole')?.toLowerCase();
+    const [activeFilter, setActiveFilter] = useState(userRole === 'nurse' ? 'my' : 'all');
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [loadingReportId, setLoadingReportId] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // stores patient id to delete
 
     // Auth context/role
-    const userRole = localStorage.getItem('userRole')?.toLowerCase();
     const userId = localStorage.getItem('userId');
 
     useEffect(() => {
@@ -40,6 +41,21 @@ const PatientList = () => {
 
     const handleEdit = (id) => {
         navigate(`/patients/edit/${id}`);
+    };
+
+    const executeDelete = async () => {
+        if (!showDeleteConfirm) return;
+        
+        try {
+            await patientService.deletePatient(showDeleteConfirm);
+            // Refresh the list natively keeping current filter setting active
+            fetchPatients(activeFilter);
+        } catch (error) {
+            alert("Failed to delete patient. The server may have returned an error.");
+            console.error("Deletion fell through: ", error);
+        } finally {
+            setShowDeleteConfirm(null);
+        }
     };
 
     const filteredPatients = patients.filter(patient =>
@@ -106,12 +122,15 @@ const PatientList = () => {
                                     >
                                         My Patients
                                     </button>
-                                    <button
-                                        className={`filter-menu-item ${activeFilter === 'all' ? 'selected' : ''}`}
-                                        onClick={() => setActiveFilter('all')}
-                                    >
-                                        All Patients
-                                    </button>
+                                    
+                                    {userRole !== 'nurse' && (
+                                        <button
+                                            className={`filter-menu-item ${activeFilter === 'all' ? 'selected' : ''}`}
+                                            onClick={() => setActiveFilter('all')}
+                                        >
+                                            All Patients
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -135,7 +154,12 @@ const PatientList = () => {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: 'center', padding: '32px' }}>Loading patients...</td>
+                                    <td colSpan="7" style={{ textAlign: 'center', padding: '60px 0' }}>
+                                        <div className="table-loader-container">
+                                            <div className="spinner-small"></div>
+                                            <span style={{ marginLeft: '12px', color: '#64748B', fontWeight: 500 }}>Updating Patient Directory...</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : filteredPatients.length === 0 ? (
                                 <tr>
@@ -168,49 +192,20 @@ const PatientList = () => {
                                         </td>
                                         <td className="text-right">
                                             <div className="actions-group">
-                                                {userRole === 'nurse' ? (
-                                                    <button
-                                                        className="btn-link"
-                                                        disabled={loadingReportId === patient.id}
-                                                        onClick={async () => {
-                                                            setLoadingReportId(patient.id);
-                                                            try {
-                                                                await patientService.clearNotifications(patient.id);
-                                                                const assessments = await patientService.getPatientAssessments(patient.id);
-
-                                                                if (assessments && assessments.length > 0) {
-                                                                    const latestAssessment = assessments[0];
-                                                                    // Store in sessionStorage as a reliable fallback
-                                                                    sessionStorage.setItem('nurse_report_assessment', JSON.stringify(latestAssessment));
-                                                                    // Navigate with state
-                                                                    navigate('/reports', { state: { assessment: latestAssessment } });
-                                                                } else {
-                                                                    alert('No assessment report found for this patient.');
-                                                                }
-                                                            } catch (err) {
-                                                                console.error('Failed to load report:', err);
-                                                                alert('Failed to load report. Please try again.');
-                                                            } finally {
-                                                                setLoadingReportId(null);
-                                                            }
-                                                        }}
-                                                        style={{ color: '#2563eb', fontWeight: 600, opacity: loadingReportId === patient.id ? 0.7 : 1 }}
-                                                    >
-                                                        {loadingReportId === patient.id ? 'Loading...' : 'View Report'}
+                                                {(userRole !== 'doctor' || String(patient.assignedDoctor?.id) === String(userId)) && (
+                                                    <button className="btn-icon-link" onClick={() => handleView(patient.id)} title="View Profile">
+                                                        <Eye size={18} />
                                                     </button>
-                                                ) : (
-                                                    <>
-                                                        {(userRole !== 'doctor' || String(patient.assignedDoctor?.id) === String(userId)) && (
-                                                            <button className="btn-icon-link" onClick={() => handleView(patient.id)} title="View Profile">
-                                                                <Eye size={18} />
-                                                            </button>
-                                                        )}
-                                                        {['admin', 'doctor'].includes(userRole) && (
-                                                            <button className="btn-link" onClick={() => handleEdit(patient.id)}>
-                                                                Update
-                                                            </button>
-                                                        )}
-                                                    </>
+                                                )}
+                                                {['admin', 'doctor'].includes(userRole) && (
+                                                    <button className="btn-link" onClick={() => handleEdit(patient.id)}>
+                                                        Update
+                                                    </button>
+                                                )}
+                                                {userRole === 'admin' && (
+                                                    <button className="btn-icon-link" style={{ color: '#ef4444' }} onClick={() => setShowDeleteConfirm(patient.id)} title="Delete Patient">
+                                                        <Trash2 size={18} />
+                                                    </button>
                                                 )}
                                             </div>
                                         </td>
@@ -221,6 +216,46 @@ const PatientList = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Custom Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
+                    <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <AlertTriangle size={20} color="#EF4444" />
+                                <h2>Confirm Delete</h2>
+                            </div>
+                            <button
+                                className="modal-close"
+                                onClick={() => setShowDeleteConfirm(null)}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Are you sure you want to delete this patient and all their records? This action cannot be undone.</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn-cancel"
+                                onClick={() => setShowDeleteConfirm(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="btn-delete"
+                                onClick={executeDelete}
+                            >
+                                <Trash2 size={16} />
+                                Delete Patient
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

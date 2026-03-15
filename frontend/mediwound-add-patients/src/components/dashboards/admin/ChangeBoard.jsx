@@ -27,7 +27,7 @@ const ChangeBoard = ({ limit = 10, showFilters = true }) => {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const response = await adminApi.getActivityLogs();
+                const response = await adminApi.getActivityLogs({ limit });
                 const fetchedData = response.data;
                 const fetchedLogs = Array.isArray(fetchedData) ? fetchedData : (fetchedData.results || []);
 

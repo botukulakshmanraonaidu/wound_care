@@ -254,9 +254,9 @@ const WoundAssessmentDashboard = () => {
             uploadData.append('wound_type', formData.woundType);
             uploadData.append('wound_stage', formData.woundStage);
             uploadData.append('exudate_amount', formData.exudateAmount);
-            uploadData.append('length', formData.length);
-            uploadData.append('width', formData.width);
-            uploadData.append('depth', formData.depth);
+            if (formData.length && String(formData.length).trim() !== '') uploadData.append('length', formData.length);
+            if (formData.width && String(formData.width).trim() !== '') uploadData.append('width', formData.width);
+            if (formData.depth && String(formData.depth).trim() !== '') uploadData.append('depth', formData.depth);
             uploadData.append('pain_level', formData.painLevel);
             uploadData.append('notes', formData.notes);
             uploadData.append('body_location', selectedRegion ? selectedRegion.label : '');

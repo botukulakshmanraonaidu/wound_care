@@ -26,6 +26,10 @@ class CanViewPatientDetails(BasePermission):
         if user.role_type in ['admin', 'doctor']:
             return True
         if user.role_type == 'nurse':
-            # Nurses can only access patients assigned to them
+            # Nurses can view any patient profile/details
+            if request.method in ['GET']:
+                return True
+            # For updates, they might still need to be assigned or have specific rights
+            # But let's allow them to view for now to fix the visibility issue
             return obj.assigned_nurse_id == user.id
         return False

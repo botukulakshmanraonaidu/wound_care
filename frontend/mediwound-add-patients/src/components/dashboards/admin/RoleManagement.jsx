@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit2, Trash2, Shield, Filter, MoreVertical, X, Eye, EyeOff } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, Shield, Filter, MoreVertical, X, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import './RoleManagement.css';
 import { adminApi } from '../../../API/adminApi';
 
@@ -14,19 +14,24 @@ const RoleManagement = ({ accessLevel }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
     // Check if user is superuser
     const isSuperuser = localStorage.getItem('isSuperuser') === 'true';
 
     const fetchUsers = async () => {
         setLoading(true);
+        setError(null);
         try {
             const response = await adminApi.getUsers();
-            setUsers(response.data);
+            // Handle both direct array and paginated response
+            const data = Array.isArray(response.data) ? response.data : 
+                         (response.data && response.data.results) ? response.data.results : [];
+            setUsers(data);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching users:', error);
-            setError('Failed to load users');
+            setError(error.response?.data?.detail || error.response?.data?.message || 'Failed to load users');
             setLoading(false);
         }
     };
@@ -47,7 +52,9 @@ const RoleManagement = ({ accessLevel }) => {
         license_id: '',
         ward: '',
         shift: '',
-        access_level: ''
+        access_level: '',
+        phone_number: '',
+        country_code: '+91'
     });
 
     const filteredUsers = users.filter(user => {
@@ -73,7 +80,9 @@ const RoleManagement = ({ accessLevel }) => {
             license_id: '',
             ward: '',
             shift: '',
-            access_level: ''
+            access_level: '',
+            phone_number: '',
+            country_code: '+91'
         });
         setError(null);
         setShowAddUserModal(true);
@@ -92,6 +101,8 @@ const RoleManagement = ({ accessLevel }) => {
             ward: user.ward || '',
             shift: user.shift || '',
             access_level: user.access_level || '',
+            phone_number: user.phone_number || '',
+            country_code: user.country_code || '+91',
             password: '',
             confirm_password: ''
         });
@@ -112,6 +123,25 @@ const RoleManagement = ({ accessLevel }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Password validation
+        if (formData.password && formData.password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+
+        const phone_digits = (formData.phone_number || '').replace(/\D/g, '');
+        if (phone_digits && phone_digits.length > 10) {
+            setError('Phone number must not exceed 10 digits');
+            return;
+        }
+
+        // Show confirmation before proceeding
+        setShowSubmitConfirm(true);
+    };
+
+    const confirmSubmit = async () => {
+        setShowSubmitConfirm(false);
         setIsSubmitting(true);
         setError(null);
 
@@ -166,6 +196,25 @@ const RoleManagement = ({ accessLevel }) => {
                 </button>
             </div>
 
+            {error && (
+                <div className="error-banner" style={{
+                    color: '#991b1b',
+                    padding: '12px 16px',
+                    marginBottom: '20px',
+                    marginRight: '10px',
+                    marginLeft: '10px',
+                    background: '#fef2f2',
+                    borderRadius: '8px',
+                    border: '1px solid #fee2e2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}>
+                    <AlertTriangle size={18} />
+                    <span>{error}</span>
+                </div>
+            )}
+
             {/* Filters and Search */}
             <div className="role-toolbar">
                 <div className="search-box">
@@ -205,7 +254,6 @@ const RoleManagement = ({ accessLevel }) => {
                                 <th>ROLE</th>
                                 <th>DEPARTMENT</th>
                                 <th>STAFF ID</th>
-                                <th>PASSWORD</th>
                                 <th className="text-right">ACTIONS</th>
                             </tr>
                         </thead>
@@ -237,9 +285,6 @@ const RoleManagement = ({ accessLevel }) => {
                                         </td>
                                         <td className="department-cell">{user.department}</td>
                                         <td className="last-active-cell">#{user.id}</td>
-                                        <td className="password-cell" style={{ fontFamily: 'monospace', color: '#6b7280' }}>
-                                            {user.raw_password || '••••••••'}
-                                        </td>
                                         <td className="text-right">
                                             <div className="action-buttons">
                                                 <button
@@ -288,7 +333,6 @@ const RoleManagement = ({ accessLevel }) => {
                                 <X size={20} />
                             </button>
                         </div>
-                        {error && <div className="error-message" style={{ color: 'red', padding: '10px', marginBottom: '10px', background: '#fee2e2', borderRadius: '4px' }}>{error}</div>}
                         <form onSubmit={handleSubmit} className="user-form">
                             <div className="form-row">
                                 <div className="form-group">
@@ -302,6 +346,9 @@ const RoleManagement = ({ accessLevel }) => {
                                         required
                                     />
                                 </div>
+                            </div>
+
+                            <div className="form-row">
                                 <div className="form-group">
                                     <label className="form-label">Email Address *</label>
                                     <input
@@ -312,6 +359,31 @@ const RoleManagement = ({ accessLevel }) => {
                                         placeholder="user@hospital.com"
                                         required
                                     />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Phone Number</label>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <select
+                                            className="form-select"
+                                            style={{ width: '100px' }}
+                                            value={formData.country_code}
+                                            onChange={(e) => setFormData({ ...formData, country_code: e.target.value })}
+                                        >
+                                            <option value="+91">+91 (IN)</option>
+                                            <option value="+1">+1 (US)</option>
+                                            <option value="+44">+44 (UK)</option>
+                                            <option value="+971">+971 (UAE)</option>
+                                            <option value="+61">+61 (AU)</option>
+                                        </select>
+                                        <input
+                                            type="tel"
+                                            className="form-input"
+                                            style={{ flex: 1 }}
+                                            value={formData.phone_number}
+                                            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                                            placeholder="10 digits"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -480,6 +552,17 @@ const RoleManagement = ({ accessLevel }) => {
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
                                     </div>
+                                    {!editingUser || formData.password ? (
+                                        <span className={`password-hint ${
+                                            !formData.password 
+                                                ? 'text-muted' 
+                                                : formData.password.length >= 6 
+                                                    ? 'text-success' 
+                                                    : 'text-danger'
+                                        }`}>
+                                            Password must be at least 6 characters
+                                        </span>
+                                    ) : null}
                                 </div>
                             </div>
 
@@ -496,6 +579,40 @@ const RoleManagement = ({ accessLevel }) => {
                                     {isSubmitting ? 'Saving...' : (editingUser ? 'Update User' : 'Create User')}
                                 </button>
                             </div>
+
+                            {/* Inner Form Confirmation Pop-up */}
+                            {showSubmitConfirm && (
+                                <div className="inner-modal-overlay">
+                                    <div className="inner-modal-content">
+                                        <div className="inner-modal-header">
+                                            <AlertTriangle size={24} className="text-warning" />
+                                            <h3>Confirm Action</h3>
+                                        </div>
+                                        <div className="inner-modal-body">
+                                            <p>Are you sure you want to {editingUser ? 'update' : 'create'} this user?</p>
+                                            <p className="subtext">
+                                                {formData.password ? 'Password meets the 6-character requirement.' : 'Proceeding with current profile data.'}
+                                            </p>
+                                        </div>
+                                        <div className="inner-modal-footer">
+                                            <button 
+                                                type="button" 
+                                                className="btn-inner-cancel"
+                                                onClick={() => setShowSubmitConfirm(false)}
+                                            >
+                                                Review Again
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                className="btn-inner-confirm"
+                                                onClick={confirmSubmit}
+                                            >
+                                                Confirm & {editingUser ? 'Update' : 'Create'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </form>
                     </div>
                 </div>
@@ -516,7 +633,7 @@ const RoleManagement = ({ accessLevel }) => {
                                 </button>
                             </div>
                             <div className="modal-body">
-                                <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+                                <p>Are you sure you want to delete this user?</p>
                             </div>
                             <div className="modal-footer">
                                 <button
@@ -524,21 +641,21 @@ const RoleManagement = ({ accessLevel }) => {
                                     className="btn btn-secondary"
                                     onClick={() => setShowDeleteConfirm(null)}
                                 >
-                                    Cancel
+                                    No
                                 </button>
                                 <button
                                     type="button"
                                     className="btn btn-danger"
                                     onClick={() => handleDeleteUser(showDeleteConfirm)}
                                 >
-                                    Delete User
+                                    Yes
                                 </button>
                             </div>
                         </div>
                     </div>
                 )
             }
-        </div >
+        </div>
     );
 };
 

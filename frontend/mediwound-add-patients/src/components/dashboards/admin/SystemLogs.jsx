@@ -157,6 +157,7 @@ function SystemLogs() {
                             <th>Severity</th>
                             <th>Action</th>
                             <th>User</th>
+                            <th>IP Address</th>
                             <th>Target</th>
                             <th>Description</th>
                         </tr>
@@ -216,6 +217,9 @@ function SystemLogs() {
                                             <td><span className="font-medium text-slate-700">{log.action || 'ACTIVITY'}</span></td>
                                             <td>
                                                 <span className="text-sm text-gray-900">{log.user_name || log.user_email || 'System'}</span>
+                                            </td>
+                                            <td className="whitespace-nowrap font-mono text-xs text-gray-500">
+                                                {log.ip_address || '-'}
                                             </td>
                                             <td className="text-sm text-gray-600">{log.target_user || '-'}</td>
                                             <td className="log-description text-sm text-gray-600" title={log.description || ''}>

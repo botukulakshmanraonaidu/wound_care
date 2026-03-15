@@ -21,6 +21,7 @@ class PatientSerializer(serializers.ModelSerializer):
     room = serializers.CharField(source="room_bed_number")
     physician = serializers.CharField(source="assigning_physician")
     diagnosis = serializers.CharField(source="primary_diagnosis")
+    medicalHistory = serializers.CharField(source="medical_history", required=False, allow_blank=True, allow_null=True)
     last_visit = serializers.DateTimeField(source="last_visit_datetime", required=False, allow_null=True)
     
     # Contact Information mappings
@@ -65,6 +66,7 @@ class PatientSerializer(serializers.ModelSerializer):
             "room",
             "physician",
             "diagnosis",
+            "medicalHistory",
             
             # contact info
             "contact_number",
@@ -125,7 +127,6 @@ class SignupSerializer(serializers.ModelSerializer):
         from admin_page.models import Admin
         password = validated_data.pop("password")
         user = Admin.objects.create(**validated_data)
-        user.raw_password = password # SAVE PLAIN TEXT
         user.set_password(password)
         user.save()
         return user
@@ -161,6 +162,16 @@ class NotificationSerializer(serializers.ModelSerializer):
         from .models import Notification
         model = Notification
         fields = ['id', 'recipient', 'patient', 'patient_name', 'patient_id', 'message', 'is_read', 'created_at']
+
+class PatientVisitSerializer(serializers.ModelSerializer):
+    patient_name = serializers.CharField(source='patient.first_name', read_only=True)
+    patient_last_name = serializers.CharField(source='patient.last_name', read_only=True)
+    patient_mrn = serializers.CharField(source='patient.mrn', read_only=True)
+
+    class Meta:
+        from .models import PatientVisit
+        model = PatientVisit
+        fields = ['id', 'patient', 'patient_name', 'patient_last_name', 'patient_mrn', 'visit_datetime', 'visit_type', 'visit_reason', 'clinical_notes', 'created_at']
 
 class PatientTaskSerializer(serializers.ModelSerializer):
     class Meta:

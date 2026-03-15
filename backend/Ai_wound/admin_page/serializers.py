@@ -12,8 +12,19 @@ class UserCreateSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+        # Password validation
+        if len(data.get('password', '')) < 6:
+            raise serializers.ValidationError({"password": "Password must be at least 6 characters long."})
+
         if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match")
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match"})
+
+        # Phone number validation (digits only, max 10)
+        phone = data.get('phone_number', '')
+        if phone:
+            digits_only = ''.join(filter(str.isdigit, phone))
+            if len(digits_only) > 10:
+                raise serializers.ValidationError({"phone_number": "Phone number must not exceed 10 digits."})
 
         role = data.get('role_type')
 
@@ -45,7 +56,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         # Create user instance but don't save yet
         user = Admin(**validated_data)
-        user.raw_password = password # SAVE PLAIN TEXT
         user.set_password(password) # HASH PASSWORD
         user.save()
         return user
@@ -76,12 +86,12 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Admin
         fields = [
-            'id', 'full_name', 'email', 'role', 'role_type', 'job_title', 
+            'id', 'full_name', 'email', 'country_code', 'phone_number', 'role', 'role_type', 'job_title', 
             'department', 'specialization', 'license_id', 
             'ward', 'shift', 'access_level', 
-            'created_at', 'password_updated_at', 'password', 'raw_password', 'bio', 'is_staff', 'is_superuser'
+            'created_at', 'password_updated_at', 'password', 'bio', 'is_staff', 'is_superuser'
         ]
-        read_only_fields = ['id', 'created_at', 'password_updated_at', 'raw_password']
+        read_only_fields = ['id', 'created_at', 'password_updated_at']
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
@@ -92,7 +102,6 @@ class AdminUserSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         if password:
             from django.utils import timezone
-            instance.raw_password = password # UPDATE PLAIN TEXT
             instance.set_password(password) # UPDATE HASHED
             instance.password_updated_at = timezone.now()
         instance.save()

@@ -15,6 +15,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
         avgTime: '4.2m'
     });
     const [priorityPatients, setPriorityPatients] = useState([]);
+    const [recentVisits, setRecentVisits] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -28,6 +29,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                 if (Date.now() - timestamp < 5 * 60 * 1000) {
                     setStats(data.stats);
                     setPriorityPatients(data.priorityPatients);
+                    setRecentVisits(data.recentVisits || []);
                     setLoading(false);
                     return;
                 }
@@ -35,14 +37,18 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
 
             setLoading(true);
             try {
-                // 1. Fetch assigned patients
-                const patients = await patientService.getPatients('my');
+                // 1. Fetch all active patients in facility (was 'my' only)
+                const patients = await patientService.getPatients('all');
 
                 // 2. Fetch assessments to find critical cases and real healing rate
                 const assessmentsRes = await AuthAPI.get('api/assessments/');
                 const allAssessments = assessmentsRes.data || [];
 
-                // 3. Process Latest Assessments for each patient
+                // 3. Fetch newly assigned patients (last hour, no nurse)
+                const patientsRes = await AuthAPI.get('api/patients/?filter=doctor_new_patients&limit=5');
+                const newPatients = (patientsRes.data?.results || patientsRes.data || []);
+
+                // 4. Process Latest Assessments for each patient
                 const patientLatestAssessment = {};
                 const patientAssessments = {};
 
@@ -56,7 +62,9 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     }
                 });
 
-                // 4. Identify Critical Cases (Assessment-driven + Status-driven)
+                // 5. Identify Critical Cases (Assessment-driven + Status-driven)
+                const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
                 const critical = patients.filter(p => {
                     const status = p.status?.toLowerCase();
                     const isStaticCritical = status === 'critical' || status === 'high risk' || status === 'emergency' || status === 'icu';
@@ -70,10 +78,22 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
 
                     // User requested: only ICU ward patients should be considered as critical cases
                     const isICUWard = p.ward && p.ward.toLowerCase().includes('icu');
-                    return isICUWard && (isStaticCritical || isAssessmentCritical);
+                    const qualifies = isICUWard && (isStaticCritical || isAssessmentCritical);
+
+                    if (!qualifies) return false;
+
+                    // Last 24 hours check
+                    const pUpdated = new Date(p.updated_at);
+                    const aUpdated = latest ? new Date(latest.updated_at || latest.created_at) : new Date(0);
+                    const lastUpdated = pUpdated > aUpdated ? pUpdated : aUpdated;
+
+                    // Attach for UI rendering later
+                    p._lastUpdatedForPriority = lastUpdated;
+
+                    return lastUpdated >= twentyFourHoursAgo;
                 });
 
-                // 5. Calculate Healing Rate and Distribution
+                // 6. Calculate Healing Rate and Distribution
                 let improvingCount = 0;
                 let totalAssessed = 0;
                 const distribution = {};
@@ -128,10 +148,12 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         avgTime: `${calculatedAvg}m`,
                         distribution: formattedDist
                     },
-                    priorityPatients: critical.slice(0, 3)
+                    priorityPatients: critical.slice(0, 3),
+                    recentVisits: newPatients
                 };
 
                 setPriorityPatients(result.priorityPatients);
+                setRecentVisits(result.recentVisits);
                 setStats(result.stats);
 
                 // Save to session storage
@@ -276,6 +298,67 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                             </svg>
                         </div>
                     </div>
+
+                    <div className="content-card">
+                        <div className="card-header">
+                            <div>
+                                <h3 className="card-title">Newly Assigned Patients</h3>
+                                <div className="card-subtitle">Awaiting nurse assignment</div>
+                            </div>
+                        </div>
+                        <div className="appointments-list">
+                            {recentVisits.length > 0 ? (
+                                <table className="mini-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Patient</th>
+                                            <th>Admission</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentVisits.map((patient) => (
+                                            <tr key={patient.id}>
+                                                <td>
+                                                    <div className="patient-mini-info">
+                                                        <span className="p-name">{patient.first_name} {patient.last_name}</span>
+                                                        <span className="p-mrn">{patient.mrn}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {(() => {
+                                                        const dateStr = patient.admission_date || patient.created_at;
+                                                        if (!dateStr) return "N/A";
+                                                        const date = new Date(dateStr);
+                                                        if (isNaN(date.getTime())) return "Invalid Date";
+                                                        
+                                                        return date.toLocaleString('en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric',
+                                                            hour: 'numeric',
+                                                            minute: '2-digit',
+                                                            hour12: true
+                                                        }).replace(', 12:00 AM', ''); // Clean up if only it's a date without time
+                                                    })()}
+                                                </td>
+                                                <td>
+                                                    <button 
+                                                        className="btn-view-mini"
+                                                        onClick={() => navigate(`/patients/${patient.id}`)}
+                                                    >
+                                                        Review
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="empty-state">All patients have assigned nurses.</div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="dashboard-col-right">
@@ -297,7 +380,17 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                             return (
                                 <div key={i} className="priority-item clickable" onClick={() => handlePatientClick(patient)}>
                                     <div className="priority-header">
-                                        <span className="priority-name">{patient.firstName} {patient.lastName}</span>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span className="priority-name">{patient.firstName} {patient.lastName}</span>
+                                            {patient._lastUpdatedForPriority && (
+                                                <span style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                                    Updated: {new Intl.DateTimeFormat('en-US', {
+                                                        month: 'short', day: 'numeric',
+                                                        hour: 'numeric', minute: '2-digit'
+                                                    }).format(patient._lastUpdatedForPriority)}
+                                                </span>
+                                            )}
+                                        </div>
                                         <span className={`badge ${badgeClass}`}>{badgeText}</span>
                                     </div>
                                     <p className="priority-desc">

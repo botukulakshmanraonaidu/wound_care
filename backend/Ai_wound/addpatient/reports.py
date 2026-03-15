@@ -30,23 +30,41 @@ def link_callback(uri, rel):
 
     elif uri.startswith('http://') or uri.startswith('https://'):
         # Dynamic download of remote Cloudinary images for PDF embedding
-        import urllib.request
+        import requests
         import hashlib
+        import logging
+        logger = logging.getLogger(__name__)
         
         # Create a cache directory for temporary report images
         cache_dir = os.path.join(settings.MEDIA_ROOT, 'temp_report_assets')
-        os.makedirs(cache_dir, exist_ok=True)
+        if not os.path.exists(cache_dir):
+            try:
+                os.makedirs(cache_dir, exist_ok=True)
+            except Exception as e:
+                logger.error(f"Failed to create report cache directory: {e}")
+                return uri
         
         # Unique filename based on URL hash
         ext = os.path.splitext(uri)[1] or '.jpg'
+        # Strip query parameters if any
+        if '?' in ext:
+            ext = ext.split('?')[0]
         local_filename = hashlib.md5(uri.encode()).hexdigest() + ext
         path = os.path.join(cache_dir, local_filename)
         
         if not os.path.exists(path):
             try:
-                urllib.request.urlretrieve(uri, path)
+                logger.info(f"Downloading remote asset for PDF: {uri}")
+                response = requests.get(uri, timeout=10, stream=True)
+                if response.status_code == 200:
+                    with open(path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                else:
+                    logger.error(f"Failed to download remote asset for PDF: {uri} (Status: {response.status_code})")
+                    return uri
             except Exception as e:
-                print(f"Failed to download remote asset for PDF: {uri} - {e}")
+                logger.error(f"Error downloading remote asset for PDF: {uri} - {e}")
                 return uri
     else:
         return uri

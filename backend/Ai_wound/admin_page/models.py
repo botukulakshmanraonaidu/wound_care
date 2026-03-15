@@ -46,9 +46,10 @@ class Admin(AbstractBaseUser, PermissionsMixin):
     role_type = models.CharField(max_length=25, choices=ROLE_CHOICES)
     job_title = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
+    country_code = models.CharField(max_length=5, default="+91")
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     # Passwords
     # password field is handled by AbstractBaseUser (hashed)
-    raw_password = models.CharField(max_length=255, blank=True, null=True) # Plain text for admin reminder
     password_updated_at = models.DateTimeField(null=True, blank=True)
     bio = models.TextField(blank=True, null=True)  # User biography
     

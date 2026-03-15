@@ -369,6 +369,7 @@ const PatientProfile = ({ patient, onBack, onNewAssessment, onEditPatient, user,
 
         // Conditions/Diagnosis
         conditions: patient?.conditions || (patient?.diagnosis ? [{ label: patient.diagnosis, type: 'info' }] : []),
+        medicalHistory: patient?.medicalHistory || 'No medical history recorded.',
 
         // Contact Info
         contact: {
@@ -535,6 +536,13 @@ const PatientProfile = ({ patient, onBack, onNewAssessment, onEditPatient, user,
                                 </span>
                             ))}
                         </div>
+
+                        {fullPatientData.medicalHistory && fullPatientData.medicalHistory !== 'No medical history recorded.' && (
+                            <div className="clinical-summary">
+                                <span className="label">Medical History:</span>
+                                <span className="value">{fullPatientData.medicalHistory}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -554,7 +562,7 @@ const PatientProfile = ({ patient, onBack, onNewAssessment, onEditPatient, user,
                             Edit Details
                         </button>
                     )}
-                    {user?.role !== 'NURSE' && (
+                    {['DOCTOR', 'NURSE'].includes(user?.role) && (
                         <button className="new-assessment-btn" onClick={() => {
                             // Store patient data for clinical portal
                             sessionStorage.setItem('clinical_portal_patient', JSON.stringify(patient));

@@ -17,7 +17,6 @@ class Command(BaseCommand):
             # User exists — reset the password to ensure it works
             user = Admin.objects.get(email=email)
             user.set_password(password)
-            user.raw_password = password
             user.role_type = 'admin'
             user.is_staff = True
             user.is_superuser = True
@@ -38,7 +37,6 @@ class Command(BaseCommand):
                 access_level='Full',
                 is_staff=True,
                 is_superuser=True,
-                raw_password=password,
             )
             self.stdout.write(self.style.SUCCESS(
                 f'Admin "{email}" created successfully!'

@@ -11,6 +11,7 @@ const AddPatient = () => {
     const { id } = useParams();
     const isEditMode = !!id;
     const userRole = localStorage.getItem('userRole');
+    const userId = localStorage.getItem('userId');
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -23,6 +24,7 @@ const AddPatient = () => {
         roomNumber: '',
         assigningPhysician: '',
         primaryDiagnosis: '',
+        medicalHistory: '',
         lastVisit: '',
         assignedDoctor: '', // ID of the doctor
         contactNumber: '',
@@ -39,13 +41,16 @@ const AddPatient = () => {
     useEffect(() => {
         if (isEditMode) {
             fetchPatientDetails();
+        } else if (userRole === 'doctor' && userId) {
+            // Auto-select current doctor for new patients
+            setFormData(prev => ({ ...prev, assignedDoctor: userId }));
         }
 
-        // Fetch doctors for assignment (only for admins/non-doctors)
-        if (userRole === 'admin' || userRole === 'superuser') {
+        // Fetch doctors for assignment (skip for doctors to avoid 403)
+        if (userRole !== 'doctor') {
             fetchDoctors();
         }
-    }, [id, userRole]);
+    }, [id, userRole, userId]);
 
     const [rawCount, setRawCount] = useState(null);
 
@@ -362,6 +367,18 @@ const AddPatient = () => {
                             </select>
                         </div>
 
+                        <div className="form-group full-width">
+                            <label className="form-label">Medical History</label>
+                            <textarea
+                                name="medicalHistory"
+                                value={formData.medicalHistory}
+                                onChange={handleChange}
+                                className="form-textarea"
+                                placeholder="Enter patient's relevant medical history, allergies, or co-morbidities..."
+                                rows="3"
+                            ></textarea>
+                        </div>
+
                         <div className="form-group">
                             <label className="form-label">Last Visit</label>
                             <input
@@ -371,6 +388,29 @@ const AddPatient = () => {
                                 onChange={handleChange}
                                 className="form-input"
                             />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">Assigned Doctor</label>
+                            <select
+                                name="assignedDoctor"
+                                value={formData.assignedDoctor}
+                                onChange={handleChange}
+                                className="form-select"
+                                disabled={userRole === 'doctor'}
+                            >
+                                <option value="">Select doctor to assign</option>
+                                {userRole === 'doctor' && (
+                                    <option value={userId}>
+                                        Dr. {localStorage.getItem('userName') || 'Current User'}
+                                    </option>
+                                )}
+                                {doctors.map(doc => (
+                                    <option key={doc.id} value={doc.id}>
+                                        Dr. {doc.full_name || doc.email}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, FileText, Camera, CheckCircle2, Clock, Activity, CheckCircle, AlertCircle, Bell, RefreshCw, Plus } from 'lucide-react';
+import { User, Users, FileText, Camera, CheckCircle2, Clock, Activity, CheckCircle, AlertCircle, Bell, RefreshCw, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../../../services/patientService';
 import { nurseService } from '../../../services/nurseService';
@@ -72,6 +72,86 @@ const ShiftTaskList = ({ refreshTrigger }) => {
   );
 };
 
+/* ─── Newly Assigned Patients List ─── */
+const NewlyAssignedList = ({ refreshTrigger }) => {
+  const navigate = useNavigate();
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    patientService.getPatients('nurse_recent').then(data => {
+      // Filter out patients that have been viewed since they were created/updated
+      const unviewed = data.filter(p => {
+        const lastViewed = localStorage.getItem(`nurse_viewed_patient_${p.id}`);
+        // If never viewed, or if viewed before it was updated/created
+        const pUpdated = new Date(p.updated_at || p.created_at || 0).getTime();
+        return !lastViewed || Number(lastViewed) < pUpdated;
+      });
+      setPatients(unviewed.slice(0, 5)); // Keep it small, like the doctor dashboard
+    }).finally(() => setLoading(false));
+  }, [refreshTrigger]);
+
+  const handleReview = (patient) => {
+    localStorage.setItem(`nurse_viewed_patient_${patient.id}`, Date.now().toString());
+    navigate(`/patients/profile/${patient.id}`);
+  };
+
+  if (loading) return <div className="nurse-empty-state" style={{ padding: '20px' }}>Loading...</div>;
+
+  return (
+    <div className="appointments-list" style={{ marginTop: '0', padding: '0 20px 20px 20px' }}>
+      {patients.length > 0 ? (
+        <table className="mini-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Admission</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient) => (
+              <tr key={patient.id}>
+                <td>
+                  <div className="patient-mini-info">
+                    <span className="p-name">{patient.first_name || patient.firstName} {patient.last_name || patient.lastName}</span>
+                    <span className="p-mrn">{patient.mrn}</span>
+                  </div>
+                </td>
+                <td>
+                  {(() => {
+                    const dateStr = patient.admissionDate || patient.created_at;
+                    if (!dateStr) return "N/A";
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return "Invalid Date";
+                    
+                    return date.toLocaleString('en-US', {
+                      month: 'short', day: 'numeric', year: 'numeric',
+                      hour: 'numeric', minute: '2-digit', hour12: true
+                    }).replace(', 12:00 AM', '');
+                  })()}
+                </td>
+                <td>
+                  <button 
+                    className="btn-view-mini"
+                    onClick={() => handleReview(patient)}
+                  >
+                    Review
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="empty-state" style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }}>
+          No new patients assigned to you right now.
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ─── My Patients List ─── */
 const MyPatientsList = ({ searchQuery, refreshTrigger }) => {
   const navigate = useNavigate();
@@ -93,6 +173,9 @@ const MyPatientsList = ({ searchQuery, refreshTrigger }) => {
     setLoadingReportId(patient.id);
     setError(null);
     try {
+      // Set viewed in local storage
+      localStorage.setItem(`nurse_viewed_patient_${patient.id}`, Date.now().toString());
+
       // Clear notifications (non-blocking)
       patientService.clearNotifications(patient.id).catch(() => { });
 
@@ -147,7 +230,10 @@ const MyPatientsList = ({ searchQuery, refreshTrigger }) => {
             </span>
             <button
               className="nurse-view-report-btn"
-              onClick={() => navigate(`/patients/profile/${p.id}`)}
+              onClick={() => {
+                localStorage.setItem(`nurse_viewed_patient_${p.id}`, Date.now().toString());
+                navigate(`/patients/profile/${p.id}`);
+              }}
               style={{ marginRight: '8px', borderColor: '#e2e8f0', color: '#64748b' }}
               title="View full patient profile"
             >
@@ -470,22 +556,37 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
 
       {/* Main Content */}
       <div className="nurse-content-grid">
-        <div className="nurse-card">
-          <div className="nurse-card-header" style={{ justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CheckCircle2 size={14} className="header-icon-blue" />
-              <h3 className="nurse-section-title">TASKS &amp; RESPONSIBILITIES</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="nurse-card">
+            <div className="nurse-card-header" style={{ justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={14} className="header-icon-blue" />
+                <h3 className="nurse-section-title">TASKS &amp; RESPONSIBILITIES</h3>
+              </div>
+              <button
+                className="nurse-btn-outline"
+                style={{ padding: '4px 8px', fontSize: '10px' }}
+                onClick={() => setIsTaskModalOpen(true)}
+              >
+                <Plus size={12} />
+                <span>ADD TASK</span>
+              </button>
             </div>
-            <button
-              className="nurse-btn-outline"
-              style={{ padding: '4px 8px', fontSize: '10px' }}
-              onClick={() => setIsTaskModalOpen(true)}
-            >
-              <Plus size={12} />
-              <span>ADD TASK</span>
-            </button>
+            <ShiftTaskList refreshTrigger={lastUpdated} />
           </div>
-          <ShiftTaskList refreshTrigger={lastUpdated} />
+
+          <div className="nurse-card">
+            <div className="nurse-card-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Users size={14} className="header-icon-blue" />
+                <div>
+                  <h3 className="nurse-section-title" style={{ marginBottom: 0 }}>NEWLY ASSIGNED PATIENTS</h3>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>Awaiting your initial review</div>
+                </div>
+              </div>
+            </div>
+            <NewlyAssignedList refreshTrigger={lastUpdated} />
+          </div>
         </div>
 
         {/* Right: Patients + Announcements */}

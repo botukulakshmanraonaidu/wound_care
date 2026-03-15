@@ -28,6 +28,5 @@ class AdminPageConfig(AppConfig):
                 department='IT',
                 access_level='Full',
                 is_staff=True,
-                is_superuser=True,
-                raw_password=password
+                is_superuser=True
             )

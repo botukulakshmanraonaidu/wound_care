@@ -46,8 +46,8 @@ function Sidebar({ onLogout, userRole: rawRole, accessLevel }) {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   ];
 
-  // Access patient management if doctor or nurse
-  if (!isSuperuser && (['doctor', 'nurse'].includes(userRole) || !userRole)) {
+  // Access patient management if doctor, nurse, or admin
+  if (userRole === 'admin' || isSuperuser || (['doctor', 'nurse'].includes(userRole) || !userRole)) {
     menuItems.push({ icon: Users, label: 'Patients', path: '/patients' });
     menuItems.push({ icon: Activity, label: 'Assessments', path: '/assessments' });
   }

@@ -245,6 +245,12 @@ function App() {
                           {/* Admin Only Routes (Admin or Superuser) */}
                           {(userRole === 'admin' || isSuperuser) && (
                             <>
+                              <Route path="/patients" element={<PatientList />} />
+                              <Route path="/patients/add" element={<AddPatient />} />
+                              <Route path="/patients/edit/:id" element={<AddPatient />} />
+                              <Route path="/patients/profile/:id" element={<PatientProfileView />} />
+                              <Route path="/assessments" element={<Assessment />} />
+                              <Route path="/reports" element={<ReportPreview />} />
                               <Route path="/roles" element={<RoleManagement accessLevel={accessLevel} />} />
                               <Route path="/logs" element={<SystemLogs />} />
                               <Route path="/storage" element={<Storage />} />

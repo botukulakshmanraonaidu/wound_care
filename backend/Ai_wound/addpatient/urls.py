@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 from .views import (
     PatientViewSet, login_api, logout_api, profile_api, UserSignupView, 
-    NotificationViewSet, PatientTaskViewSet, AssessmentViewSet, ChatMessageViewSet
+    NotificationViewSet, PatientTaskViewSet, AssessmentViewSet, ChatMessageViewSet,
+    PatientVisitViewSet
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -13,6 +14,7 @@ router.register(r'api/tasks', PatientTaskViewSet, basename='tasks')
 router.register(r'api/patients/(?P<patient_pk>\d+)/tasks', PatientTaskViewSet, basename='patient-tasks')
 router.register(r'api/assessments', AssessmentViewSet, basename='assessments')
 router.register(r'api/chat', ChatMessageViewSet, basename='chat')
+router.register(r'api/visits', PatientVisitViewSet, basename='visits')
 
 urlpatterns = [
     path('', include(router.urls)),

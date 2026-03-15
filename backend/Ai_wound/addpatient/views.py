@@ -16,7 +16,7 @@ from .models import Patient, Notification, PatientTask, Assessment, AssessmentIm
 from .serializers import (
     PatientSerializer, SignupSerializer, NotificationSerializer, 
     AssessmentSerializer, AssessmentImageSerializer, PatientTaskSerializer,
-    ChatMessageSerializer
+    ChatMessageSerializer, PatientVisitSerializer
 )
 from .reports import generate_assessment_report_pdf
 
@@ -48,6 +48,23 @@ class PatientViewSet(viewsets.ModelViewSet):
         # Role-based root filtering
         filter_type = self.request.query_params.get('filter')
         
+        if filter_type == 'recent_hour':
+            from django.utils import timezone
+            from datetime import timedelta
+            one_hour_ago = timezone.now() - timedelta(hours=1)
+            queryset = queryset.filter(created_at__gte=one_hour_ago)
+            return queryset
+
+        if filter_type == 'doctor_new_patients':
+            from django.utils import timezone
+            from datetime import timedelta
+            one_hour_ago = timezone.now() - timedelta(hours=1)
+            return queryset.filter(
+                assigned_doctor=user,
+                assigned_nurse__isnull=True,
+                created_at__gte=one_hour_ago
+            )
+
         if user.role_type == 'doctor':
             if filter_type == 'my':
                 # Return only assigned patients
@@ -56,7 +73,12 @@ class PatientViewSet(viewsets.ModelViewSet):
             return queryset
             
         if user.role_type == 'nurse':
-            # Nurses should ONLY see their assigned patients in the dashboard context
+            if filter_type == 'nurse_recent':
+                from django.utils import timezone
+                from datetime import timedelta
+                two_hours_ago = timezone.now() - timedelta(hours=2)
+                return queryset.filter(assigned_nurse=user, updated_at__gte=two_hours_ago)
+            # Nurses are strictly restricted to only seeing their assigned patients
             return queryset.filter(assigned_nurse=user)
             
         return queryset
@@ -178,7 +200,8 @@ def login_api(request):
                 user_email=user.email,
                 action='LOGIN',
                 description='User logged in successfully',
-                severity='INFO'
+                severity='INFO',
+                ip_address=request.META.get('REMOTE_ADDR')
             )
         except Exception as e:
             logger.error(f"Failed to log login activity: {e}")
@@ -216,7 +239,8 @@ def logout_api(request):
         user_email=user.email,
         action='LOGOUT',
         description='User logged out',
-        severity='INFO'
+        severity='INFO',
+        ip_address=request.META.get('REMOTE_ADDR')
     )
     return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
@@ -321,14 +345,28 @@ class AssessmentViewSet(viewsets.ModelViewSet):
         filter_type = self.request.query_params.get('filter')
         patient_id = self.request.query_params.get('patient_id')
         
+        if filter_type == 'recent_hour':
+            from django.utils import timezone
+            from datetime import timedelta
+            one_hour_ago = timezone.now() - timedelta(hours=1)
+            queryset = queryset.filter(created_at__gte=one_hour_ago)
+            return queryset
+        
         if user.role_type == 'doctor':
             if filter_type == 'my':
                 # Show assessments for patients assigned to this doctor
                 queryset = queryset.filter(patient__assigned_doctor=user)
             
         elif user.role_type == 'nurse':
-            # Nurses strictly see only their assigned patients' assessments
-            queryset = queryset.filter(patient__assigned_nurse=user)
+            if patient_id:
+                # If a specific patient is being viewed, allow the nurse to see assessments
+                # to enable history viewing and reduction rate calculations.
+                queryset = queryset.filter(patient_id=patient_id)
+            elif filter_type == 'my':
+                queryset = queryset.filter(patient__assigned_nurse=user)
+            else:
+                # Default to all assessments they have permission for (directory view)
+                queryset = queryset
             
         # Apply patient_id filter if provided
         if patient_id:
@@ -456,7 +494,8 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                     user_email=request.user.email,
                     action='CREATE',
                     description=f'Created assessment for patient ID {assessment.patient_id}',
-                    severity='INFO'
+                    severity='INFO',
+                    ip_address=request.META.get('REMOTE_ADDR')
                 )
             except Exception as e:
                 logger.error(f"Failed to log assessment activity: {e}")
@@ -488,6 +527,39 @@ class AssessmentViewSet(viewsets.ModelViewSet):
             {"error": "Report is not ready yet. Please try again in a moment."}, 
             status=status.HTTP_400_BAD_REQUEST
         )
+
+from .models import PatientVisit
+
+class PatientVisitViewSet(viewsets.ModelViewSet):
+    queryset = PatientVisit.objects.all()
+    serializer_class = PatientVisitSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = self.queryset.select_related('patient').order_by("-visit_datetime")
+        
+        filter_type = self.request.query_params.get('filter')
+        patient_id = self.request.query_params.get('patient_id')
+        
+        if filter_type == 'recent_hour':
+            from django.utils import timezone
+            from datetime import timedelta
+            one_hour_ago = timezone.now() - timedelta(hours=1)
+            queryset = queryset.filter(created_at__gte=one_hour_ago)
+            return queryset
+            
+        if user.role_type == 'doctor':
+            if filter_type == 'my':
+                queryset = queryset.filter(patient__assigned_doctor=user)
+        elif user.role_type == 'nurse':
+            if filter_type == 'my':
+                queryset = queryset.filter(patient__assigned_nurse=user)
+                
+        if patient_id:
+            queryset = queryset.filter(patient_id=patient_id)
+            
+        return queryset
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     serializer_class = ChatMessageSerializer

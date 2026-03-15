@@ -429,6 +429,26 @@
     color: #2d62a8;
 }
 
+.password-hint {
+    display: block;
+    font-size: 12px;
+    margin-top: 6px;
+    line-height: 1.4;
+    transition: color 0.3s ease;
+}
+
+.text-muted {
+    color: #64748b;
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+.text-success {
+    color: #10b981;
+}
+
 .form-input:focus,
 .form-select:focus {
     outline: none;
@@ -534,4 +554,110 @@
         width: 95%;
         max-height: 95vh;
     }
+}
+
+/* Inner Modal (Nested inside Add/Edit Modal) */
+.inner-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    border-radius: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+.inner-modal-content {
+    background: white;
+    border: 2px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 32px;
+    width: 85%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    text-align: center;
+}
+
+.inner-modal-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.inner-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.inner-modal-body p {
+    color: #475569;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.inner-modal-body .subtext {
+    font-size: 0.85rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 12px;
+}
+
+.inner-modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.btn-inner-cancel {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-inner-cancel:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.btn-inner-confirm {
+    flex: 2;
+    padding: 10px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-inner-confirm:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.text-warning {
+    color: #f59e0b;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
