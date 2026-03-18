@@ -173,15 +173,11 @@ class PatientVisitSerializer(serializers.ModelSerializer):
         model = PatientVisit
         fields = ['id', 'patient', 'patient_name', 'patient_last_name', 'patient_mrn', 'visit_datetime', 'visit_type', 'visit_reason', 'clinical_notes', 'created_at']
 
-<<<<<<< HEAD
-=======
 class PatientMiniSerializer(serializers.ModelSerializer):
     class Meta:
         from .models import Patient
         model = Patient
         fields = ['id', 'first_name', 'last_name', 'mrn']
-
->>>>>>> e0ff7c8 (new changes)
 class PatientTaskSerializer(serializers.ModelSerializer):
     patient_details = PatientMiniSerializer(source='patient', read_only=True)
     

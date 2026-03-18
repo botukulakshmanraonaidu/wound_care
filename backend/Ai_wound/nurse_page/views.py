@@ -112,11 +112,7 @@ class ShiftLogViewSet(viewsets.ModelViewSet):
         from django.utils import timezone
         today = timezone.now().date()
         
-<<<<<<< HEAD
-        active_patients = Patient.objects.filter(status='Active').count()
-=======
         active_patients = Patient.objects.filter(assigned_nurse=user, status='Active').count()
->>>>>>> e0ff7c8 (new changes)
         pending_tasks = NurseTask.objects.filter(nurse=user, status='pending').count()
         completed_tasks = NurseTask.objects.filter(nurse=user, status='completed', updated_at__date=today).count()
         wound_scans = Assessment.objects.filter(assessed_by=user, created_at__date=today).count()

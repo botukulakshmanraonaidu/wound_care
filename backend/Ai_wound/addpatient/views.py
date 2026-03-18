@@ -65,8 +65,6 @@ class PatientViewSet(viewsets.ModelViewSet):
                 created_at__gte=one_hour_ago
             )
 
-<<<<<<< HEAD
-=======
         if filter_type == 'recent_assignment':
             from django.utils import timezone
             from datetime import timedelta
@@ -76,8 +74,6 @@ class PatientViewSet(viewsets.ModelViewSet):
             if user.role_type == 'nurse':
                 return queryset.filter(assigned_nurse=user, updated_at__gte=one_hour_ago)
             return queryset.filter(updated_at__gte=one_hour_ago)
-
->>>>>>> e0ff7c8 (new changes)
         if user.role_type == 'doctor':
             if filter_type == 'my':
                 # Return only assigned patients
@@ -86,21 +82,16 @@ class PatientViewSet(viewsets.ModelViewSet):
             return queryset
             
         if user.role_type == 'nurse':
-<<<<<<< HEAD
             if filter_type == 'nurse_recent':
                 from django.utils import timezone
                 from datetime import timedelta
                 two_hours_ago = timezone.now() - timedelta(hours=2)
                 return queryset.filter(assigned_nurse=user, updated_at__gte=two_hours_ago)
-            # Nurses are strictly restricted to only seeing their assigned patients
-            return queryset.filter(assigned_nurse=user)
-=======
-            if filter_type == 'my':
+            elif filter_type == 'my':
                 # Return only assigned patients
                 return queryset.filter(assigned_nurse=user)
             # Nurses can see the list of all patients
             return queryset
->>>>>>> e0ff7c8 (new changes)
             
         return queryset
 
@@ -290,11 +281,7 @@ def login_api(request):
                 action='LOGIN',
                 description='User logged in successfully',
                 severity='INFO',
-<<<<<<< HEAD
-                ip_address=request.META.get('REMOTE_ADDR')
-=======
                 request=request
->>>>>>> e0ff7c8 (new changes)
             )
         except Exception as e:
             logger.error(f"Failed to log login activity: {e}")
@@ -383,11 +370,7 @@ def logout_api(request):
         action='LOGOUT',
         description='User logged out',
         severity='INFO',
-<<<<<<< HEAD
-        ip_address=request.META.get('REMOTE_ADDR')
-=======
         request=request
->>>>>>> e0ff7c8 (new changes)
     )
     return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
@@ -515,17 +498,9 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 # If a specific patient is being viewed, allow the nurse to see assessments
                 # to enable history viewing and reduction rate calculations.
                 queryset = queryset.filter(patient_id=patient_id)
-<<<<<<< HEAD
-            elif filter_type == 'my':
-                queryset = queryset.filter(patient__assigned_nurse=user)
-            else:
-                # Default to all assessments they have permission for (directory view)
-                queryset = queryset
-=======
             else:
                 # Nurses only see assessments for patients assigned to them
                 queryset = queryset.filter(patient__assigned_nurse=user)
->>>>>>> e0ff7c8 (new changes)
             
         # Apply patient_id filter if provided
         if patient_id:
@@ -670,11 +645,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                     action='CREATE',
                     description=f'Created assessment for patient ID {assessment.patient_id}',
                     severity='INFO',
-<<<<<<< HEAD
-                    ip_address=request.META.get('REMOTE_ADDR')
-=======
                     request=request
->>>>>>> e0ff7c8 (new changes)
                 )
             except Exception as e:
                 logger.error(f"Failed to log assessment activity: {e}")
