@@ -47,11 +47,7 @@ class Admin(AbstractBaseUser, PermissionsMixin):
     job_title = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     country_code = models.CharField(max_length=5, default="+91")
-<<<<<<< HEAD
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-=======
     phone_number = models.CharField(max_length=20, blank=True, null=True, unique=True)
->>>>>>> e0ff7c8 (new changes)
     # Passwords
     # password field is handled by AbstractBaseUser (hashed)
     password_updated_at = models.DateTimeField(null=True, blank=True)
