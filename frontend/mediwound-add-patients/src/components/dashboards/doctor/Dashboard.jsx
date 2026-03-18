@@ -331,11 +331,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                                                         if (!dateStr) return "N/A";
                                                         const date = new Date(dateStr);
                                                         if (isNaN(date.getTime())) return "Invalid Date";
-<<<<<<< HEAD
                                                         
-=======
-
->>>>>>> e0ff7c8 (new changes)
                                                         return date.toLocaleString('en-US', {
                                                             month: 'short',
                                                             day: 'numeric',
@@ -347,11 +343,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                                                     })()}
                                                 </td>
                                                 <td>
-<<<<<<< HEAD
-                                                    <button 
-=======
                                                     <button
->>>>>>> e0ff7c8 (new changes)
                                                         className="btn-view-mini"
                                                         onClick={() => navigate(`/patients/${patient.id}`)}
                                                     >

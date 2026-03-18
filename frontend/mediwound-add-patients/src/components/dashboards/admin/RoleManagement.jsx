@@ -15,35 +15,8 @@ const RoleManagement = ({ accessLevel }) => {
     const [error, setError] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-<<<<<<< HEAD
-
-    // Check if user is superuser
-    const isSuperuser = localStorage.getItem('isSuperuser') === 'true';
-
-    const fetchUsers = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await adminApi.getUsers();
-            // Handle both direct array and paginated response
-            const data = Array.isArray(response.data) ? response.data : 
-                         (response.data && response.data.results) ? response.data.results : [];
-            setUsers(data);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            setError(error.response?.data?.detail || error.response?.data?.message || 'Failed to load users');
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-=======
     const [phoneExistsError, setPhoneExistsError] = useState(null);
     const [checkingPhone, setCheckingPhone] = useState(false);
->>>>>>> e0ff7c8 (new changes)
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -185,9 +158,6 @@ const RoleManagement = ({ accessLevel }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-<<<<<<< HEAD
-=======
-
         if (checkingPhone) {
             setError("Please wait, validating phone number...");
             return;
@@ -197,7 +167,6 @@ const RoleManagement = ({ accessLevel }) => {
             setError(phoneExistsError);
             return;
         }
->>>>>>> e0ff7c8 (new changes)
         
         // Password validation
         if (formData.password && formData.password.length < 6) {
@@ -211,8 +180,6 @@ const RoleManagement = ({ accessLevel }) => {
             return;
         }
 
-<<<<<<< HEAD
-=======
         // Final phone validation check before confirming
         setCheckingPhone(true);
         try {
@@ -229,7 +196,6 @@ const RoleManagement = ({ accessLevel }) => {
             setCheckingPhone(false);
         }
 
->>>>>>> e0ff7c8 (new changes)
         // Show confirmation before proceeding
         setShowSubmitConfirm(true);
     };
@@ -483,14 +449,6 @@ const RoleManagement = ({ accessLevel }) => {
                                         <input
                                             type="tel"
                                             className="form-input"
-<<<<<<< HEAD
-                                            style={{ flex: 1 }}
-                                            value={formData.phone_number}
-                                            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                                            placeholder="10 digits"
-                                        />
-                                    </div>
-=======
                                             value={formData.phone_number}
                                             onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                                             placeholder="10 digits"
@@ -507,7 +465,6 @@ const RoleManagement = ({ accessLevel }) => {
                                             <span style={{ color: '#ef4444', fontSize: '12px', display: 'block' }}>{phoneExistsError}</span>
                                         ) : null}
                                     </div>
->>>>>>> e0ff7c8 (new changes)
                                 </div>
                             </div>
 
@@ -735,10 +692,7 @@ const RoleManagement = ({ accessLevel }) => {
                                                 type="button" 
                                                 className="btn-inner-confirm"
                                                 onClick={confirmSubmit}
-<<<<<<< HEAD
-=======
                                                 disabled={checkingPhone || !!phoneExistsError}
->>>>>>> e0ff7c8 (new changes)
                                             >
                                                 Confirm & {editingUser ? 'Update' : 'Create'}
                                             </button>
