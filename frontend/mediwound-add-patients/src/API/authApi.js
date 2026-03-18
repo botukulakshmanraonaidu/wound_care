@@ -4,9 +4,6 @@ import { getApiBaseUrl } from "./apiConfig";
 const AuthAPI = axios.create({
   baseURL: `${getApiBaseUrl()}/patient/`,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // Add a request interceptor to inject the JWT token

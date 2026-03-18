@@ -1,0 +1,6 @@
+SystemCheckError: System check identified some issues:
+
+ERRORS:
+admin_page.ActivityLog.action: (fields.E009) 'max_length' is too small to fit the longest value in 'choices' (12 characters).
+
+System check identified 1 issue (0 silenced).

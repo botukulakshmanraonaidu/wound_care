@@ -186,7 +186,11 @@ const AdminDashboard = () => {
                                     </div>
                                     <div className="p-actions">
                                         <div className="p-date">{new Date(patient.admission_date).toLocaleDateString()}</div>
+<<<<<<< HEAD
                                         <button 
+=======
+                                        <button
+>>>>>>> e0ff7c8 (new changes)
                                             className="btn-view-small"
                                             onClick={() => navigate(`/patients/profile/${patient.id}`)}
                                         >
@@ -221,7 +225,11 @@ const AdminDashboard = () => {
                                     </div>
                                     <div className="assess-meta-mini">
                                         <div className="assess-date">{new Date(assess.created_at).toLocaleDateString()}</div>
+<<<<<<< HEAD
                                         <button 
+=======
+                                        <button
+>>>>>>> e0ff7c8 (new changes)
                                             className="btn-view-small"
                                             onClick={() => navigate('/reports', { state: { assessment: assess } })}
                                         >

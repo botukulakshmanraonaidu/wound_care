@@ -75,9 +75,9 @@ const WoundAssessmentDashboard = () => {
             const base64Response = await fetch(imageData);
             const blob = await base64Response.blob();
             const uploadData = new FormData();
-            uploadData.append('file', blob, 'wound.jpg');
+            uploadData.append('image', blob, 'wound.jpg');
 
-            const mlResponse = await fetch(`${getMlBaseUrl()}/analyze-wound`, {
+            const mlResponse = await fetch(`${getMlBaseUrl()}/api/predict`, {
                 method: 'POST',
                 body: uploadData
             });
@@ -102,9 +102,9 @@ const WoundAssessmentDashboard = () => {
                 setFormData(prev => ({
                     ...prev,
                     woundType: result.wound_type || prev.woundType,
-                    woundStage: result.stage || prev.woundStage,
                     length: result.dimensions?.length || prev.length,
                     width: result.dimensions?.width || prev.width,
+                    depth: result.dimensions?.depth || prev.depth,
                     notes: prev.notes + `\n\n[AI SUGGESTION]: ${result.cure_recommendation}${reductionInfo}`
                 }));
             } else {
@@ -112,8 +112,8 @@ const WoundAssessmentDashboard = () => {
             }
         } catch (error) {
             console.error("AI Analysis failed", error);
-            const targetUrl = `${getMlBaseUrl()}/analyze-wound`;
-            setAnalysisError(`Could not connect to ML Service at ${targetUrl}. Please check if the service is running and CORS is allowed.`);
+            const targetUrl = `${getMlBaseUrl()}/api/predict`;
+            setAnalysisError(`Could not connect to ML Service at ${targetUrl}. Error: ${error.message}. Please check if the service is running and CORS is allowed.`);
         } finally {
             setIsAnalyzing(false);
         }
@@ -717,7 +717,7 @@ const WoundAssessmentDashboard = () => {
                                                     </div>
                                                     <div>
                                                         <div style={{ color: '#15803d', fontWeight: '500' }}>Dimensions</div>
-                                                        <div style={{ color: '#166534' }}>{aiAnalysis.dimensions?.length || 0} x {aiAnalysis.dimensions?.width || 0} cm</div>
+                                                        <div style={{ color: '#166534' }}>{aiAnalysis.dimensions?.length || 0} x {aiAnalysis.dimensions?.width || 0} x {aiAnalysis.dimensions?.depth || 0} cm</div>
                                                     </div>
                                                     <div>
                                                         <div style={{ color: '#15803d', fontWeight: '500' }}>Tissue Health</div>
@@ -731,15 +731,23 @@ const WoundAssessmentDashboard = () => {
                                                             </div>
                                                         </div>
                                                     )}
-                                                    <div>
-                                                        <div style={{ color: '#15803d', fontWeight: '500' }}>AI Confidence</div>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                            <div style={{ flex: 1, height: '6px', background: '#dcfce7', borderRadius: '3px', overflow: 'hidden' }}>
-                                                                <div style={{ width: `${aiAnalysis.confidence_score || 0}%`, height: '100%', background: (aiAnalysis.confidence_score || 0) > 80 ? '#16a34a' : '#eab308' }} />
-                                                            </div>
-                                                            <span style={{ fontWeight: '700', color: '#166534' }}>{aiAnalysis.confidence_score || 0}%</span>
+                                                    {aiAnalysis.cure_recommendation && (
+                                                        <div style={{ gridColumn: '1 / span 2', marginTop: '4px', padding: '8px', background: 'white', borderRadius: '4px', border: '1px solid #dcfce7' }}>
+                                                            <div style={{ color: '#15803d', fontWeight: '500', fontSize: '12px' }}>Cure Recommendation</div>
+                                                            <div style={{ color: '#166534', fontSize: '13px', fontStyle: 'italic' }}>"{aiAnalysis.cure_recommendation}"</div>
                                                         </div>
-                                                    </div>
+                                                    )}
+                                                    {aiAnalysis.confidence_score !== undefined && (
+                                                        <div>
+                                                            <div style={{ color: '#15803d', fontWeight: '500' }}>AI Confidence</div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                <div style={{ flex: 1, height: '6px', background: '#dcfce7', borderRadius: '3px', overflow: 'hidden' }}>
+                                                                    <div style={{ width: `${aiAnalysis.confidence_score}%`, height: '100%', background: aiAnalysis.confidence_score > 80 ? '#16a34a' : '#eab308' }} />
+                                                                </div>
+                                                                <span style={{ fontWeight: '700', color: '#166534' }}>{aiAnalysis.confidence_score}%</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     {aiAnalysis.healing_index !== undefined && (
                                                         <div>
                                                             <div style={{ color: '#15803d', fontWeight: '500' }}>Health Score</div>

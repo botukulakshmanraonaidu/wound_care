@@ -173,11 +173,22 @@ class PatientVisitSerializer(serializers.ModelSerializer):
         model = PatientVisit
         fields = ['id', 'patient', 'patient_name', 'patient_last_name', 'patient_mrn', 'visit_datetime', 'visit_type', 'visit_reason', 'clinical_notes', 'created_at']
 
+<<<<<<< HEAD
+=======
+class PatientMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import Patient
+        model = Patient
+        fields = ['id', 'first_name', 'last_name', 'mrn']
+
+>>>>>>> e0ff7c8 (new changes)
 class PatientTaskSerializer(serializers.ModelSerializer):
+    patient_details = PatientMiniSerializer(source='patient', read_only=True)
+    
     class Meta:
         from .models import PatientTask
         model = PatientTask
-        fields = ['id', 'patient', 'title', 'due', 'scheduled_date', 'completed', 'created_at']
+        fields = ['id', 'patient', 'patient_details', 'title', 'due', 'scheduled_date', 'description', 'priority', 'completed', 'created_at']
 
 class AssessmentImageSerializer(serializers.ModelSerializer):
     # use_url=True ensures full Cloudinary URLs are returned, not relative paths
@@ -191,11 +202,12 @@ class AssessmentImageSerializer(serializers.ModelSerializer):
 
 class AssessmentSerializer(serializers.ModelSerializer):
     images = AssessmentImageSerializer(many=True, read_only=True)
-    assessed_by_name = serializers.CharField(source='assessed_by.full_name', read_only=True)
+    assessed_by_name = serializers.CharField(source='patient.assigned_doctor.full_name', read_only=True)
     patient_name = serializers.CharField(source='patient.first_name', read_only=True)
     patient_last_name = serializers.CharField(source='patient.last_name', read_only=True)
     patient_mrn = serializers.CharField(source='patient.mrn', read_only=True)
     patient_dob = serializers.DateField(source='patient.date_of_birth', read_only=True)
+    patient_gender = serializers.CharField(source='patient.gender', read_only=True)
 
     stage = serializers.CharField(source='wound_stage', read_only=True)
     tissue_composition = serializers.SerializerMethodField()
@@ -212,7 +224,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
         model = Assessment
         fields = [
             'id', 'patient', 'patient_name', 'patient_last_name', 'patient_mrn', 'patient_dob',
-            'assessed_by', 'assessed_by_name', 'wound_type', 'onset_date',
+            'patient_gender', 'assessed_by', 'assessed_by_name', 'wound_type', 'onset_date',
             'wound_stage', 'stage', 'exudate_amount', 'length', 'width', 'depth',
             'pain_level', 'notes', 'body_location', 'images', 'created_at',
             'ml_analysis_result', 'tissue_composition', 'reduction_rate', 

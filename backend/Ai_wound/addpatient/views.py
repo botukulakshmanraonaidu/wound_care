@@ -1,8 +1,8 @@
 from rest_framework import viewsets, status, views
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes, action
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes, action, parser_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.authtoken.models import Token
 # Removed AnonRateThrottle to disable rate limiting on login
 from django.contrib.auth import authenticate, get_user_model
@@ -65,6 +65,19 @@ class PatientViewSet(viewsets.ModelViewSet):
                 created_at__gte=one_hour_ago
             )
 
+<<<<<<< HEAD
+=======
+        if filter_type == 'recent_assignment':
+            from django.utils import timezone
+            from datetime import timedelta
+            one_hour_ago = timezone.now() - timedelta(hours=1)
+            if user.role_type == 'doctor':
+                return queryset.filter(assigned_doctor=user, updated_at__gte=one_hour_ago)
+            if user.role_type == 'nurse':
+                return queryset.filter(assigned_nurse=user, updated_at__gte=one_hour_ago)
+            return queryset.filter(updated_at__gte=one_hour_ago)
+
+>>>>>>> e0ff7c8 (new changes)
         if user.role_type == 'doctor':
             if filter_type == 'my':
                 # Return only assigned patients
@@ -73,6 +86,7 @@ class PatientViewSet(viewsets.ModelViewSet):
             return queryset
             
         if user.role_type == 'nurse':
+<<<<<<< HEAD
             if filter_type == 'nurse_recent':
                 from django.utils import timezone
                 from datetime import timedelta
@@ -80,6 +94,13 @@ class PatientViewSet(viewsets.ModelViewSet):
                 return queryset.filter(assigned_nurse=user, updated_at__gte=two_hours_ago)
             # Nurses are strictly restricted to only seeing their assigned patients
             return queryset.filter(assigned_nurse=user)
+=======
+            if filter_type == 'my':
+                # Return only assigned patients
+                return queryset.filter(assigned_nurse=user)
+            # Nurses can see the list of all patients
+            return queryset
+>>>>>>> e0ff7c8 (new changes)
             
         return queryset
 
@@ -96,6 +117,22 @@ class PatientViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             logger.info("Patient created successfully: %s", serializer.data)
+            
+            # Log Activity
+            try:
+                from admin_page.views import log_activity
+                patient_name = f"{serializer.data.get('first_name', '')} {serializer.data.get('last_name', '')}"
+                log_activity(
+                    user_email=request.user.email,
+                    action='CREATE',
+                    target_user=patient_name,
+                    description=f"Added new patient: {patient_name}",
+                    severity='INFO',
+                    request=request
+                )
+            except Exception as e:
+                logger.error(f"Failed to log patient creation: {e}")
+
             return Response(
                 {"message": "Patient added successfully", "data": serializer.data},
                 status=status.HTTP_201_CREATED
@@ -152,7 +189,42 @@ class PatientViewSet(viewsets.ModelViewSet):
         } for d in doctors]
         return Response(data)
 
+    def perform_update(self, serializer):
+        patient = serializer.save()
+        patient_name = f"{patient.first_name} {patient.last_name}"
+        try:
+            from admin_page.views import log_activity
+            log_activity(
+                user_email=self.request.user.email,
+                action='UPDATE',
+                target_user=patient_name,
+                description=f"Updated patient details: {patient_name}",
+                severity='INFO',
+                request=self.request
+            )
+        except Exception as e:
+            logger.error(f"Failed to log patient update: {e}")
+
+    def perform_destroy(self, instance):
+        name = f"{instance.first_name} {instance.last_name}"
+        instance.delete()
+        try:
+            from admin_page.views import log_activity
+            log_activity(
+                user_email=self.request.user.email,
+                action='DELETE',
+                target_user=name,
+                description=f"Deleted patient: {name}",
+                severity='WARNING',
+                request=self.request
+            )
+        except Exception as e:
+            logger.error(f"Failed to log patient deletion: {e}")
+
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.utils import timezone
+from datetime import timedelta
+
 
 @api_view(["POST"])
 @authentication_classes([])
@@ -164,19 +236,30 @@ def login_api(request):
     """
     email = request.data.get("email")
     password = request.data.get("password")
-    logger.info(f"DEBUG: Login attempt for email=[{email}]")
+    ip_address = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', ''))
+    logger.info(f"DEBUG: Login attempt for email=[{email}] from IP=[{ip_address}]")
 
     if not email or not password:
         logger.warning("DEBUG: Missing email or password")
         return Response({"error": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Diagnostic check: Does the user even exist in this DB?
+    # Diagnostic check & Lockout Verification
     try:
         from admin_page.models import Admin
-        db_user_exists = Admin.objects.filter(email=email).exists()
-        logger.info(f"DEBUG: Internal DB check for [{email}]: exists={db_user_exists}")
+        db_user = Admin.objects.filter(email=email).first()
+        if db_user:
+            # Check if account is locked
+            if db_user.locked_until and db_user.locked_until > timezone.now():
+                lock_duration_sec = (db_user.locked_until - timezone.now()).total_seconds()
+                lock_duration_min = max(1, int(lock_duration_sec / 60))
+                logger.warning(f"DEBUG: Locked account attempt for [{email}]")
+                return Response({
+                    "error": "Account is locked due to too many failed login attempts.",
+                    "details": f"Please try again in {lock_duration_min} minutes."
+                }, status=status.HTTP_403_FORBIDDEN)
     except Exception as check_err:
         logger.error(f"DEBUG: Could not check user existence: {check_err}")
+        db_user = None
 
     try:
         user = authenticate(username=email, password=password)
@@ -190,6 +273,12 @@ def login_api(request):
     logger.info(f"DEBUG: Authenticate result for [{email}]: {user}")
 
     if user:
+        # Reset failed attempts on successful login
+        if db_user and db_user.failed_login_attempts > 0:
+            db_user.failed_login_attempts = 0
+            db_user.locked_until = None
+            db_user.save(update_fields=['failed_login_attempts', 'locked_until'])
+
         logger.info(f"Successful login for: {email}")
         logger.info(f"User authenticated successfully: {email}")
         
@@ -201,7 +290,11 @@ def login_api(request):
                 action='LOGIN',
                 description='User logged in successfully',
                 severity='INFO',
+<<<<<<< HEAD
                 ip_address=request.META.get('REMOTE_ADDR')
+=======
+                request=request
+>>>>>>> e0ff7c8 (new changes)
             )
         except Exception as e:
             logger.error(f"Failed to log login activity: {e}")
@@ -222,6 +315,56 @@ def login_api(request):
             "message": "Login successful"
         }, status=status.HTTP_200_OK)
     else:
+        # Handle Failed Login
+        if db_user:
+            db_user.failed_login_attempts += 1
+            
+            # Lock account after 5 failed attempts
+            if db_user.failed_login_attempts >= 5:
+                db_user.locked_until = timezone.now() + timedelta(minutes=15)
+                logger.warning(f"SECURITY: Account locked for 15m due to multiple failed attempts: {email}")
+                
+                try:
+                    from admin_page.models import ActivityLog
+                    ActivityLog.objects.create(
+                        user_email=email,
+                        target_user=email,
+                        action='FAILED_LOGIN',
+                        description="Account locked for 15 minutes due to 5 consecutive failed login attempts.",
+                        severity='ERROR',
+                        ip_address=ip_address
+                    )
+                except Exception as e:
+                    logger.error(f"Could not log lockout: {e}")
+            else:
+                try:
+                    from admin_page.models import ActivityLog
+                    ActivityLog.objects.create(
+                        user_email=email,
+                        target_user=email,
+                        action='FAILED_LOGIN',
+                        description=f"Failed login attempt ({db_user.failed_login_attempts}/5).",
+                        severity='WARNING',
+                        ip_address=ip_address
+                    )
+                except Exception as e:
+                    logger.error(f"Could not log failed login: {e}")
+                
+            db_user.save(update_fields=['failed_login_attempts', 'locked_until'])
+        else:
+            try:
+                from admin_page.models import ActivityLog
+                ActivityLog.objects.create(
+                    user_email=email,
+                    target_user=email,
+                    action='FAILED_LOGIN',
+                    description="Failed login attempt for non-existent account.",
+                    severity='WARNING',
+                    ip_address=ip_address
+                )
+            except Exception as e:
+                logger.error(f"Could not log failed login for non-existent user: {e}")
+
         logger.warning(f"Authentication failed for email: {email}")
         return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -240,12 +383,17 @@ def logout_api(request):
         action='LOGOUT',
         description='User logged out',
         severity='INFO',
+<<<<<<< HEAD
         ip_address=request.META.get('REMOTE_ADDR')
+=======
+        request=request
+>>>>>>> e0ff7c8 (new changes)
     )
     return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def profile_api(request):
     from admin_page.serializers import AdminUserSerializer
     user = request.user  # Instance of Admin
@@ -255,13 +403,18 @@ def profile_api(request):
         return Response(serializer.data)
     
     elif request.method == 'PATCH':
+        print(f"DEBUG: profile_api PATCH request.data: {request.data}")
+        print(f"DEBUG: profile_api Files: {request.FILES}")
         serializer = AdminUserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            print("DEBUG: profile_api Save successful")
             return Response({
-                "message": "Profile updated successfully",
+                "status": "success",
+                "message": "Profile updated successfully!",
                 "data": serializer.data
-            }, status=status.HTTP_200_OK)
+            })
+        print(f"DEBUG: profile_api Serializer errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserSignupView(views.APIView):
@@ -362,11 +515,17 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                 # If a specific patient is being viewed, allow the nurse to see assessments
                 # to enable history viewing and reduction rate calculations.
                 queryset = queryset.filter(patient_id=patient_id)
+<<<<<<< HEAD
             elif filter_type == 'my':
                 queryset = queryset.filter(patient__assigned_nurse=user)
             else:
                 # Default to all assessments they have permission for (directory view)
                 queryset = queryset
+=======
+            else:
+                # Nurses only see assessments for patients assigned to them
+                queryset = queryset.filter(patient__assigned_nurse=user)
+>>>>>>> e0ff7c8 (new changes)
             
         # Apply patient_id filter if provided
         if patient_id:
@@ -421,37 +580,53 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                         annotations=annotations
                     )
             
-            # 3. Call FastAPI ML Service
+            # 3. Call Flask ML Service
             try:
                 # Use the first image for ML analysis
                 first_image = assessment.images.first()
                 if first_image and first_image.full_image:
                     import os
-                    ml_url = os.getenv("ML_SERVICE_URL", "http://localhost:8001/analyze-wound")
-                    # Ensure URL ends with the endpoint if only base is provided
-                    if not ml_url.endswith("/analyze-wound"):
-                        ml_url = f"{ml_url.rstrip('/')}/analyze-wound"
+                    # Default to localhost if not specified in .env
+                    ml_url = os.getenv("ML_SERVICE_URL", "http://localhost:8001/api/predict")
+                    
+                    # Ensure URL ends with the correct endpoint
+                    if not ml_url.endswith("/api/predict"):
+                        ml_url = f"{ml_url.rstrip('/')}/api/predict"
                         
                     with first_image.full_image.open('rb') as img_file:
-                        files = {'file': (first_image.full_image.name, img_file, 'image/jpeg')}
-                        response = requests.post(ml_url, files=files, timeout=10)
+                        # Use 'image' as the key to match Flask's request.files['image']
+                        files = {'image': (first_image.full_image.name, img_file, 'image/jpeg')}
+                        response = requests.post(ml_url, files=files, timeout=15)
                         
                         if response.status_code == 200:
                             result = response.json()
                             assessment.ml_analysis_result = result
-                            assessment.cure_recommendation = result.get('cure_recommendation')
                             
-                            # Strictly populate model fields from ML results to prevent manual override
-                            dims = result.get('dimensions', {})
-                            assessment.length = dims.get('length', assessment.length)
-                            assessment.width = dims.get('width', assessment.width)
-                            assessment.depth = dims.get('depth', assessment.depth)
-                            
+                            # Map Flask response fields to Django model fields
                             assessment.wound_type = result.get('wound_type', assessment.wound_type)
                             assessment.wound_stage = result.get('stage', assessment.wound_stage)
-                            assessment.confidence_score = result.get('confidence_score')
-                            assessment.healing_index = result.get('healing_index')
+                            
+                            dims = result.get('dimensions', {})
+                            if dims:
+                                assessment.length = dims.get('length', assessment.length)
+                                assessment.width = dims.get('width', assessment.width)
+                                assessment.depth = dims.get('depth', assessment.depth)
+                            
+                            assessment.cure_recommendation = result.get('cure_recommendation', assessment.cure_recommendation)
+                            
+                            # Use confidence_score and healing_index directly from ML response
+                            # These are 0-100 values
+                            assessment.confidence_score = result.get('confidence_score', assessment.confidence_score)
+                            assessment.healing_index = result.get('healing_index', assessment.healing_index)
+                            
+                            # Fallback if specific scores missing but raw confidence exists
+                            if assessment.confidence_score is None and result.get('confidence') is not None:
+                                assessment.confidence_score = float(result['confidence']) * 100
+                            
+                            # Store processing steps
                             assessment.algorithm_analysis = result.get('algorithm_analysis')
+                            
+                            logger.info(f"Populated AI fields for assessment {assessment.id}: Type={assessment.wound_type}, Stage={assessment.wound_stage}, Dims={assessment.length}x{assessment.width}, Conf={assessment.confidence_score}%")
                             
                             # --- Reduction Rate Calculation ---
                             try:
@@ -495,7 +670,11 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                     action='CREATE',
                     description=f'Created assessment for patient ID {assessment.patient_id}',
                     severity='INFO',
+<<<<<<< HEAD
                     ip_address=request.META.get('REMOTE_ADDR')
+=======
+                    request=request
+>>>>>>> e0ff7c8 (new changes)
                 )
             except Exception as e:
                 logger.error(f"Failed to log assessment activity: {e}")

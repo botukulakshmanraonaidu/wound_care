@@ -89,6 +89,42 @@ class PatientTests(APITestCase):
         self.assertIsNotNone(notification)
         self.assertIn("assigned to the wound care team", notification.message)
 
+    def test_recent_assignment_filter(self):
+        """Verify that the recent_assignment filter correctly filters by time and assignment."""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # 1. Create a patient assigned to nurse 1 hour 5 mins ago (should NOT show)
+        old_patient = Patient.objects.create(
+            first_name="Old", last_name="Patient", 
+            date_of_birth="2000-01-01", gender="Male",
+            admission_date="2023-10-01", ward_department="General",
+            room_bed_number="101", assigning_physician="Dr. Old",
+            primary_diagnosis="Old Issue",
+            assigned_nurse=self.nurse
+        )
+        Patient.objects.filter(id=old_patient.id).update(updated_at=timezone.now() - timedelta(minutes=65))
+
+        # 2. Create a patient assigned to nurse just now (should show)
+        new_patient = Patient.objects.create(
+            first_name="New", last_name="Patient", 
+            date_of_birth="2000-01-01", gender="Female",
+            admission_date="2023-10-01", ward_department="General",
+            room_bed_number="102", assigning_physician="Dr. New",
+            primary_diagnosis="New Issue",
+            assigned_nurse=self.nurse
+        )
+
+        # 3. Request with recent_assignment filter as the nurse
+        self.client.force_authenticate(user=self.nurse)
+        url = reverse('patient-list') + '?filter=recent_assignment'
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Should only contain the new patient
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], new_patient.id)
+
 class AssessmentTests(APITestCase):
     def setUp(self):
         self.doctor = Admin.objects.create_user(

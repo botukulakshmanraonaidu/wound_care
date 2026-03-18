@@ -23,6 +23,11 @@ class NurseTask(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     due_time = models.CharField(max_length=100, default="Today, 05:00 PM")
+    priority = models.CharField(
+        max_length=20,
+        choices=(('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')),
+        default='Medium'
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -197,7 +197,7 @@ function SystemLogs() {
 
                                         rows.push(
                                             <tr key={`header-${dateStr}`} className="log-date-header">
-                                                <td colSpan="6">{headerText}</td>
+                                                <td colSpan="7">{headerText}</td>
                                             </tr>
                                         );
                                         lastDate = dateStr;
@@ -218,7 +218,11 @@ function SystemLogs() {
                                             <td>
                                                 <span className="text-sm text-gray-900">{log.user_name || log.user_email || 'System'}</span>
                                             </td>
+<<<<<<< HEAD
                                             <td className="whitespace-nowrap font-mono text-xs text-gray-500">
+=======
+                                            <td className="text-sm font-mono text-gray-500">
+>>>>>>> e0ff7c8 (new changes)
                                                 {log.ip_address || '-'}
                                             </td>
                                             <td className="text-sm text-gray-600">{log.target_user || '-'}</td>

@@ -14,10 +14,10 @@ const ShiftTaskList = ({ refreshTrigger }) => {
     nurseService.getTasks().then(data => {
       const dynamicTasks = Array.isArray(data) ? data : [];
       const staticTasks = [
-        { id: 'static-1', title: 'Morning Vital Signs Check', status: 'pending', due_time: '08:00 AM' },
-        { id: 'static-2', title: 'Administer Morning Medications', status: 'pending', due_time: '09:00 AM' },
-        { id: 'static-3', title: 'Wound Dressing Changes', status: 'pending', due_time: '11:00 AM' },
-        { id: 'static-4', title: 'Review Patient Charts', status: 'pending', due_time: '02:00 PM' }
+        { id: 'static-1', title: 'Morning Vital Signs Check', status: 'pending', due: '08:00 AM', priority: 'High' },
+        { id: 'static-2', title: 'Administer Morning Medications', status: 'pending', due: '09:00 AM', priority: 'High' },
+        { id: 'static-3', title: 'Wound Dressing Changes', status: 'pending', due: '11:00 AM', priority: 'Medium' },
+        { id: 'static-4', title: 'Review Patient Charts', status: 'pending', due: '02:00 PM', priority: 'Low' }
       ];
       setTasks([...staticTasks, ...dynamicTasks]);
     }).catch(err => {
@@ -26,16 +26,22 @@ const ShiftTaskList = ({ refreshTrigger }) => {
   }, [refreshTrigger]);
 
   const toggle = async (id, current) => {
-    const next = current === 'completed' ? 'pending' : 'completed';
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: next } : t));
+    // In DRF, status might be a boolean 'completed' or a string 'pending'/'completed'
+    // The current code uses 'completed'/'pending' strings in state.
+    // Let's stick to that for UI consistency.
+    const isCompleted = current === 'completed' || current === true;
+    const nextStatus = isCompleted ? 'pending' : 'completed';
+    const nextCompletedBool = !isCompleted;
+
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, status: nextStatus, completed: nextCompletedBool } : t));
 
     // Only call API for dynamic tasks
     if (!String(id).startsWith('static-')) {
       try {
-        await nurseService.updateTaskStatus(id, next);
+        await nurseService.updateTaskStatus(id, nextCompletedBool);
       } catch (err) {
         console.error('Failed to update task status:', err);
-        setTasks(prev => prev.map(t => t.id === id ? { ...t, status: current } : t));
+        setTasks(prev => prev.map(t => t.id === id ? { ...t, status: current, completed: isCompleted } : t));
       }
     }
   };
@@ -44,30 +50,125 @@ const ShiftTaskList = ({ refreshTrigger }) => {
   if (!tasks.length) return <p className="nurse-empty-state">No shift tasks assigned.</p>;
 
   return (
-    <div className="nurse-task-list">
-      {tasks.map(t => (
-        <div
-          key={t.id}
-          className={`nurse-task-item ${t.status === 'completed' ? 'completed' : ''}`}
-          onClick={() => toggle(t.id, t.status)}
-        >
-          <div className={`task-dot ${t.status === 'completed' ? 'done' : ''}`} />
-          <div className="task-body">
-            <p className="task-title">{t.title}</p>
-            <div className="task-meta-row">
-              <span className="task-time">{t.due_time || 'No time set'}</span>
-              {t.patient_details && (
-                <span className="task-patient-ref">
-                  • {t.patient_details.first_name} {t.patient_details.last_name}
-                </span>
-              )}
-            </div>
-          </div>
-          {t.status === 'completed'
-            ? <CheckCircle size={16} className="task-icon-done" />
-            : <Clock size={16} className="task-icon-pending" />}
+    <div className="nurse-task-table-container">
+      <table className="nurse-task-table">
+        <thead>
+          <tr>
+            <th style={{ width: '45px' }}>Done</th>
+            <th>Task Details</th>
+            <th>Patient</th>
+            <th>Due</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasks.map(t => {
+            const isCompleted = t.status === 'completed' || t.completed === true;
+            return (
+              <tr key={t.id} className={isCompleted ? 'completed' : ''}>
+                <td style={{ textAlign: 'center' }}>
+                  <div
+                    className={`task-checkbox ${isCompleted ? 'checked' : ''}`}
+                    onClick={() => toggle(t.id, t.status)}
+                  >
+                    {isCompleted && <CheckCircle size={14} />}
+                  </div>
+                </td>
+                <td>
+                  <div className="task-title-cell">{t.title}</div>
+                  {t.description && <div className="nurse-task-desc">{t.description}</div>}
+                </td>
+                <td>
+                  {t.patient_details ? (
+                    <span className="task-patient-ref">
+                      {t.patient_details.first_name} {t.patient_details.last_name}
+                    </span>
+                  ) : <span style={{ color: '#94a3b8', fontSize: '11px' }}>General</span>}
+                </td>
+                <td className="task-time">{t.due || t.due_time || 'No time set'}</td>
+                <td>
+                  <span className={`task-priority-badge priority-${(t.priority || 'Medium').toLowerCase()}`}>
+                    {t.priority || 'Medium'}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+/* ─── Newly Assigned Patients List ─── */
+const NewlyAssignedList = ({ refreshTrigger }) => {
+  const navigate = useNavigate();
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    patientService.getPatients('recent_assignment').then(data => {
+      setPatients(data.slice(0, 5));
+    }).finally(() => setLoading(false));
+  }, [refreshTrigger]);
+
+  const handleReview = (patient) => {
+    localStorage.setItem(`nurse_viewed_patient_${patient.id}`, Date.now().toString());
+    navigate(`/patients/profile/${patient.id}`);
+  };
+
+  if (loading) return <div className="nurse-empty-state" style={{ padding: '20px' }}>Loading...</div>;
+
+  return (
+    <div className="appointments-list" style={{ marginTop: '0', padding: '0 20px 20px 20px' }}>
+      {patients.length > 0 ? (
+        <table className="mini-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Admission</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient) => (
+              <tr key={patient.id}>
+                <td>
+                  <div className="patient-mini-info">
+                    <span className="p-name">{patient.first_name || patient.firstName} {patient.last_name || patient.lastName}</span>
+                    <span className="p-mrn">{patient.mrn}</span>
+                  </div>
+                </td>
+                <td>
+                  {(() => {
+                    const dateStr = patient.admissionDate || patient.created_at;
+                    if (!dateStr) return "N/A";
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) return "Invalid Date";
+
+                    return date.toLocaleString('en-US', {
+                      month: 'short', day: 'numeric', year: 'numeric',
+                      hour: 'numeric', minute: '2-digit', hour12: true
+                    }).replace(', 12:00 AM', '');
+                  })()}
+                </td>
+                <td>
+                  <button
+                    className="btn-view-mini"
+                    onClick={() => handleReview(patient)}
+                  >
+                    Review
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="empty-state" style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontStyle: 'italic' }}>
+          No new patients assigned to you right now.
         </div>
-      ))}
+      )}
     </div>
   );
 };
@@ -293,7 +394,9 @@ const StaffAnnouncements = ({ refreshTrigger }) => {
 /* ─── Create Task Modal ─── */
 const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [dueTime, setDueTime] = useState('Today, 05:00 PM');
+  const [priority, setPriority] = useState('Medium');
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState('');
   const [loading, setLoading] = useState(false);
@@ -310,13 +413,17 @@ const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
     try {
       await nurseService.createTask({
         title,
+        description,
         due_time: dueTime,
-        patient: selectedPatient || null,
-        status: 'pending'
+        priority,
+        patient: selectedPatient || null
       });
       onCreated();
       onClose();
       setTitle('');
+      setDescription('');
+      setPriority('Medium');
+      setDueTime('Today, 05:00 PM');
       setSelectedPatient('');
     } catch (err) {
       console.error('Failed to create task:', err);
@@ -329,7 +436,7 @@ const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+      <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px' }}>
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Plus size={18} className="header-icon-blue" />
@@ -339,7 +446,7 @@ const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
         </div>
         <form onSubmit={handleSubmit} style={{ padding: '20px' }}>
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>TASK TITLE</label>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>TASK TITLE</label>
             <input
               type="text"
               required
@@ -349,18 +456,45 @@ const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
             />
           </div>
+
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>DUE TIME</label>
-            <input
-              type="text"
-              value={dueTime}
-              onChange={e => setDueTime(e.target.value)}
-              placeholder="e.g. Today, 05:00 PM"
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>DESCRIPTION (OPTIONAL)</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              placeholder="Add more details about this task..."
+              rows={3}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px', resize: 'vertical' }}
             />
           </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>DUE TIME</label>
+              <input
+                type="text"
+                value={dueTime}
+                onChange={e => setDueTime(e.target.value)}
+                placeholder="e.g. Today, 05:00 PM"
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>PRIORITY</label>
+              <select
+                value={priority}
+                onChange={e => setPriority(e.target.value)}
+                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '14px' }}
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>PATIENT (OPTIONAL)</label>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '6px' }}>PATIENT (OPTIONAL)</label>
             <select
               value={selectedPatient}
               onChange={e => setSelectedPatient(e.target.value)}
@@ -372,6 +506,7 @@ const CreateTaskModal = ({ isOpen, onClose, onCreated }) => {
               ))}
             </select>
           </div>
+
           <div style={{ display: 'flex', gap: '12px' }}>
             <button type="button" className="nurse-btn-outline" style={{ flex: 1 }} onClick={onClose}>Cancel</button>
             <button type="submit" className="nurse-btn-primary" style={{ flex: 1 }} disabled={loading}>

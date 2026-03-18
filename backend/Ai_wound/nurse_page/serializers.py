@@ -5,13 +5,18 @@ from addpatient.serializers import PatientSerializer
 class NurseTaskSerializer(serializers.ModelSerializer):
     patient_details = PatientSerializer(source='patient', read_only=True)
     nurse_name = serializers.CharField(source='nurse.full_name', read_only=True)
+    completed = serializers.SerializerMethodField()
 
     class Meta:
         model = NurseTask
         fields = [
             'id', 'nurse', 'nurse_name', 'patient', 'patient_details',
-            'title', 'description', 'due_time', 'status', 'created_at', 'updated_at'
+            'title', 'description', 'due_time', 'status', 'priority', 'completed', 'created_at', 'updated_at'
         ]
+        read_only_fields = ['nurse', 'created_at', 'updated_at']
+
+    def get_completed(self, obj):
+        return obj.status == 'completed'
 
 class StaffAnnouncementSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source='author.full_name', read_only=True)

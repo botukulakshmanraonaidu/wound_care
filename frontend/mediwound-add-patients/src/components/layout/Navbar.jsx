@@ -5,6 +5,7 @@ import AuthAPI from '../../API/authApi';
 import './Navbar.css';
 
 function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick }) {
+  const [profilePic, setProfilePic] = useState(localStorage.getItem('profilePicture'));
   const [internalCount, setInternalCount] = useState(0);
   const navigate = useNavigate();
 
@@ -22,6 +23,30 @@ function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick
       console.error('Navbar: Failed to fetch notifications', error);
     }
   };
+
+  useEffect(() => {
+    // Sync profile picture when localStorage changes (via storage event)
+    const handleStorageChange = () => {
+      setProfilePic(localStorage.getItem('profilePicture'));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event check (Settings dispatches a generic Event('storage'))
+    // Some browsers don't trigger 'storage' event on the same window
+    // so we handle both.
+    const handleCustomStorage = (e) => {
+      if (e.type === 'storage') {
+        handleStorageChange();
+      }
+    };
+    window.addEventListener('storage', handleCustomStorage);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage', handleCustomStorage);
+    };
+  }, []);
 
   useEffect(() => {
     // Only poll if not controlled externally
@@ -90,7 +115,11 @@ function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick
             <div className="navbar-user-role">{userJobTitle || "Specialist"}</div>
           </div>
           <div className="navbar-user-avatar">
-            <User size={20} />
+            {profilePic ? (
+              <img src={profilePic} alt="Profile" className="navbar-avatar-img" />
+            ) : (
+              <User size={20} />
+            )}
           </div>
         </div>
       </div>

@@ -15,6 +15,52 @@ const RoleManagement = ({ accessLevel }) => {
     const [error, setError] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+<<<<<<< HEAD
+
+    // Check if user is superuser
+    const isSuperuser = localStorage.getItem('isSuperuser') === 'true';
+
+    const fetchUsers = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await adminApi.getUsers();
+            // Handle both direct array and paginated response
+            const data = Array.isArray(response.data) ? response.data : 
+                         (response.data && response.data.results) ? response.data.results : [];
+            setUsers(data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setError(error.response?.data?.detail || error.response?.data?.message || 'Failed to load users');
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+=======
+    const [phoneExistsError, setPhoneExistsError] = useState(null);
+    const [checkingPhone, setCheckingPhone] = useState(false);
+>>>>>>> e0ff7c8 (new changes)
+
+    const [formData, setFormData] = useState({
+        full_name: '',
+        email: '',
+        role_type: 'nurse',
+        job_title: '',
+        department: '',
+        password: '',
+        confirm_password: '',
+        specialization: '',
+        license_id: '',
+        ward: '',
+        shift: '',
+        access_level: '',
+        phone_number: '',
+        country_code: '+91'
+    });
 
     // Check if user is superuser
     const isSuperuser = localStorage.getItem('isSuperuser') === 'true';
@@ -40,22 +86,38 @@ const RoleManagement = ({ accessLevel }) => {
         fetchUsers();
     }, []);
 
-    const [formData, setFormData] = useState({
-        full_name: '',
-        email: '',
-        role_type: 'nurse',
-        job_title: '',
-        department: '',
-        password: '',
-        confirm_password: '',
-        specialization: '',
-        license_id: '',
-        ward: '',
-        shift: '',
-        access_level: '',
-        phone_number: '',
-        country_code: '+91'
-    });
+    // Real-time phone validation
+    useEffect(() => {
+        const checkPhone = async () => {
+            const phone = formData.phone_number;
+            const digitsOnly = (phone || '').replace(/\D/g, '');
+            
+            if (digitsOnly.length >= 1) {
+                setCheckingPhone(true);
+                try {
+                    const response = await adminApi.checkPhoneUnique(phone, editingUser?.id);
+                    if (response.data.exists) {
+                        setPhoneExistsError('This phone number is already in use');
+                    } else {
+                        setPhoneExistsError(null);
+                    }
+                } catch (err) {
+                    console.error('Error checking phone uniqueness:', err);
+                } finally {
+                    setCheckingPhone(false);
+                }
+            } else {
+                setPhoneExistsError(null);
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            checkPhone();
+        }, 300); // Reduced debounce to 300ms
+
+        return () => clearTimeout(timeoutId);
+    }, [formData.phone_number, editingUser]);
+
 
     const filteredUsers = users.filter(user => {
         const matchesSearch =
@@ -123,6 +185,19 @@ const RoleManagement = ({ accessLevel }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+<<<<<<< HEAD
+=======
+
+        if (checkingPhone) {
+            setError("Please wait, validating phone number...");
+            return;
+        }
+
+        if (phoneExistsError) {
+            setError(phoneExistsError);
+            return;
+        }
+>>>>>>> e0ff7c8 (new changes)
         
         // Password validation
         if (formData.password && formData.password.length < 6) {
@@ -136,6 +211,25 @@ const RoleManagement = ({ accessLevel }) => {
             return;
         }
 
+<<<<<<< HEAD
+=======
+        // Final phone validation check before confirming
+        setCheckingPhone(true);
+        try {
+            const response = await adminApi.checkPhoneUnique(formData.phone_number, editingUser?.id);
+            if (response.data.exists) {
+                setPhoneExistsError('This phone number is already in use');
+                setError('This phone number is already in use');
+                setCheckingPhone(false);
+                return;
+            }
+        } catch (err) {
+            console.error('Final phone check failed:', err);
+        } finally {
+            setCheckingPhone(false);
+        }
+
+>>>>>>> e0ff7c8 (new changes)
         // Show confirmation before proceeding
         setShowSubmitConfirm(true);
     };
@@ -162,7 +256,18 @@ const RoleManagement = ({ accessLevel }) => {
             setShowAddUserModal(false);
         } catch (err) {
             console.error('Error saving user:', err);
-            setError(err.response?.data ? JSON.stringify(err.response.data) : 'Failed to save user');
+            if (err.response?.data) {
+                const data = err.response.data;
+                if (typeof data === 'object') {
+                    // Extract first error message from the object
+                    const firstError = Object.values(data).flat()[0];
+                    setError(firstError || 'Data validation failed');
+                } else {
+                    setError(data.toString());
+                }
+            } else {
+                setError('Failed to save user');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -280,7 +385,7 @@ const RoleManagement = ({ accessLevel }) => {
                                         </td>
                                         <td>
                                             <span className={`role-badge ${getRoleBadgeClass(user.role_type)}`}>
-                                                {user.job_title}
+                                                {user.role_type ? user.role_type.charAt(0).toUpperCase() + user.role_type.slice(1) : 'Unknown'}
                                             </span>
                                         </td>
                                         <td className="department-cell">{user.department}</td>
@@ -378,12 +483,31 @@ const RoleManagement = ({ accessLevel }) => {
                                         <input
                                             type="tel"
                                             className="form-input"
+<<<<<<< HEAD
                                             style={{ flex: 1 }}
                                             value={formData.phone_number}
                                             onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                                             placeholder="10 digits"
                                         />
                                     </div>
+=======
+                                            value={formData.phone_number}
+                                            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                                            placeholder="10 digits"
+                                            style={{ flex: 1, borderColor: phoneExistsError ? '#ef4444' : undefined }}
+                                        />
+                                    </div>
+                                    <div style={{ minHeight: '20px', marginTop: '4px' }}>
+                                        {checkingPhone ? (
+                                            <span className="text-muted" style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <div className="spinner-border spinner-border-sm" role="status" style={{ width: '12px', height: '12px' }}></div>
+                                                Checking availability...
+                                            </span>
+                                        ) : phoneExistsError ? (
+                                            <span style={{ color: '#ef4444', fontSize: '12px', display: 'block' }}>{phoneExistsError}</span>
+                                        ) : null}
+                                    </div>
+>>>>>>> e0ff7c8 (new changes)
                                 </div>
                             </div>
 
@@ -575,7 +699,12 @@ const RoleManagement = ({ accessLevel }) => {
                                 >
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                                <button 
+                                    type="submit" 
+                                    className="btn btn-primary" 
+                                    disabled={isSubmitting || checkingPhone || !!phoneExistsError}
+                                    title={phoneExistsError ? "Fix duplicate phone number to enable" : ""}
+                                >
                                     {isSubmitting ? 'Saving...' : (editingUser ? 'Update User' : 'Create User')}
                                 </button>
                             </div>
@@ -606,6 +735,10 @@ const RoleManagement = ({ accessLevel }) => {
                                                 type="button" 
                                                 className="btn-inner-confirm"
                                                 onClick={confirmSubmit}
+<<<<<<< HEAD
+=======
+                                                disabled={checkingPhone || !!phoneExistsError}
+>>>>>>> e0ff7c8 (new changes)
                                             >
                                                 Confirm & {editingUser ? 'Update' : 'Create'}
                                             </button>

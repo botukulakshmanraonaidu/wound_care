@@ -6,6 +6,7 @@ import './PatientList.css';
 
 const PatientList = () => {
     const navigate = useNavigate();
+<<<<<<< HEAD
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -15,8 +16,19 @@ const PatientList = () => {
     const [loadingReportId, setLoadingReportId] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // stores patient id to delete
 
+=======
+>>>>>>> e0ff7c8 (new changes)
     // Auth context/role
     const userId = localStorage.getItem('userId');
+
+    const [patients, setPatients] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeFilter, setActiveFilter] = useState((userRole === 'nurse' || userRole === 'doctor') ? 'my' : 'all');
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [loadingReportId, setLoadingReportId] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(null); // stores patient id to delete
+
 
     useEffect(() => {
         fetchPatients(activeFilter);
@@ -122,7 +134,10 @@ const PatientList = () => {
                                     >
                                         My Patients
                                     </button>
+<<<<<<< HEAD
                                     
+=======
+>>>>>>> e0ff7c8 (new changes)
                                     {userRole !== 'nurse' && (
                                         <button
                                             className={`filter-menu-item ${activeFilter === 'all' ? 'selected' : ''}`}

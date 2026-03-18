@@ -8,19 +8,22 @@ def run():
     # Get absolute paths to subdirectories
     base_dir = os.path.abspath(os.path.dirname(__file__))
     django_dir = os.path.join(base_dir, "Ai_wound")
-    ml_dir = os.path.join(base_dir, "ml_service")
+    ml_dir = os.path.join(base_dir, "ml_services")
     
     print("🚀 Starting AI MediWound Services...")
 
-    # 1. Start ML Service (FastAPI)
-    print("🤖 Starting ML Service (FastAPI) on port 8001...")
+    # 1. Start ML Service (Flask)
+    print("🤖 Starting ML Service (Flask) on port 8001...")
+    env = os.environ.copy()
+    env["PORT"] = "8001"
     ml_proc = subprocess.Popen(
-        [sys.executable, "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"],
-        cwd=ml_dir
+        [sys.executable, "ai_api.py"],
+        cwd=ml_dir,
+        env=env
     )
     
     # Wait a bit for ML service to initialize
-    time.sleep(2)
+    time.sleep(3)
     
     # 2. Start Django Backend
     print("🌐 Starting Django Backend on port 8000...")

@@ -7,7 +7,8 @@ from .views import (
     ActivityLogViewSet, 
     SystemStatsAPIView,
     SystemFileViewSet,
-    SystemStorageStatsAPIView
+    SystemStorageStatsAPIView,
+    CheckPhoneUniqueAPIView
 )
 
 router = SimpleRouter()
@@ -17,6 +18,7 @@ router.register(r'files', SystemFileViewSet, basename='system-file')
 urlpatterns = [
     path('users/', UserListAPIView.as_view(), name='user-list'),
     path('users/create/', CreateAdminAPIView.as_view(), name='user-create'),
+    path('users/check-phone/', CheckPhoneUniqueAPIView.as_view(), name='check-phone-unique'),
     path('users/<int:pk>/', UserDetailAPIView.as_view(), name='user-detail'),
     path('stats/', SystemStatsAPIView.as_view(), name='system-stats'),
     path('storage-stats/', SystemStorageStatsAPIView.as_view(), name='storage-stats'),

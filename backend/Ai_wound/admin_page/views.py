@@ -5,18 +5,56 @@ from .models import Admin, ActivityLog
 from .serializers import UserCreateSerializer, AdminUserSerializer, ActivityLogSerializer
 from .permissions import isAdminRole, isAdminFullAccess
 from django.db.models import Count
+from django.db import connection, IntegrityError
 from datetime import datetime, timedelta
 import os
 import math
 import shutil
-from django.db import connection
 try:
     import cloudinary
     import cloudinary.api
 except ImportError:
     cloudinary = None
+import logging
+logger = logging.getLogger(__name__)
 
-def log_activity(user_email, action, target_user=None, description="", ip_address=None, severity='INFO'):
+def get_client_ip(request):
+    """
+    Robustly capture client IP address from various headers added by proxies/CDNs.
+    """
+    # Check common proxy headers in order of reliability
+    headers = [
+        'HTTP_CF_CONNECTING_IP',  # Cloudflare
+        'HTTP_X_REAL_IP',        # Nginx/Gunicorn/Proxies
+        'HTTP_X_FORWARDED_FOR',   # Standard proxy header
+    ]
+    
+    for header in headers:
+        val = request.META.get(header)
+        if val:
+            if header == 'HTTP_X_FORWARDED_FOR':
+                # Can be a comma-separated list
+                parts = [p.strip() for p in val.split(',')]
+                # Filter out 'unknown' or invalid IPs if necessary, but usually first is fine
+                ip = parts[0]
+            else:
+                ip = val.strip()
+            
+            if ip:
+                logger.debug(f"Captured IP {ip} from header {header}")
+                return ip
+                
+    # Fallback to standard remote address
+    remote_addr = request.META.get('REMOTE_ADDR')
+    logger.debug(f"Using REMOTE_ADDR for IP: {remote_addr}")
+    return remote_addr
+
+def log_activity(user_email, action, target_user=None, description="", ip_address=None, severity='INFO', request=None):
+    if request and not ip_address:
+        ip_address = get_client_ip(request)
+    
+    logger.info(f"Logging activity: {action} by {user_email} from IP {ip_address}")
+        
     ActivityLog.objects.create(
         user_email=user_email,
         target_user=target_user,
@@ -32,19 +70,52 @@ class CreateAdminAPIView(APIView):
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            try:
+                user = serializer.save()
+            except IntegrityError:
+                return Response(
+                    {"phone_number": ["This phone number is already in use (database constraint)."]},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             log_activity(
-                user_email=request.data.get('admin_email', 'system'), # Should be from request.user
+                user_email=request.user.email if request.user.is_authenticated else 'system',
                 action='CREATE',
                 target_user=user.full_name,
                 description=f"Created user {user.full_name} with role {user.role_type}",
+<<<<<<< HEAD
                 ip_address=request.META.get('REMOTE_ADDR')
+=======
+                request=request
+>>>>>>> e0ff7c8 (new changes)
             )
             return Response(
                 {"message": "User Registered Successfully"},
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CheckPhoneUniqueAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated, isAdminRole]
+
+    def get(self, request):
+        phone = request.query_params.get('phone_number')
+        exclude_id = request.query_params.get('exclude_id')
+
+        if not phone:
+            return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Normalize input for search
+        normalized_phone = ''.join(filter(str.isdigit, str(phone)))
+        
+        queryset = Admin.objects.filter(phone_number=normalized_phone)
+        if exclude_id:
+            try:
+                queryset = queryset.exclude(id=int(exclude_id))
+            except (ValueError, TypeError):
+                pass
+
+        exists = queryset.exists()
+        return Response({"exists": exists})
 
 from .permissions import isAdminRole, isAdminFullAccess
 
@@ -59,13 +130,22 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AdminUserSerializer
 
     def perform_update(self, serializer):
-        user = serializer.save()
+        try:
+            user = serializer.save()
+        except IntegrityError:
+            from rest_framework.exceptions import ValidationError
+            raise ValidationError({"phone_number": ["This phone number is already in use (database constraint)."]})
+            
         log_activity(
-            user_email=self.request.data.get('admin_email', 'system'),
+            user_email=self.request.user.email,
             action='UPDATE',
             target_user=user.full_name,
             description=f"Updated user {user.full_name}",
+<<<<<<< HEAD
             ip_address=self.request.META.get('REMOTE_ADDR')
+=======
+            request=self.request
+>>>>>>> e0ff7c8 (new changes)
         )
 
     def perform_destroy(self, instance):
@@ -77,11 +157,15 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         name = instance.full_name
         instance.delete()
         log_activity(
-            user_email=self.request.data.get('admin_email', 'system'),
+            user_email=self.request.user.email,
             action='DELETE',
             target_user=name,
             description=f"Deleted user {name}",
+<<<<<<< HEAD
             ip_address=self.request.META.get('REMOTE_ADDR')
+=======
+            request=self.request
+>>>>>>> e0ff7c8 (new changes)
         )
 
 class ActivityLogViewSet(viewsets.ModelViewSet):
@@ -171,7 +255,11 @@ class SystemFileViewSet(viewsets.ModelViewSet):
             target_user=instance.name,
             description=f"Uploaded file: {instance.name} ({instance.size})",
             severity='INFO',
+<<<<<<< HEAD
             ip_address=self.request.META.get('REMOTE_ADDR')
+=======
+            request=self.request
+>>>>>>> e0ff7c8 (new changes)
         )
         
     def perform_destroy(self, instance):
@@ -195,7 +283,11 @@ class SystemFileViewSet(viewsets.ModelViewSet):
             target_user=file_name,
             description=f"Deleted file: {file_name}",
             severity='WARNING',
+<<<<<<< HEAD
             ip_address=self.request.META.get('REMOTE_ADDR')
+=======
+            request=self.request
+>>>>>>> e0ff7c8 (new changes)
         )
 
 def get_directory_size(path):

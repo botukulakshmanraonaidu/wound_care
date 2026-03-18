@@ -109,6 +109,12 @@ class PatientTask(models.Model):
     due = models.CharField(max_length=100, default="Today, 05:00 PM")
     scheduled_date = models.DateField(null=True, blank=True)
     completed = models.BooleanField(default=False)
+    description = models.TextField(blank=True, null=True)
+    priority = models.CharField(
+        max_length=20, 
+        choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')], 
+        default='Medium'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

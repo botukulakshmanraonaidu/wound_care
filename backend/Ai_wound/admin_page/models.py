@@ -47,7 +47,11 @@ class Admin(AbstractBaseUser, PermissionsMixin):
     job_title = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     country_code = models.CharField(max_length=5, default="+91")
+<<<<<<< HEAD
     phone_number = models.CharField(max_length=20, blank=True, null=True)
+=======
+    phone_number = models.CharField(max_length=20, blank=True, null=True, unique=True)
+>>>>>>> e0ff7c8 (new changes)
     # Passwords
     # password field is handled by AbstractBaseUser (hashed)
     password_updated_at = models.DateTimeField(null=True, blank=True)
@@ -68,10 +72,15 @@ class Admin(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True
     )
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    
+    # Login Security
+    failed_login_attempts = models.IntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
 
     objects = AdminManager()
 
@@ -88,11 +97,12 @@ class ActivityLog(models.Model):
         ('DELETE', 'Deleted'),
         ('LOGIN', 'Login'),
         ('LOGOUT', 'Logout'),
+        ('FAILED_LOGIN', 'Failed Login'),
     )
     
     user_email = models.EmailField()  # Who performed the action
     target_user = models.CharField(max_length=100, null=True, blank=True)  # Who was affected
-    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     description = models.TextField()  # Details of what changed
     timestamp = models.DateTimeField(auto_now_add=True)
     severity = models.CharField(  # New field to match DB

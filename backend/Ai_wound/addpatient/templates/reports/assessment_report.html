@@ -320,30 +320,34 @@
             </tr>
         </table>
 
-        <!-- Patient Details -->
         <div class="patient-grid-container">
             <table class="full-width">
                 <tr>
-                    <td class="detail-item" style="width: 20%;">
+                    <td class="detail-item" style="width: 33.33%; padding-bottom: 12pt;">
                         <div class="detail-label">NAME</div>
                         <div class="detail-value">{{ patient.first_name }} {{ patient.last_name }}</div>
                     </td>
-                    <td class="detail-item" style="width: 20%;">
+                    <td class="detail-item" style="width: 33.33%; padding-bottom: 12pt;">
                         <div class="detail-label">MRN</div>
                         <div class="detail-value">{{ patient.mrn }}</div>
                     </td>
-                    <td class="detail-item" style="width: 20%;">
+                    <td class="detail-item" style="width: 33.33%; padding-bottom: 12pt;">
+                        <div class="detail-label">GENDER</div>
+                        <div class="detail-value">{{ patient.gender|default:"N/A"|title }}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="detail-item" style="width: 33.33%;">
                         <div class="detail-label">DOB</div>
                         <div class="detail-value">{{ patient.date_of_birth }}</div>
                     </td>
-                    <td class="detail-item" style="width: 20%;">
+                    <td class="detail-item" style="width: 33.33%;">
                         <div class="detail-label">LOCATION</div>
                         <div class="detail-value">{{ assessment.body_location|default:"N/A" }}</div>
                     </td>
-                    <td class="detail-item" style="width: 20%;">
+                    <td class="detail-item" style="width: 33.33%;">
                         <div class="detail-label">ASSESSED BY</div>
-                        <div class="detail-value">{% if doctor %}Dr. {{ doctor.full_name }}{% else %}N/A{% endif %}
-                        </div>
+                        <div class="detail-value">{% if doctor %}Dr. {{ doctor.full_name }}{% else %}N/A{% endif %}</div>
                     </td>
                 </tr>
             </table>

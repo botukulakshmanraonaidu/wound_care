@@ -9,46 +9,36 @@ class AddpatientConfig(AppConfig):
     name = 'addpatient'
 
     def ready(self):
-        # Avoid double-launching during Django's auto-reloader:
-        # The reloader runs the app twice; RUN_MAIN is set only in the actual worker process.
+        # Auto-launch the Flask ML service alongside Django
         if os.environ.get('RUN_MAIN') != 'true':
             return
 
         def start_ml_service():
-            # Determine the Python executable from the current virtual environment
             venv_python = os.path.join(
                 os.path.dirname(sys.executable),
                 'python.exe' if sys.platform == 'win32' else 'python'
             )
-
-            # Resolve the backend root (two levels up from this apps.py → addpatient → Ai_wound → backend)
-            # This is where Ai_wound and ml_service now coexist
+            
+            # Resolve the backend root (where ml_services and Ai_wound co-exist)
             backend_root = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..', '..')
             )
-
-            print(f"[ML Service] Auto-starting FastAPI on port 8001...")
-            print(f"[ML Service] Using Python: {venv_python}")
-            print(f"[ML Service] Working dir: {backend_root}")
-
+            ml_dir = os.path.join(backend_root, "ml_services")
+            
+            print(f"[ML Service] Auto-starting Flask on port 8001...")
+            
+            env = os.environ.copy()
+            env["PORT"] = "8001"
+            
             try:
                 subprocess.Popen(
-                    [
-                        venv_python, "-m", "uvicorn",
-                        "ml_service.main:app",
-                        "--host", "0.0.0.0",
-                        "--port", "8001",
-                        "--reload"
-                    ],
-                    cwd=backend_root,
-                    # Inherit stdout/stderr so ML logs appear in the same terminal
-                    stdout=None,
-                    stderr=None,
+                    [venv_python, "ai_api.py"],
+                    cwd=ml_dir,
+                    env=env
                 )
-                print("[ML Service] FastAPI ML service launched successfully.")
+                print("[ML Service] Flask ML service launched successfully.")
             except Exception as e:
-                print(f"[ML Service] Failed to start: {e}")
+                print(f"[ML Service] Failed to auto-start: {e}")
 
-        # Run in a daemon thread so it doesn't block Django startup
-        thread = threading.Thread(target=start_ml_service, daemon=True)
-        thread.start()
+        # Start in a background thread to avoid blocking Django
+        threading.Thread(target=start_ml_service, daemon=True).start()

@@ -14,7 +14,12 @@ export const nurseService = {
 
     updateTaskStatus: async (taskId, status) => {
         try {
-            const response = await NurseAPI.patch(`tasks/${taskId}/`, { status });
+            // Map boolean status from frontend to backend status strings if necessary
+            const statusString = typeof status === 'boolean' 
+                ? (status ? 'completed' : 'pending')
+                : status;
+                
+            const response = await NurseAPI.patch(`tasks/${taskId}/`, { status: statusString });
             return response.data;
         } catch (error) {
             console.error('Error updating task status:', error);

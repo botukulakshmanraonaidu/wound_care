@@ -86,7 +86,7 @@ def generate_assessment_report_pdf(assessment_id):
         context = {
             'assessment': assessment,
             'patient': patient,
-            'doctor': assessment.assessed_by,
+            'doctor': assessment.patient.assigned_doctor,
             'ml_result': assessment.ml_analysis_result or {},
             'images': assessment.images.all(),
             'report_date': assessment.created_at.strftime('%m/%d/%Y, %I:%M:%S %p'),

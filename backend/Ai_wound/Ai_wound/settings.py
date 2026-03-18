@@ -188,7 +188,7 @@ if _database_url:
     DATABASES = {
         'default': dj_database_url.config(
             default=_database_url,
-            conn_max_age=60,
+            conn_max_age=0,  # Disable persistent connections to avoid exhausting the pool Hippo
             ssl_require=True if not DEBUG else False
         )
     }
@@ -216,6 +216,7 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT'),
+            'CONN_MAX_AGE': 0, # Hippo: Safe for pooled connections
             'OPTIONS': {
                 'sslmode': 'require',
                 'connect_timeout': 15,
@@ -226,9 +227,6 @@ else:
             },
         }
     }
-    # Clean up None values from OPTIONS
-    if DATABASES['default']['OPTIONS'].get('sslmode') is None:
-        del DATABASES['default']['OPTIONS']['sslmode']
 
 
 

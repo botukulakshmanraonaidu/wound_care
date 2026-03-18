@@ -81,6 +81,7 @@ export const adminApi = {
     getSystemStats: (params) => AdminAPI.get("stats/", { params }),
     getStorageStats: (params) => AdminAPI.get("storage-stats/", { params }),
     getFiles: (params) => AdminAPI.get("files/", { params }),
+    checkPhoneUnique: (phone, excludeId) => AdminAPI.get('users/check-phone/', { params: { phone_number: phone, exclude_id: excludeId } }),
 };
 
 export default adminApi;

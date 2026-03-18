@@ -57,6 +57,21 @@ class ShiftLogViewSet(viewsets.ModelViewSet):
             ward=ward,
             shift_type=shift_type
         )
+        
+        # Log Activity
+        try:
+            from admin_page.views import log_activity
+            log_activity(
+                user_email=user.email,
+                action='CREATE',
+                description=f"Started {shift_type} shift in {ward} ward",
+                severity='INFO',
+                request=request
+            )
+        except Exception as e:
+            from .models import logger
+            logger.error(f"Failed to log shift start: {e}")
+
         return Response(ShiftLogSerializer(shift).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'])
@@ -70,6 +85,21 @@ class ShiftLogViewSet(viewsets.ModelViewSet):
         active_shift.end_time = timezone.now()
         active_shift.notes = request.data.get('notes', '')
         active_shift.save()
+        
+        # Log Activity
+        try:
+            from admin_page.views import log_activity
+            log_activity(
+                user_email=user.email,
+                action='UPDATE',
+                description=f"Ended shift. Notes: {active_shift.notes}",
+                severity='INFO',
+                request=request
+            )
+        except Exception as e:
+            from .models import logger
+            logger.error(f"Failed to log shift end: {e}")
+
         return Response(ShiftLogSerializer(active_shift).data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'])
@@ -82,7 +112,11 @@ class ShiftLogViewSet(viewsets.ModelViewSet):
         from django.utils import timezone
         today = timezone.now().date()
         
+<<<<<<< HEAD
         active_patients = Patient.objects.filter(status='Active').count()
+=======
+        active_patients = Patient.objects.filter(assigned_nurse=user, status='Active').count()
+>>>>>>> e0ff7c8 (new changes)
         pending_tasks = NurseTask.objects.filter(nurse=user, status='pending').count()
         completed_tasks = NurseTask.objects.filter(nurse=user, status='completed', updated_at__date=today).count()
         wound_scans = Assessment.objects.filter(assessed_by=user, created_at__date=today).count()

@@ -175,12 +175,20 @@ function ReportPreview() {
                             <div className="detail-value">{patientData.mrn}</div>
                         </div>
                         <div className="detail-item">
+                            <label>GENDER</label>
+                            <div className="detail-value">{assessment?.patient_gender || "N/A"}</div>
+                        </div>
+                        <div className="detail-item">
                             <label>DOB</label>
                             <div className="detail-value">{patientData.dob}</div>
                         </div>
                         <div className="detail-item">
                             <label>LOCATION</label>
                             <div className="detail-value">{patientData.location}</div>
+                        </div>
+                        <div className="detail-item">
+                            <label>ASSESSED BY</label>
+                            <div className="detail-value">{assessment?.assessed_by_name ? `Dr. ${assessment.assessed_by_name}` : "N/A"}</div>
                         </div>
                     </div>
 

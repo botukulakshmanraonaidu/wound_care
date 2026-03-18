@@ -51,13 +51,14 @@
 .patient-profile-header {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    padding: 12px 20px;
+    padding: 12px 24px;
     margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border);
+    gap: 32px;
 }
 
 .header-content {
@@ -100,7 +101,7 @@
 
 .details-row {
     display: flex;
-    gap: 20px;
+    gap: 28px;
     margin-bottom: 12px;
 }
 
@@ -153,7 +154,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 8px 12px;
     background: #eff6ff;
     color: #2563eb;
     border: 1px solid #bfdbfe;
@@ -161,27 +162,33 @@
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 36px;
+    box-sizing: border-box;
 }
 
 .chat-shortcut-btn:hover {
-    background: #2563eb;
-    color: #fff;
-    border-color: #2563eb;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .edit-details-btn,
 .new-assessment-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
+    gap: 8px;
+    padding: 8px 12px;
     border-radius: var(--radius-md);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 36px;
+    box-sizing: border-box;
+    white-space: nowrap;
 }
 
 .edit-details-btn {
@@ -193,17 +200,22 @@
 .edit-details-btn:hover {
     background: #f8fafc;
     border-color: #cbd5e1;
+    color: var(--text-main);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .new-assessment-btn {
     background: var(--primary);
     border: none;
     color: white;
+    box-shadow: 0 4px 6px -1px rgba(45, 99, 169, 0.15);
 }
 
 .new-assessment-btn:hover {
     background: #25528d;
-    box-shadow: 0 4px 12px rgba(45, 99, 169, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(45, 99, 169, 0.3);
 }
 
 /* Dashboard Grid */

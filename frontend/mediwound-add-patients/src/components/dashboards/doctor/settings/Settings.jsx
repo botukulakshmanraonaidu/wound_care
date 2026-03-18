@@ -44,12 +44,16 @@ function Settings() {
         { id: 'display', label: 'Display & Accessibility', icon: Monitor },
     ];
 
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [existingPicture, setExistingPicture] = useState(null);
+
     // Fetch Profile Data on Mount
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const res = await getProfile();
-                const { full_name, role, job_title, specialization, bio, password_updated_at } = res.data;
+                const { full_name, role, job_title, specialization, bio, password_updated_at, profile_picture } = res.data;
                 setFormData(prev => ({
                     ...prev,
                     full_name: full_name || '',
@@ -58,15 +62,34 @@ function Settings() {
                     bio: bio || ''
                 }));
                 setPasswordUpdatedAt(password_updated_at);
+                setExistingPicture(profile_picture);
+                if (profile_picture) {
+                    localStorage.setItem('profilePicture', profile_picture);
+                }
             } catch (err) {
                 console.error("Failed to fetch profile", err);
             }
         };
         fetchProfile();
+
+        const handleStorageChange = () => {
+            setExistingPicture(localStorage.getItem('profilePicture'));
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
     };
 
     const handleNotificationToggle = (key) => {
@@ -87,13 +110,31 @@ function Settings() {
         }
 
         try {
-            const updateData = { full_name, bio };
-            if (password) updateData.password = password;
+            let updateData;
+            
+            if (selectedFile) {
+                updateData = new FormData();
+                updateData.append('full_name', full_name);
+                updateData.append('bio', bio);
+                updateData.append('profile_picture', selectedFile);
+                if (password) updateData.append('password', password);
+            } else {
+                updateData = { full_name, bio };
+                if (password) updateData.password = password;
+            }
 
             const response = await updateProfile(updateData);
             setMessage("Profile updated successfully");
 
             localStorage.setItem("userName", full_name);
+            if (response.data.data?.profile_picture) {
+                const picUrl = response.data.data.profile_picture;
+                setExistingPicture(picUrl);
+                localStorage.setItem("profilePicture", picUrl);
+                setSelectedFile(null);
+                setPreviewUrl(null);
+            }
+            
             window.dispatchEvent(new Event('storage'));
 
             if (password) {
@@ -160,8 +201,30 @@ function Settings() {
 
                             <div className="profile-form">
                                 <div className="profile-avatar-section">
-                                    <div className="avatar-placeholder">
-                                        <Camera size={24} color="#64748b" />
+                                    <div className="avatar-preview-container">
+                                        {previewUrl ? (
+                                            <img src={previewUrl} alt="Preview" className="avatar-image" />
+                                        ) : existingPicture ? (
+                                            <img src={existingPicture} alt="Profile" className="avatar-image" />
+                                        ) : (
+                                            <div className="avatar-placeholder">
+                                                <User size={40} color="#64748b" />
+                                            </div>
+                                        )}
+                                        <label htmlFor="profile-upload" className="avatar-upload-label">
+                                            <Camera size={18} />
+                                            <input 
+                                                type="file" 
+                                                id="profile-upload" 
+                                                accept="image/*" 
+                                                onChange={handleFileChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div className="avatar-info">
+                                        <h4>Profile Picture</h4>
+                                        <p>JPG, GIF or PNG. Max size of 2MB</p>
                                     </div>
                                 </div>
 
