@@ -20,13 +20,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"confirm_password": "Passwords do not match"})
 
         # Phone number validation (digits only, max 10)
-<<<<<<< HEAD
-        phone = data.get('phone_number', '')
-        if phone:
-            digits_only = ''.join(filter(str.isdigit, phone))
-            if len(digits_only) > 10:
-                raise serializers.ValidationError({"phone_number": "Phone number must not exceed 10 digits."})
-=======
         phone = data.get('phone_number')
         if phone:
             digits_only = ''.join(filter(str.isdigit, str(phone)))
@@ -39,7 +32,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             # Check for uniqueness
             if Admin.objects.filter(phone_number=digits_only).exists():
                 raise serializers.ValidationError({"phone_number": "This phone number is already in use."})
->>>>>>> e0ff7c8 (new changes)
 
         role = data.get('role_type')
 
@@ -103,11 +95,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'full_name', 'email', 'country_code', 'phone_number', 'role', 'role_type', 'job_title', 
             'department', 'specialization', 'license_id', 
-<<<<<<< HEAD
-            'ward', 'shift', 'access_level', 
-=======
             'ward', 'shift', 'access_level', 'profile_picture',
->>>>>>> e0ff7c8 (new changes)
             'created_at', 'password_updated_at', 'password', 'bio', 'is_staff', 'is_superuser'
         ]
         read_only_fields = ['id', 'created_at', 'password_updated_at']

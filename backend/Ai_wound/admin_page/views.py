@@ -82,11 +82,7 @@ class CreateAdminAPIView(APIView):
                 action='CREATE',
                 target_user=user.full_name,
                 description=f"Created user {user.full_name} with role {user.role_type}",
-<<<<<<< HEAD
-                ip_address=request.META.get('REMOTE_ADDR')
-=======
                 request=request
->>>>>>> e0ff7c8 (new changes)
             )
             return Response(
                 {"message": "User Registered Successfully"},
@@ -141,11 +137,7 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             action='UPDATE',
             target_user=user.full_name,
             description=f"Updated user {user.full_name}",
-<<<<<<< HEAD
-            ip_address=self.request.META.get('REMOTE_ADDR')
-=======
             request=self.request
->>>>>>> e0ff7c8 (new changes)
         )
 
     def perform_destroy(self, instance):
@@ -161,11 +153,7 @@ class UserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             action='DELETE',
             target_user=name,
             description=f"Deleted user {name}",
-<<<<<<< HEAD
-            ip_address=self.request.META.get('REMOTE_ADDR')
-=======
             request=self.request
->>>>>>> e0ff7c8 (new changes)
         )
 
 class ActivityLogViewSet(viewsets.ModelViewSet):
@@ -255,11 +243,7 @@ class SystemFileViewSet(viewsets.ModelViewSet):
             target_user=instance.name,
             description=f"Uploaded file: {instance.name} ({instance.size})",
             severity='INFO',
-<<<<<<< HEAD
-            ip_address=self.request.META.get('REMOTE_ADDR')
-=======
             request=self.request
->>>>>>> e0ff7c8 (new changes)
         )
         
     def perform_destroy(self, instance):
@@ -283,11 +267,7 @@ class SystemFileViewSet(viewsets.ModelViewSet):
             target_user=file_name,
             description=f"Deleted file: {file_name}",
             severity='WARNING',
-<<<<<<< HEAD
-            ip_address=self.request.META.get('REMOTE_ADDR')
-=======
             request=self.request
->>>>>>> e0ff7c8 (new changes)
         )
 
 def get_directory_size(path):
