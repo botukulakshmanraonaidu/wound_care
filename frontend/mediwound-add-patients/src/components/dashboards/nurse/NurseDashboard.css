@@ -1,7 +1,8 @@
 /* ─── Nurse Dashboard — mirrors Doctor Dashboard aesthetics ─── */
 
 .nurse-dashboard {
-  padding: 12px 24px;
+  padding: 8px 10px;
+  @media (min-width: 768px) { padding: 12px 24px; }
   background-color: #F8FAFC;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #0F172A;
@@ -192,8 +193,8 @@
 
 .nurse-stat-card {
   background: #fff;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 8px;
+  padding: 8px 10px;
   border: 1px solid #E2E8F0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   min-width: 0;
@@ -222,7 +223,7 @@
 }
 
 .nurse-stat-value {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 800;
   color: #0F172A;
   margin: 0 0 2px 0;
@@ -337,8 +338,8 @@
 /* ─── Shared Card ─── */
 .nurse-card {
   background: #fff;
-  border-radius: 12px;
-  padding: 16px 18px;
+  border-radius: 10px;
+  padding: 12px 14px;
   border: 1px solid #E2E8F0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   display: flex;
@@ -443,8 +444,8 @@
 
 .nurse-task-table th {
   text-align: left;
-  padding: 12px;
-  font-size: 11px;
+  padding: 8px 6px;
+  font-size: 10px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
@@ -457,7 +458,7 @@
 }
 
 .nurse-task-table td {
-  padding: 12px;
+  padding: 8px 6px;
   border-bottom: 1px solid #F1F5F9;
   vertical-align: middle;
 }
@@ -612,8 +613,8 @@
 .nurse-patient-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #F1F5F9;
   cursor: default;

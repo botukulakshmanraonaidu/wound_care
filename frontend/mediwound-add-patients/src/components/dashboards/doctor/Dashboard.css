@@ -1,5 +1,6 @@
 .dashboard-container {
-    padding: 12px 24px;
+    padding: 8px 10px;
+    @media (min-width: 768px) { padding: 12px 24px; }
     background-color: #F8FAFC;
 }
 
@@ -73,29 +74,32 @@
 }
 
 /* Stats Grid - Single Row Forced */
-/* Stats Grid - STRICTLY FORCED SINGLE ROW */
+/* Stats Grid - STRICTLY FORCED SINGLE ROW for desktop but responsive for mobile */
 .stats-grid {
     display: grid !important;
-    grid-template-columns: repeat(4, minmax(200px, 1fr)) !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     width: 100% !important;
-    gap: 12px !important;
-    margin-bottom: 24px;
+    gap: 8px !important;
+    margin-bottom: 16px;
     box-sizing: border-box;
-    overflow-x: auto;
-    /* Allow horizontal scroll on smaller screens to prevent overlap */
-    padding-bottom: 8px;
+}
+@media (min-width: 1024px) {
+  .stats-grid {
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 12px !important;
+  }
 }
 
 .stat-card {
     background: white;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 8px 10px;
     border: 1px solid #E2E8F0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    min-width: 200px !important;
+    min-width: 0 !important;
     height: 100%;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -161,7 +165,7 @@
 }
 
 .stat-value {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: 800;
     color: #0F172A;
     line-height: 1.2;
@@ -187,8 +191,14 @@
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 16px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+@media (min-width: 1024px) {
+  .dashboard-grid {
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+  }
 }
 
 .dashboard-col-left,
@@ -200,9 +210,9 @@
 
 .content-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid #E2E8F0;
-    padding: 16px;
+    padding: 12px 14px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -408,8 +418,8 @@
 
 .priority-item {
     background: white;
-    border-radius: 12px;
-    padding: 18px;
+    border-radius: 10px;
+    padding: 12px 14px;
     border: 1px solid #FECACA;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }

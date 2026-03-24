@@ -46,6 +46,7 @@ function App() {
   const [userJobTitle, setUserJobTitle] = useState("");
   const [isSuperuser, setIsSuperuser] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Disabled loading screen
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // 🔄 Restore login state on refresh
   useEffect(() => {
@@ -206,13 +207,23 @@ function App() {
                   <Navigate to="/login" replace />
                 ) : (
                   //  Logged in and onboarded → show app layout
-                  <div className="app-container">
-                    <Sidebar onLogout={handleLogout} userRole={userRole} accessLevel={accessLevel} />
+                  <div className="flex h-screen bg-gray-50 overflow-hidden w-full relative">
+                    <Sidebar 
+                      onLogout={handleLogout} 
+                      userRole={userRole} 
+                      accessLevel={accessLevel} 
+                      isOpen={isMobileSidebarOpen} 
+                      onClose={() => setIsMobileSidebarOpen(false)} 
+                    />
 
-                    <div className="content-wrapper">
-                      <Navbar userName={userName} userJobTitle={userJobTitle} />
+                    <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                      <Navbar 
+                        userName={userName} 
+                        userJobTitle={userJobTitle} 
+                        toggleSidebar={() => setIsMobileSidebarOpen(true)} 
+                      />
 
-                      <main className="main-content">
+                      <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 bg-gray-50">
                         <Routes>
                           <Route path="/dashboard" element={renderDashboard()} />
 

@@ -50,8 +50,8 @@ const ShiftTaskList = ({ refreshTrigger }) => {
   if (!tasks.length) return <p className="nurse-empty-state">No shift tasks assigned.</p>;
 
   return (
-    <div className="nurse-task-table-container">
-      <table className="nurse-task-table">
+    <div className="nurse-task-table-container overflow-x-auto w-full">
+      <table className="nurse-task-table min-w-[600px] w-full">
         <thead>
           <tr>
             <th style={{ width: '45px' }}>Done</th>
@@ -128,9 +128,9 @@ const NewlyAssignedList = ({ refreshTrigger }) => {
   if (loading) return <div className="nurse-empty-state" style={{ padding: '20px' }}>Loading...</div>;
 
   return (
-    <div className="appointments-list" style={{ marginTop: '0', padding: '0 20px 20px 20px' }}>
+    <div className="appointments-list overflow-x-auto w-full pt-2 sm:pt-0" style={{ padding: '0 20px 20px 20px' }}>
       {patients.length > 0 ? (
-        <table className="mini-table">
+        <table className="mini-table min-w-[400px] w-full">
           <thead>
             <tr>
               <th>Patient</th>
@@ -577,7 +577,7 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
       </div>
 
       {/* Stats Row */}
-      <div className="nurse-stats-grid">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6 w-full">
         {statCards.map((s, i) => (
           <div
             key={i}
@@ -618,8 +618,8 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
       </div>
 
       {/* Main Content */}
-      <div className="nurse-content-grid">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full items-start">
+        <div className="xl:col-span-2 flex flex-col gap-6 w-full">
           <div className="nurse-card">
             <div className="nurse-card-header" style={{ justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -653,7 +653,7 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
         </div>
 
         {/* Right: Patients + Announcements */}
-        <div className="nurse-right-col">
+        <div className="xl:col-span-1 flex flex-col gap-6 w-full">
           <div className="nurse-card">
             <div className="nurse-card-header">
               <User size={14} className="header-icon-blue" />

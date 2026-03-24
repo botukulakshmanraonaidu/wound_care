@@ -306,9 +306,9 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                                 <div className="card-subtitle">Awaiting nurse assignment</div>
                             </div>
                         </div>
-                        <div className="appointments-list">
+                        <div className="appointments-list overflow-x-auto w-full pt-1">
                             {recentVisits.length > 0 ? (
-                                <table className="mini-table">
+                                <table className="mini-table min-w-[400px] w-full">
                                     <thead>
                                         <tr>
                                             <th>Patient</th>
