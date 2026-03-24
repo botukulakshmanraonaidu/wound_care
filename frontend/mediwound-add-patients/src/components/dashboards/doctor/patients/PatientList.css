@@ -1,5 +1,6 @@
 .patient-list-container {
-    padding: 12px 24px;
+    padding: 8px 10px;
+    @media (min-width: 640px) { padding: 12px 24px; }
     background-color: #F8FAFC;
 }
 
@@ -34,11 +35,16 @@
 }
 
 .page-title {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #0F172A;
-    margin: 0 0 2px 0;
+    margin: 0;
     letter-spacing: -0.5px;
+}
+@media (min-width: 640px) {
+  .page-title {
+    font-size: 20px;
+  }
 }
 
 .page-subtitle {
@@ -200,33 +206,64 @@
 /* Table */
 .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
 }
 
 .data-table {
     width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
     text-align: left;
+    table-layout: fixed;
 }
 
 .data-table th {
-    padding: 12px 20px;
+    padding: 10px 12px;
     background: #F8FAFC;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: #64748B;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 2px solid #E2E8F0;
 }
 
+.data-table th:nth-child(1) { width: 180px; }
+.data-table th:nth-child(2) { width: 100px; }
+.data-table th:nth-child(3) { width: 120px; }
+.data-table th:nth-child(4) { width: 160px; }
+.data-table th:nth-child(5) { width: 100px; }
+.data-table th:nth-child(6) { width: 110px; }
+.data-table th:nth-child(7) { width: 100px; }
+
 .data-table td {
-    padding: 12px 20px;
-    /* Reduced vertical padding for density */
+    padding: 10px 12px;
     border-bottom: 1px solid #F1F5F9;
     font-size: 13px;
-    /* Clean, slightly smaller font */
     color: #334155;
     vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background-color: #fafbfc;
 }
 
 .data-table tr:last-child td {

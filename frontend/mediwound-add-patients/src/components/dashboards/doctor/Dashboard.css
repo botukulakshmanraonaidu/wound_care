@@ -1,6 +1,6 @@
 .dashboard-container {
-    padding: 8px 10px;
-    @media (min-width: 768px) { padding: 12px 24px; }
+    padding: 6px 8px;
+    @media (min-width: 640px) { padding: 8px 16px; }
     background-color: #F8FAFC;
 }
 
@@ -9,13 +9,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .dashboard-avatar-container {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
     overflow: hidden;
     border: 2px solid #fff;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -28,9 +28,9 @@
 }
 
 .dashboard-avatar-placeholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
     background: #f1f5f9;
     display: flex;
     align-items: center;
@@ -49,10 +49,10 @@
 }
 
 .welcome-text {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 700;
     color: #0F172A;
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
 }
 
 .status-text {
@@ -210,9 +210,9 @@
 
 .content-card {
     background: white;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #E2E8F0;
-    padding: 12px 14px;
+    padding: 10px 12px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -220,7 +220,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .date-picker-wrapper {

@@ -1,8 +1,8 @@
 /* ─── Nurse Dashboard — mirrors Doctor Dashboard aesthetics ─── */
 
 .nurse-dashboard {
-  padding: 8px 10px;
-  @media (min-width: 768px) { padding: 12px 24px; }
+  padding: 6px 8px;
+  @media (min-width: 640px) { padding: 8px 16px; }
   background-color: #F8FAFC;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #0F172A;
@@ -13,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .nurse-date {
@@ -26,10 +26,10 @@
 }
 
 .nurse-title {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
   color: #0F172A;
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
   letter-spacing: -0.02em;
 }
 
@@ -64,9 +64,9 @@
 }
 
 .nurse-avatar-container {
-  width: 54px;
-  height: 54px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   overflow: hidden;
   border: 2px solid #fff;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -80,9 +80,9 @@
 }
 
 .nurse-avatar-placeholder {
-  width: 54px;
-  height: 54px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   background: #f1f5f9;
   display: flex;
   align-items: center;
@@ -258,9 +258,9 @@
 .nurse-action-secondary {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border-radius: 10px;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
   cursor: pointer;
   border: none;
   text-align: left;
@@ -291,9 +291,9 @@
 }
 
 .action-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -326,7 +326,7 @@
 .nurse-content-grid {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .nurse-right-col {
@@ -432,11 +432,15 @@
 .nurse-task-table-container {
   height: 500px;
   overflow-y: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-top: 10px;
+  width: 100%;
 }
 
 .nurse-task-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13px;
@@ -444,8 +448,8 @@
 
 .nurse-task-table th {
   text-align: left;
-  padding: 8px 6px;
-  font-size: 10px;
+  padding: 6px 4px;
+  font-size: 9px;
   font-weight: 700;
   color: #64748B;
   text-transform: uppercase;
@@ -458,7 +462,7 @@
 }
 
 .nurse-task-table td {
-  padding: 8px 6px;
+  padding: 6px 4px;
   border-bottom: 1px solid #F1F5F9;
   vertical-align: middle;
 }

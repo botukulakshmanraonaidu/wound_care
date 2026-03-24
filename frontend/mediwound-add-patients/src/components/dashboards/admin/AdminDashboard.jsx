@@ -92,7 +92,7 @@ const AdminDashboard = () => {
                         Home <span>&gt;</span> System Administration
                     </div>
                     <div className="admin-title">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="flex items-center flex-wrap gap-2 sm:gap-3">
                             <h1>System Administration</h1>
                             <div className={`live-indicator ${refreshing ? 'syncing' : ''}`}>
                                 <span className="dot"></span>
@@ -108,8 +108,8 @@ const AdminDashboard = () => {
                     </div>
                 </div>
                 <button className="btn-export">
-                    <Download size={22} />
-                    Export Report
+                    <Download size={18} />
+                    <span className="hidden sm:inline">Export Report</span>
                 </button>
             </div>
 

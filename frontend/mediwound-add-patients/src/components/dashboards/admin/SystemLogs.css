@@ -1,5 +1,6 @@
 .system-logs-container {
-    padding: 24px;
+    padding: 8px 10px;
+    @media (min-width: 640px) { padding: 24px; }
     background: #f8fafc;
     min-height: 100vh;
 }
@@ -141,17 +142,19 @@
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .logs-table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
 }
 
 .logs-table th {
     text-align: left;
-    padding: 16px 20px;
-    font-size: 13px;
+    padding: 8px 12px;
+    font-size: 11px;
     font-weight: 600;
     color: #64748b;
     text-transform: uppercase;
@@ -160,8 +163,8 @@
 }
 
 .logs-table td {
-    padding: 16px 20px;
-    font-size: 14px;
+    padding: 8px 12px;
+    font-size: 13px;
     color: #334155;
     border-bottom: 1px solid #f1f5f9;
 }
@@ -204,7 +207,7 @@
 }
 
 .log-description {
-    max-width: 250px;
+    max-width: 350px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

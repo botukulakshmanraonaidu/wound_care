@@ -232,9 +232,9 @@ function Storage() {
                                     files.map(file => (
                                         <tr key={file.id}>
                                             <td>
-                                                <div className="file-name">
-                                                    <File size={16} className="text-gray-400" />
-                                                    {file.name}
+                                                <div className="file-name" title={file.name}>
+                                                    <File size={16} className="text-gray-400" style={{ flexShrink: 0 }} />
+                                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
                                                 </div>
                                             </td>
                                             <td><span className="badge badge-gray">{file.file_type}</span></td>

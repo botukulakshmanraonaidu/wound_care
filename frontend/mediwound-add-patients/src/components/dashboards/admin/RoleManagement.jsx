@@ -343,9 +343,9 @@ const RoleManagement = ({ accessLevel }) => {
                                                 <div className="user-avatar">
                                                     {(user.full_name || 'U').split(' ').map(n => n?.[0]).join('')}
                                                 </div>
-                                                <div className="user-details">
-                                                    <div className="user-name">{user.full_name}</div>
-                                                    <div className="user-email">{user.email}</div>
+                                                <div className="user-details" style={{ overflow: 'hidden' }}>
+                                                    <div className="user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.full_name}</div>
+                                                    <div className="user-email" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.7 }}>{user.email}</div>
                                                 </div>
                                             </div>
                                         </td>

@@ -216,14 +216,14 @@ function App() {
                       onClose={() => setIsMobileSidebarOpen(false)} 
                     />
 
-                    <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                    <div className="layout-content-wrapper flex-1 flex flex-col min-w-0 overflow-hidden">
                       <Navbar 
                         userName={userName} 
                         userJobTitle={userJobTitle} 
                         toggleSidebar={() => setIsMobileSidebarOpen(true)} 
                       />
 
-                      <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8 bg-gray-50">
+                      <main className="main-content flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 bg-gray-50">
                         <Routes>
                           <Route path="/dashboard" element={renderDashboard()} />
 

@@ -1,5 +1,5 @@
 .sidebar {
-  width: 240px;
+  width: 224px;
   background: white;
   border-right: 1px solid #E2E8F0;
   box-shadow: 1px 0 0 #E2E8F0;
@@ -12,6 +12,20 @@
   flex-direction: column;
   z-index: 101;
   box-sizing: border-box;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* DESKTOP PERMANENCE - Integrated flex layout for desktop */
+@media (min-width: 640px) {
+  aside.sidebar {
+    position: relative !important; /* Switch from fixed to relative/static */
+    transform: none !important;
+    transition: none !important;
+    visibility: visible !important;
+    display: flex !important;
+    height: 100vh !important;
+    flex-shrink: 0; /* Don't let it be squished */
+  }
 }
 
 .sidebar *,
@@ -24,6 +38,9 @@
 .sidebar-header {
   padding: 8px 16px;
   border-bottom: 1px solid #E2E8F0;
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 
 .sidebar-brand {

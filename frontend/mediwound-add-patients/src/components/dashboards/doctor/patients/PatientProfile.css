@@ -20,7 +20,8 @@
 
 .patient-profile-container {
     background-color: transparent;
-    padding: 12px 24px;
+    padding: 6px 8px;
+    @media (min-width: 640px) { padding: 8px 16px; }
     color: var(--text-main);
     font-family: 'Inter', -apple-system, blinkmacsystemfont, sans-serif;
     min-height: calc(100vh - 56px);
@@ -50,15 +51,26 @@
 /* Header Section */
 .patient-profile-header {
     background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 12px 24px;
-    margin-bottom: 16px;
+    border-radius: var(--radius-md);
+    padding: 8px 10px;
+    margin-bottom: 12px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border);
-    gap: 32px;
+    gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .patient-profile-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 20px;
+  }
 }
 
 .header-content {
@@ -72,8 +84,8 @@
 }
 
 .avatar-placeholder {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     background: var(--primary-light);
     border-radius: 50%;
     display: flex;
@@ -93,16 +105,16 @@
 }
 
 .patient-info-main h1 {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    margin: 0 0 4px 0;
+    margin: 0 0 2px 0;
     letter-spacing: -0.02em;
 }
 
 .details-row {
     display: flex;
-    gap: 28px;
-    margin-bottom: 12px;
+    gap: 16px;
+    margin-bottom: 8px;
 }
 
 .detail-item {
@@ -221,16 +233,23 @@
 /* Dashboard Grid */
 .profile-dashboard-grid {
     display: grid;
-    grid-template-columns: minmax(240px, 0.8fr) minmax(400px, 2fr) minmax(240px, 0.8fr);
-    gap: 20px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 1024px) {
+    .profile-dashboard-grid {
+        grid-template-columns: minmax(240px, 0.8fr) minmax(400px, 2fr) minmax(240px, 0.8fr);
+        gap: 20px;
+    }
 }
 
 /* Cards */
 .card {
     background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 12px;
-    margin-bottom: 16px;
+    border-radius: var(--radius-md);
+    padding: 10px;
+    margin-bottom: 12px;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
 }
@@ -239,7 +258,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
 .card-header h3 {
@@ -257,11 +276,11 @@
 .vitals-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 8px;
 }
 
 .vital-item {
-    padding: 10px;
+    padding: 6px 8px;
     border-radius: var(--radius-md);
     background: #f8fafc;
 }
@@ -360,7 +379,7 @@
 }
 
 .wound-image-col {
-    width: 200px;
+    width: 160px;
     flex-shrink: 0;
     background: #f1f5f9;
 }
@@ -417,16 +436,16 @@
 }
 
 .wound-type-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    margin: 0 0 20px 0;
+    margin: 0 0 10px 0;
 }
 
 .wound-metrics-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px 20px;
-    margin-bottom: 16px;
+    gap: 8px 12px;
+    margin-bottom: 12px;
 }
 
 .metric-box label {
@@ -486,8 +505,8 @@
 /* Timeline */
 .timeline-item {
     display: flex;
-    gap: 16px;
-    padding-bottom: 24px;
+    gap: 12px;
+    padding-bottom: 12px;
 }
 
 .timeline-left {

@@ -170,8 +170,8 @@ const PatientList = () => {
                             ) : (
                                 filteredPatients.map((patient) => (
                                     <tr key={patient.id}>
-                                        <td>
-                                            <div className="font-medium">{patient.firstName} {patient.lastName}</div>
+                                        <td style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <div className="font-medium" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{patient.firstName} {patient.lastName}</div>
                                         </td>
                                         <td>{patient.mrn}</td>
                                         <td>
@@ -179,7 +179,7 @@ const PatientList = () => {
                                                 {patient.ward || 'Unassigned'}
                                             </span>
                                         </td>
-                                        <td className="font-medium text-slate-600">
+                                        <td className="font-medium text-slate-600" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {patient.assignedDoctor?.full_name || patient.assignedDoctor?.email || 'None'}
                                         </td>
                                         <td>

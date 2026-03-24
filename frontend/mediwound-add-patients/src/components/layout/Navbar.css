@@ -1,19 +1,28 @@
 .navbar {
-  height: 56px;
+  height: 64px;
+  /* h-16 */
   background: #FFFFFF;
   border-bottom: 1px solid #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 240px;
-  /* Aligned with sidebar width */
-  right: 0;
-  width: calc(100% - 240px);
-  z-index: 100;
-  margin-left: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .navbar {
+    /* No longer fixed; sticky in a flex-col parent is much safer */
+    position: sticky;
+    top: 0;
+    width: 100%;
+    left: 0;
+  }
 }
 
 .navbar-title {

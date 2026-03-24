@@ -1,5 +1,6 @@
 .report-preview-container {
-    padding: 12px 24px;
+    padding: 8px 10px;
+    @media (min-width: 640px) { padding: 12px 24px; }
     background-color: #F1F5F9;
     min-height: 100vh;
 }
@@ -31,13 +32,22 @@
 
 .report-control-bar {
     background: white;
-    padding: 12px 24px;
+    padding: 10px 14px;
     border-radius: 8px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
     margin-bottom: 16px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+@media (min-width: 640px) {
+  .report-control-bar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+  }
 }
 
 .report-title {
@@ -126,13 +136,15 @@
 
 .patient-details-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
+    @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+    @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
     background: #F8FAFC;
     border-radius: 8px;
-    padding: 24px;
+    padding: 16px;
     margin-bottom: 30px;
-    row-gap: 20px;
-    column-gap: 40px;
+    row-gap: 12px;
+    column-gap: 20px;
     border: 1px solid #F1F5F9;
 }
 

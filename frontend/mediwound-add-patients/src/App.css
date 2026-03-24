@@ -1,23 +1,14 @@
-.app-container {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  width: 100%;
+.layout-content-wrapper {
+  overflow: hidden;
 }
 
 .main-content {
-  margin-left: 240px;
-  /* Offset for fixed sidebar */
-  padding-top: 56px;
-  /* Seamless offset for fixed navbar */
   background-color: #F8FAFC;
-  flex: 1;
-  width: calc(100% - 240px);
+  width: 100%;
   min-height: 100vh;
+}
+
+/* Ensure Navbar also respects the padding if it's not internal to the wrapper */
+.navbar {
+  width: 100%;
 }

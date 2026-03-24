@@ -31,7 +31,7 @@ function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
+
     // Custom event check (Settings dispatches a generic Event('storage'))
     // Some browsers don't trigger 'storage' event on the same window
     // so we handle both.
@@ -79,18 +79,18 @@ function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick
   };
 
   return (
-    <nav className="navbar flex sticky top-0 z-40 bg-white border-b border-gray-100 px-2 sm:px-4 py-1 sm:py-2 h-12 sm:h-14 items-center justify-between w-full shadow-sm">
-      <div className="flex items-center gap-2 sm:gap-3">
+    <nav className="navbar flex sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-2 h-16 items-center justify-between w-full shadow-sm">
+      <div className="flex items-center gap-3">
         {toggleSidebar && (
-          <button 
-            onClick={toggleSidebar} 
-            className="md:hidden p-1.5 -ml-1 text-gray-500 hover:text-blue-600 focus:outline-none rounded-md touch-target min-h-[44px] min-w-[44px] flex items-center justify-center"
+          <button
+            onClick={toggleSidebar}
+            className="sm:hidden p-2 text-gray-500 hover:text-blue-600 focus:outline-none rounded-md"
             aria-label="Open sidebar"
           >
-            <Menu size={20} />
+            <Menu size={24} />
           </button>
         )}
-        <div className="navbar-title text-lg md:text-xl font-bold text-gray-800 hidden sm:block">Dashboard Overview</div>
+        <div className="navbar-title text-xl font-bold text-gray-800 hidden sm:block">Dashboard Overview</div>
       </div>
 
       <div className="navbar-center hidden md:flex flex-1 justify-center px-4">
