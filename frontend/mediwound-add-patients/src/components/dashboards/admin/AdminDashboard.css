@@ -3,42 +3,174 @@
 
 .admin-stats-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
     margin-bottom: 16px;
 }
+
 @media (min-width: 1024px) {
-  .admin-stats-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-  }
+    .admin-stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 }
 
 .admin-stats-grid .stat-card {
     min-width: 0 !important;
-    /* Allow shrinking in 3-col grid */
+    padding: 20px 24px; /* Increased padding for more breathing room */
+    height: auto; /* Let content dictate height naturally */
+    min-height: 130px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: visible !important; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically to prevent top/bottom edge hugging */
+}
+
+.admin-stats-grid .stat-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.admin-stats-grid .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 6px;
+}
+
+.admin-stats-grid .stat-subtext {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    line-height: 1.5 !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-top: 6px;
+    white-space: normal;
+}
+
+/* Mobile overrides */
+@media (max-width: 768px) {
+    .admin-stats-grid .stat-card {
+        padding: 14px 16px;
+        min-height: auto;
+        height: auto;
+        justify-content: flex-start; /* Prevent vertical stretching gap */
+    }
+
+    .admin-stats-grid .stat-header {
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 6px;
+        gap: 4px;
+    }
+
+    .admin-stats-grid .stat-icon-wrapper {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .admin-stats-grid .stat-trend {
+        font-size: 8px;
+        padding: 1px 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60px;
+    }
+
+    .admin-stats-grid .stat-value {
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .admin-stats-grid .stat-label {
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.3;
+        margin-bottom: 2px;
+        white-space: normal;
+    }
+
+    .admin-stats-grid .stat-subtext {
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+        color: #475569 !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        margin-top: 4px;
+        white-space: normal;
+    }
 }
 
 /* Header & Breadcrumbs */
 .admin-header-content {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    gap: 8px;
+    align-items: center;
+    /* Center vertically for better alignment */
+    margin-bottom: 24px;
+    gap: 16px;
+    padding: 0 4px;
 }
 
 @media (max-width: 640px) {
-  .admin-header-content {
-    flex-direction: column;
-    gap: 8px;
-  }
+    .admin-header-content {
+        flex-direction: row;
+        align-items: flex-start;
+        flex-wrap: wrap; /* Allows wrapping if screen is tiny */
+        gap: 12px;
+    }
+
+    .admin-title-panel {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .btn-export {
+        padding: 6px 10px;
+        flex-shrink: 0;
+    }
+    
+    .btn-export span {
+        display: none; /* Keep text hidden to save space, only icon */
+    }
+}
+
+.content-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+}
+
+.content-card:last-child {
+    margin-bottom: 0;
 }
 
 .admin-avatar-container {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     overflow: hidden;
     border: 2px solid #fff;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -51,9 +183,9 @@
 }
 
 .admin-avatar-placeholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     background: #f1f5f9;
     display: flex;
     align-items: center;
@@ -69,9 +201,9 @@
 }
 
 @media (max-width: 480px) {
-  .breadcrumbs {
-    display: none;
-  }
+    .breadcrumbs {
+        display: none;
+    }
 }
 
 .breadcrumbs span {
@@ -80,22 +212,32 @@
 }
 
 .admin-title h1 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #0F172A;
     margin: 0;
-    white-space: nowrap;
+    line-height: 1.2;
+    white-space: normal;
 }
 
 @media (min-width: 640px) {
-  .admin-title h1 {
-    font-size: 20px;
-  }
+    .admin-title h1 {
+        font-size: 20px;
+    }
 }
 
 .admin-subtitle {
     color: #64748B;
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+    .admin-subtitle span {
+        display: block;
+        margin-left: 0 !important;
+        margin-top: 2px;
+    }
 }
 
 .btn-export {
@@ -105,14 +247,13 @@
     background-color: #2563eb;
     color: white;
     border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-top: 6px;
 }
 
 .btn-export:hover {
@@ -388,16 +529,26 @@
     align-items: center;
     padding: 8px 0;
     border-bottom: 1px solid #F1F5F9;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .patient-row-mini:last-child {
     border-bottom: none;
 }
 
+.p-info {
+    flex: 1;
+    min-width: 0;
+}
+
 .p-info .p-name {
     font-size: 14px;
-    font-weight: 600;
-    color: #1E293B;
+    font-weight: 700;
+    color: #0F172A;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .p-info .p-mrn {
@@ -407,16 +558,23 @@
 
 .p-details {
     flex: 1;
-    margin: 0 8px;
+    margin: 0 4px;
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    min-width: 0;
+}
+
+@media (max-width: 480px) {
+    .p-details {
+        display: none;
+    }
 }
 
 @media (min-width: 640px) {
-  .p-details {
-    margin: 0 24px;
-    gap: 12px;
-  }
+    .p-details {
+        margin: 0 16px;
+        gap: 12px;
+    }
 }
 
 .p-ward {
@@ -438,9 +596,85 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 4px;
+    flex-shrink: 0;
 }
 
 .p-date {
     font-size: 10px;
     color: #94A3B8;
-}
+}
+
+/* Assessment row specific */
+.assess-patient-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.assess-patient-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.assess-patient-mrn {
+    font-size: 11px;
+    color: #64748B;
+}
+
+.assess-details-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0 4px;
+    min-width: 0;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 480px) {
+    .assess-details-mini {
+        display: none;
+    }
+}
+
+.assess-type,
+.assess-stage {
+    font-size: 11px;
+    color: #475569;
+    background: #F1F5F9;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: nowrap;
+}
+
+.assess-meta-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.assess-date {
+    font-size: 10px;
+    color: #94A3B8;
+}
+
+.btn-view-small {
+    padding: 3px 10px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1D4ED8;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-view-small:hover {
+    background: #DBEAFE;
+}

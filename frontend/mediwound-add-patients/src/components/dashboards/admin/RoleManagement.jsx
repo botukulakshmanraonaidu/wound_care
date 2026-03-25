@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Edit2, Trash2, Shield, Filter, MoreVertical, X, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import './RoleManagement.css';
 import { adminApi } from '../../../API/adminApi';
+import Pagination from '../../common/Pagination';
 
 const RoleManagement = ({ accessLevel }) => {
     const [users, setUsers] = useState([]);
@@ -17,6 +18,12 @@ const RoleManagement = ({ accessLevel }) => {
     const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
     const [phoneExistsError, setPhoneExistsError] = useState(null);
     const [checkingPhone, setCheckingPhone] = useState(false);
+    
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [isServerPaginated, setIsServerPaginated] = useState(false);
+    const pageSize = 10;
 
     const [formData, setFormData] = useState({
         full_name: '',
@@ -38,15 +45,32 @@ const RoleManagement = ({ accessLevel }) => {
     // Check if user is superuser
     const isSuperuser = localStorage.getItem('isSuperuser') === 'true';
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (pageNum = page) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await adminApi.getUsers();
-            // Handle both direct array and paginated response
-            const data = Array.isArray(response.data) ? response.data : 
-                         (response.data && response.data.results) ? response.data.results : [];
-            setUsers(data);
+            const params = {
+                page: pageNum,
+                page_size: pageSize,
+                search: searchTerm,
+                role_type: filterRole !== 'all' ? filterRole : undefined
+            };
+            const response = await adminApi.getUsers(params);
+            
+            const data = response.data;
+            if (data && data.results) {
+                setUsers(data.results);
+                setTotalCount(data.count || data.results.length);
+                setIsServerPaginated(true);
+            } else if (Array.isArray(data)) {
+                setUsers(data);
+                setTotalCount(data.length);
+                setIsServerPaginated(false);
+            } else {
+                setUsers([]);
+                setTotalCount(0);
+                setIsServerPaginated(false);
+            }
             setLoading(false);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -56,8 +80,12 @@ const RoleManagement = ({ accessLevel }) => {
     };
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        setPage(1); // Reset to page 1 on filter/search change
+    }, [searchTerm, filterRole]);
+
+    useEffect(() => {
+        fetchUsers(page);
+    }, [page, searchTerm, filterRole]);
 
     // Real-time phone validation
     useEffect(() => {
@@ -92,14 +120,8 @@ const RoleManagement = ({ accessLevel }) => {
     }, [formData.phone_number, editingUser]);
 
 
-    const filteredUsers = users.filter(user => {
-        const matchesSearch =
-            (user.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (user.department || '').toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesRole = filterRole === 'all' || user.role_type === filterRole;
-        return matchesSearch && matchesRole;
-    });
+    // Filtering is now handled on the server side if supported, otherwise falling back to client-side slicing
+    const displayedUsers = isServerPaginated ? users : users.slice((page - 1) * pageSize, page * pageSize);
 
     const handleAddUser = () => {
         setEditingUser(null);
@@ -318,7 +340,8 @@ const RoleManagement = ({ accessLevel }) => {
                 {loading && users.length === 0 ? (
                     <div className="loading-state" style={{ padding: '40px', textAlign: 'center' }}>Loading users...</div>
                 ) : (
-                    <table className="users-table">
+                    <>
+                        <table className="users-table">
                         <thead>
                             <tr>
                                 <th>NAME</th>
@@ -329,64 +352,74 @@ const RoleManagement = ({ accessLevel }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="no-results">
-                                        No users found
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredUsers.map((user) => (
-                                    <tr key={user.id}>
-                                        <td>
-                                            <div className="user-info">
-                                                <div className="user-avatar">
-                                                    {(user.full_name || 'U').split(' ').map(n => n?.[0]).join('')}
-                                                </div>
-                                                <div className="user-details" style={{ overflow: 'hidden' }}>
-                                                    <div className="user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.full_name}</div>
-                                                    <div className="user-email" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.7 }}>{user.email}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className={`role-badge ${getRoleBadgeClass(user.role_type)}`}>
-                                                {user.role_type ? user.role_type.charAt(0).toUpperCase() + user.role_type.slice(1) : 'Unknown'}
-                                            </span>
-                                        </td>
-                                        <td className="department-cell">{user.department}</td>
-                                        <td className="last-active-cell">#{user.id}</td>
-                                        <td className="text-right">
-                                            <div className="action-buttons">
-                                                <button
-                                                    className="action-btn edit-btn"
-                                                    onClick={() => handleEditUser(user)}
-                                                    title="Edit user"
-                                                >
-                                                    <Edit2 size={16} />
-                                                </button>
-                                                {(accessLevel === 'Full' || isSuperuser) && (
-                                                    <button
-                                                        className="action-btn delete-btn"
-                                                        onClick={() => setShowDeleteConfirm(user.id)}
-                                                        title="Delete user"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                )}
-                                            </div>
+                                {displayedUsers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" className="no-results">
+                                            No users found
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    displayedUsers.map((user) => (
+                                        <tr key={user.id}>
+                                            <td>
+                                                <div className="user-info">
+                                                    <div className="user-avatar">
+                                                        {(user.full_name || 'U').split(' ').map(n => n?.[0]).join('')}
+                                                    </div>
+                                                    <div className="user-details" style={{ overflow: 'hidden' }}>
+                                                        <div className="user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.full_name}</div>
+                                                        <div className="user-email" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.7 }}>{user.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`role-badge ${getRoleBadgeClass(user.role_type)}`}>
+                                                    {user.role_type ? user.role_type.charAt(0).toUpperCase() + user.role_type.slice(1) : 'Unknown'}
+                                                </span>
+                                            </td>
+                                            <td className="department-cell">{user.department}</td>
+                                            <td className="last-active-cell">#{user.id}</td>
+                                            <td className="text-right">
+                                                <div className="action-buttons">
+                                                    <button
+                                                        className="action-btn edit-btn"
+                                                        onClick={() => handleEditUser(user)}
+                                                        title="Edit user"
+                                                    >
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    {(accessLevel === 'Full' || isSuperuser) && (
+                                                        <button
+                                                            className="action-btn delete-btn"
+                                                            onClick={() => setShowDeleteConfirm(user.id)}
+                                                            title="Delete user"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                        
+                        {/* Pagination Component */}
+                        <Pagination 
+                            currentPage={page}
+                            totalCount={totalCount}
+                            pageSize={pageSize}
+                            onPageChange={(p) => setPage(p)}
+                            loading={loading}
+                        />
+                    </>
                 )}
 
                 {/* Stats Footer */}
                 <div className="table-footer">
                     <span className="user-count">
-                        Showing {filteredUsers.length} of {users.length} users
+                        Total {totalCount} users
                     </span>
                 </div>
             </div>

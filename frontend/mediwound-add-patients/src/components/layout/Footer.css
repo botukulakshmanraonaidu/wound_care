@@ -1,0 +1,112 @@
+.app-footer {
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 12px 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    color: #475569;
+    font-size: 13px;
+    z-index: 30;
+    position: relative;
+    width: 100%;
+    margin-top: auto;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.footer-logo {
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+}
+
+.footer-divider {
+    color: #cbd5e1;
+}
+
+.footer-tagline {
+    font-style: italic;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.copyright {
+    margin: 0;
+    text-align: center;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #475569;
+}
+
+.status-icon {
+    color: #10b981;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .app-footer {
+        height: auto;
+        padding: 16px;
+        flex-direction: column;
+        border-top: none;
+        background: #f8fafc;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .footer-left {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .footer-divider {
+        display: none;
+    }
+
+    .footer-tagline {
+        margin-top: 2px;
+    }
+
+    .footer-right {
+        order: -1; /* Place status at top on mobile */
+    }
+}

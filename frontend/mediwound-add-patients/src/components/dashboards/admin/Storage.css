@@ -1,8 +1,14 @@
 .storage-container {
     padding: 8px 10px;
-    @media (min-width: 640px) { padding: 24px; }
     background: #f8fafc;
-    min-height: 100vh;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+@media (min-width: 640px) {
+    .storage-container {
+        padding: 24px;
+    }
 }
 
 .page-title {
@@ -339,3 +345,65 @@
 .btn-icon-danger:hover {
     background: #fef2f2;
 }
+
+/* ═══ Mobile Responsive ═══ */
+@media (max-width: 640px) {
+    .page-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .stat-card {
+        height: auto;
+        min-height: 100px;
+    }
+
+    .files-table {
+        min-width: 100%;
+    }
+
+    .files-table th:nth-child(1) { width: auto; }
+    .files-table th:nth-child(2) { width: 55px; }
+    .files-table th:nth-child(5) { width: 75px; }
+    .files-table th:nth-child(6) { width: 45px; }
+
+    /* Hide less critical columns on mobile */
+    .files-table th:nth-child(3),
+    .files-table td:nth-child(3),
+    .files-table th:nth-child(4),
+    .files-table td:nth-child(4) {
+        display: none;
+    }
+
+    .files-table th,
+    .files-table td {
+        padding: 8px 6px;
+        font-size: 11px;
+    }
+
+    .files-table th {
+        font-size: 10px;
+        letter-spacing: -0.2px;
+    }
+
+    .file-name {
+        gap: 4px;
+        font-size: 11px;
+    }
+
+    .badge-gray {
+        padding: 2px 4px;
+        font-size: 10px;
+    }
+    
+    .btn-icon-danger {
+        padding: 4px;
+    }
+}

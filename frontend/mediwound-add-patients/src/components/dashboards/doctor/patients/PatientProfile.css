@@ -24,7 +24,10 @@
     @media (min-width: 640px) { padding: 8px 16px; }
     color: var(--text-main);
     font-family: 'Inter', -apple-system, blinkmacsystemfont, sans-serif;
-    min-height: calc(100vh - 56px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 40px;
 }
 
 /* Breadcrumbs */
@@ -235,6 +238,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
+    flex: 1;
 }
 
 @media (min-width: 1024px) {
@@ -746,3 +750,70 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 640px) {
+    .profile-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wound-card {
+        flex-direction: column;
+    }
+
+    .wound-image-col {
+        width: 100%;
+        height: 160px;
+    }
+
+    .details-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .detail-item {
+        font-size: 12px;
+    }
+
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .header-content {
+        gap: 12px;
+    }
+
+    .task-modal,
+    .chat-modal {
+        width: 95vw;
+        max-width: 95vw;
+    }
+
+    .modal-card {
+        padding: 20px;
+    }
+
+    .patient-info-main h1 {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .vitals-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .edit-details-btn span,
+    .new-assessment-btn span,
+    .chat-shortcut-btn span {
+        display: none;
+    }
+
+    .edit-details-btn,
+    .new-assessment-btn,
+    .chat-shortcut-btn {
+        padding: 8px;
+        min-width: 36px;
+        justify-content: center;
+    }
+}

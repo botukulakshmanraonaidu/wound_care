@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Users,
-    Activity,
-    AlertTriangle,
-    Download,
-    MoreHorizontal
-} from 'lucide-react';
+import { Download, Users, Activity, Database, ChevronRight, Search, User, CircleAlert, MoreHorizontal } from 'lucide-react';
 import '../doctor/Dashboard.css'; // Reuse base styles
 import './AdminDashboard.css';    // Admin specific styles
 import ChangeBoard from './ChangeBoard';
@@ -13,7 +7,7 @@ import { adminApi } from '../../../API/adminApi';
 import AuthAPI from '../../../API/authApi';
 import { useNavigate } from 'react-router-dom';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ user }) => {
     const navigate = useNavigate();
     const [stats, setStats] = useState({
         total_users: '...',
@@ -107,10 +101,23 @@ const AdminDashboard = () => {
                         </p>
                     </div>
                 </div>
-                <button className="btn-export">
-                    <Download size={18} />
-                    <span className="hidden sm:inline">Export Report</span>
-                </button>
+                <div className="flex items-center gap-4">
+                    <button className="btn-export">
+                        <Download size={18} />
+                        <span className="hidden sm:inline">Export Report</span>
+                    </button>
+
+                    {/* Admin Profile Image */}
+                    <div className="admin-avatar-container hidden sm:block">
+                        {user?.profile_picture ? (
+                            <img src={user.profile_picture} alt="Admin Profile" className="admin-avatar-img" />
+                        ) : (
+                            <div className="admin-avatar-placeholder">
+                                <User size={30} color="#64748b" />
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Stats Cards - Reusing .stat-card logic but with admin content */}
@@ -149,7 +156,7 @@ const AdminDashboard = () => {
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon-wrapper icon-red">
-                            <AlertTriangle size={18} />
+                            <CircleAlert size={18} />
                         </div>
                         <div className="stat-trend trend-down">
                             Attention
@@ -165,7 +172,7 @@ const AdminDashboard = () => {
             <div className="dashboard-grid">
                 {/* Left Column: Clinical Oversight */}
                 <div className="dashboard-col-left">
-                    <div className="content-card" style={{ marginBottom: '24px' }}>
+                    <div className="content-card">
                         <div className="card-header">
                             <div className="card-title-wrapper">
                                 <Users size={18} className="text-blue" style={{ marginRight: '8px' }} />
@@ -200,7 +207,7 @@ const AdminDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="content-card" style={{ marginBottom: '24px' }}>
+                    <div className="content-card">
                         <div className="card-header">
                             <div className="card-title-wrapper">
                                 <Activity size={18} className="text-blue" style={{ marginRight: '8px' }} />

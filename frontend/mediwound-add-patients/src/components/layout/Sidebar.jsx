@@ -42,6 +42,12 @@ function Sidebar({ onLogout, userRole: rawRole, accessLevel, isOpen, onClose }) 
 
 
 
+  const handleItemClick = () => {
+    if (window.innerWidth < 640) {
+      onClose();
+    }
+  };
+
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   ];
@@ -80,11 +86,10 @@ function Sidebar({ onLogout, userRole: rawRole, accessLevel, isOpen, onClose }) 
         />
       )}
 
-      <aside className={`sidebar fixed sm:static inset-y-0 left-0 z-50 w-56 bg-white shadow-xl sm:shadow-none transform transition-transform duration-300 ease-in-out sm:translate-x-0 flex flex-col h-full border-r border-gray-100 ${isOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
-        }`}>
-        <div className="sidebar-header px-4">
+      <aside className={`sidebar ${isOpen ? 'isOpen' : ''}`}>
+        <div className="sidebar-header">
           <div className="sidebar-brand gap-3">
-            <div className="logo-box w-8 h-8">
+            <div className="logo-box">
               <svg width="24" height="24" viewBox="0 0 116 116" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="116" height="116" rx="7.93162" fill="#2D63A9" fill-opacity="0.16" />
                 <path d="M51.3996 30.5735C49.6494 30.5735 47.9708 31.2688 46.7332 32.5064C45.4956 33.744 44.8003 35.4226 44.8003 37.1728V44.8721H38.2009C36.4507 44.8721 34.7721 45.5674 33.5345 46.805C32.2969 48.0426 31.6016 49.7212 31.6016 51.4715V64.6042C31.6016 66.3544 32.2969 68.033 33.5345 69.2706C34.7721 70.5082 36.4507 71.2035 38.2009 71.2035H44.8003V77.8029C44.8003 79.5532 45.4956 81.2317 46.7332 82.4693C47.9708 83.707 49.6494 84.4023 51.3996 84.4023H64.5984C66.3486 84.4023 68.0272 83.707 69.2648 82.4693C70.5024 81.2317 71.1977 79.5532 71.1977 77.8029V71.2035H77.7971C79.5473 71.2035 81.2259 70.5082 82.4635 69.2706C83.7011 68.033 84.3964 66.3544 84.3964 64.6042V51.4055C84.3964 49.6552 83.7011 47.9766 82.4635 46.739C81.2259 45.5014 79.5473 44.8061 77.7971 44.8061H71.1977V37.1728C71.1977 35.4226 70.5024 33.744 69.2648 32.5064C68.0272 31.2688 66.3486 30.5735 64.5984 30.5735H51.3996Z" fill="#2D63A9" />
@@ -105,7 +110,7 @@ function Sidebar({ onLogout, userRole: rawRole, accessLevel, isOpen, onClose }) 
               className={({ isActive }) =>
                 `sidebar-item text-[13px] py-1.5 px-3 ${isActive ? 'sidebar-item-active' : ''}`
               }
-              onClick={onClose}
+              onClick={handleItemClick}
             >
               <item.icon size={16} />
               <span>{item.label}</span>
@@ -131,7 +136,7 @@ function Sidebar({ onLogout, userRole: rawRole, accessLevel, isOpen, onClose }) 
             className={({ isActive }) =>
               `sidebar-item ${isActive ? 'sidebar-item-active' : ''}`
             }
-            onClick={onClose}
+            onClick={handleItemClick}
           >
             <Settings size={20} />
             <span>Settings</span>

@@ -3,6 +3,7 @@
     @media (min-width: 640px) { padding: 12px 24px; }
     background-color: #F1F5F9;
     min-height: 100vh;
+    padding-bottom: 40px;
 }
 
 .report-breadcrumbs {

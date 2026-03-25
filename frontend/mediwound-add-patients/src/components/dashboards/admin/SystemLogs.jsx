@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { adminApi } from '../../../API/adminApi';
-import { Search, Filter, RefreshCw, AlertTriangle, Info, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, RefreshCw, CircleAlert, Info, CircleCheck, CircleAlert as AlertOctagon } from 'lucide-react';
 import './SystemLogs.css';
+import Pagination from '../../common/Pagination';
 
 function SystemLogs() {
     const [logs, setLogs] = useState([]);
@@ -18,28 +19,51 @@ function SystemLogs() {
         end_date: formatDateISO(new Date())
     });
     const [error, setError] = useState(null);
+    
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [isServerPaginated, setIsServerPaginated] = useState(false);
+    const pageSize = 10;
 
-    const fetchLogs = async () => {
+    const fetchLogs = async (pageNum = page) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await adminApi.getActivityLogs(filters);
+            const params = {
+                ...filters,
+                page: pageNum,
+                page_size: pageSize
+            };
+            const response = await adminApi.getActivityLogs(params);
             const data = response.data;
-            // Support both paginated (data.results) and non-paginated (data array) responses
-            const logsList = Array.isArray(data) ? data : (data.results || []);
-            setLogs(logsList);
+            
+            if (data && data.results) {
+                setLogs(data.results);
+                setTotalCount(data.count || data.results.length);
+                setIsServerPaginated(true);
+            } else if (Array.isArray(data)) {
+                setLogs(data);
+                setTotalCount(data.length);
+                setIsServerPaginated(false);
+            } else {
+                setLogs([]);
+                setTotalCount(0);
+                setIsServerPaginated(false);
+            }
         } catch (err) {
             console.error('Failed to load logs', err);
             setError(`Failed to load activity logs: ${err.response?.data?.detail || err.message}`);
-            setLogs([]); // Ensure logs is empty array on error
+            setLogs([]);
+            setTotalCount(0);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchLogs();
-    }, []); // Initial load
+        fetchLogs(page);
+    }, [page]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -47,7 +71,8 @@ function SystemLogs() {
     };
 
     const applyFilters = () => {
-        fetchLogs();
+        setPage(1);
+        fetchLogs(1);
     };
 
     const clearFilters = () => {
@@ -62,13 +87,27 @@ function SystemLogs() {
         };
 
         setFilters(defaultFilters);
+        setPage(1);
+        // fetchLogs will be triggered by the page change or we can call it manually
         setLoading(true);
         setError(null);
 
-        adminApi.getActivityLogs(defaultFilters).then(response => {
+        const params = { ...defaultFilters, page: 1, page_size: pageSize };
+        adminApi.getActivityLogs(params).then(response => {
             const data = response.data;
-            const logsList = Array.isArray(data) ? data : (data.results || []);
-            setLogs(logsList);
+            if (data && data.results) {
+                setLogs(data.results);
+                setTotalCount(data.count || data.results.length);
+                setIsServerPaginated(true);
+            } else if (Array.isArray(data)) {
+                setLogs(data);
+                setTotalCount(data.length);
+                setIsServerPaginated(false);
+            } else {
+                setLogs([]);
+                setTotalCount(0);
+                setIsServerPaginated(false);
+            }
         }).catch(err => {
             console.error(err);
             setError('Failed to load activity logs.');
@@ -77,10 +116,10 @@ function SystemLogs() {
 
     const getSeverityIcon = (severity) => {
         switch (severity?.toUpperCase()) {
-            case 'ERROR': return <XCircle size={16} color="#ef4444" />;
-            case 'WARNING': return <AlertTriangle size={16} color="#f59e0b" />;
+            case 'ERROR': return <AlertOctagon size={16} color="#ef4444" />;
+            case 'WARNING': return <CircleAlert size={16} color="#f59e0b" />;
             case 'INFO': return <Info size={16} color="#3b82f6" />;
-            case 'SUCCESS': return <CheckCircle size={16} color="#10b981" />;
+            case 'SUCCESS': return <CircleCheck size={16} color="#10b981" />;
             default: return <Info size={16} color="#94a3b8" />;
         }
     };
@@ -167,14 +206,14 @@ function SystemLogs() {
                             <tr><td colSpan="6" className="text-center">Loading logs...</td></tr>
                         ) : error ? (
                             <tr><td colSpan="6" className="text-center text-red-500">{error}</td></tr>
-                        ) : logs.length === 0 ? (
-                            <tr><td colSpan="6" className="text-center">No logs found.</td></tr>
+                        ) : (isServerPaginated ? logs : logs.slice((page - 1) * pageSize, page * pageSize)).length === 0 ? (
+                            <tr><td colSpan="7" className="text-center">No logs found.</td></tr>
                         ) : (
                             (() => {
                                 const rows = [];
                                 let lastDate = null;
 
-                                logs.forEach((log, index) => {
+                                (isServerPaginated ? logs : logs.slice((page - 1) * pageSize, page * pageSize)).forEach((log, index) => {
                                     const logDate = new Date(log.timestamp);
                                     const dateStr = logDate.toLocaleDateString();
 
@@ -234,6 +273,14 @@ function SystemLogs() {
                     </tbody>
                 </table>
             </div>
+            
+            <Pagination 
+                currentPage={page}
+                totalCount={totalCount}
+                pageSize={pageSize}
+                onPageChange={(p) => setPage(p)}
+                loading={loading}
+            />
         </div>
     );
 }

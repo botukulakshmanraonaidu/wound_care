@@ -3,6 +3,7 @@
     @media (min-width: 640px) { padding: 24px; }
     background: #f8fafc;
     min-height: 100vh;
+    padding-bottom: 40px;
 }
 
 .logs-header {
@@ -44,7 +45,11 @@
     gap: 12px;
     margin-bottom: 24px;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end; /* Align labels and inputs better */
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .search-box {
@@ -131,9 +136,9 @@
 
 .filter-actions {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin-left: auto;
-    /* Push buttons to the right if space permits */
+    align-self: flex-end;
 }
 
 /* Table */
@@ -220,4 +225,92 @@
     padding: 12px 20px;
     font-size: 14px;
     border-bottom: 1px solid #e2e8f0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .system-logs-container {
+        padding: 12px;
+    }
+
+    .logs-header {
+        margin-bottom: 16px;
+    }
+
+    .logs-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .logs-filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .search-box {
+        grid-column: span 2;
+        min-width: 0;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .filter-group label {
+        font-size: 12px;
+    }
+
+    .filter-date {
+        width: 100%;
+        padding: 8px;
+    }
+
+    .filter-actions {
+        grid-column: span 2;
+        margin-left: 0;
+        width: 100%;
+        display: flex;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .btn-primary, .btn-secondary {
+        flex: 1;
+        padding: 10px;
+        font-size: 14px;
+        justify-content: center;
+    }
+
+    .logs-table {
+        min-width: 600px;
+    }
+
+    /* Hide User and IP on smaller mobile */
+    .logs-table th:nth-child(4),
+    .logs-table td:nth-child(4),
+    .logs-table th:nth-child(5),
+    .logs-table td:nth-child(5) {
+        display: none;
+    }
+
+    .log-description {
+        max-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logs-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .search-box, .filter-select, .filter-group, .filter-actions {
+        grid-column: span 1;
+    }
 }

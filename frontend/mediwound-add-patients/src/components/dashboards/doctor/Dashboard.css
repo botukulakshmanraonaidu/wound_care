@@ -2,6 +2,7 @@
     padding: 6px 8px;
     @media (min-width: 640px) { padding: 8px 16px; }
     background-color: #F8FAFC;
+    padding-bottom: 40px;
 }
 
 /* Header */
@@ -15,7 +16,7 @@
 .dashboard-avatar-container {
     width: 48px;
     height: 48px;
-    border-radius: 10px;
+    border-radius: 50%;
     overflow: hidden;
     border: 2px solid #fff;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -30,7 +31,7 @@
 .dashboard-avatar-placeholder {
     width: 48px;
     height: 48px;
-    border-radius: 10px;
+    border-radius: 50%;
     background: #f1f5f9;
     display: flex;
     align-items: center;
@@ -258,11 +259,23 @@
 }
 
 .card-title {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: #0F172A;
     margin: 0;
     letter-spacing: -0.01em;
+}
+
+@media (min-width: 640px) {
+  .card-title {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-title {
+    font-size: 18px;
+  }
 }
 
 .card-subtitle {
@@ -574,3 +587,61 @@
     background: #E2E8F0;
     color: #0F172A;
 }
+
+/* ═══ Doctor Dashboard Mobile Responsive ═══ */
+@media (max-width: 640px) {
+    .dashboard-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .welcome-text {
+        font-size: 16px;
+    }
+
+    .header-actions {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .mini-table {
+        min-width: 450px;
+    }
+
+    /* Wrap mini-table in overflow container */
+    .appointments-list {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hide less critical columns on mobile appointment table */
+    .mini-table th:nth-child(3),
+    .mini-table td:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-avatar-container,
+    .dashboard-avatar-placeholder {
+        width: 36px;
+        height: 36px;
+    }
+
+    .welcome-text {
+        font-size: 15px;
+    }
+
+    .status-text {
+        font-size: 12px;
+    }
+
+    .chart-container {
+        padding: 0 4px;
+    }
+
+    .chart-labels {
+        font-size: 10px;
+        padding: 0 4px;
+    }
+}

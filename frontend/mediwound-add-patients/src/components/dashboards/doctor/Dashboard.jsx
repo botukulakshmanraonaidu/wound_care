@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, AlertCircle, Activity, Clock, Calendar, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { Users, CircleAlert, Activity, Clock, Calendar, ArrowUp, ArrowDown, Plus, User } from 'lucide-react';
 import { patientService } from '../../../services/patientService';
 import AuthAPI from '../../../API/authApi';
 import { API_BASE_URL } from './patients/config';
@@ -199,6 +199,17 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         <Plus size={18} />
                         <span>New Patient</span>
                     </button>
+
+                    {/* Doctor Profile Image */}
+                    <div className="dashboard-avatar-container hidden sm:block">
+                        {user?.profile_picture ? (
+                            <img src={user.profile_picture} alt="Doctor Profile" className="dashboard-avatar-img" />
+                        ) : (
+                            <div className="dashboard-avatar-placeholder">
+                                <User size={26} color="#64748b" />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -222,7 +233,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon-wrapper icon-red">
-                            <AlertCircle size={18} />
+                            <CircleAlert size={18} />
                         </div>
                         <div className="stat-trend trend-down">
                             <ArrowDown size={12} />
@@ -365,7 +376,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     <div className="content-card priority-card">
                         <div className="card-header">
                             <div className="card-title-wrapper">
-                                <AlertCircle size={20} className="text-red" />
+                                <CircleAlert size={20} className="text-red" />
                                 <h3 className="card-title text-red">Priority Attention</h3>
                             </div>
                         </div>

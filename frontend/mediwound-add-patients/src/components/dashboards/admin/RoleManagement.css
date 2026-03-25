@@ -1,8 +1,13 @@
 .role-management-container {
     padding: 8px 10px;
-    @media (min-width: 640px) { padding: 12px 24px; }
+
+    @media (min-width: 640px) {
+        padding: 12px 24px;
+    }
+
     max-width: 1400px;
     margin: 0 auto;
+    padding-bottom: 40px;
 }
 
 /* Header */
@@ -37,10 +42,11 @@
     margin: 0;
     letter-spacing: -0.5px;
 }
+
 @media (min-width: 640px) {
-  .role-title {
-    font-size: 28px;
-  }
+    .role-title {
+        font-size: 28px;
+    }
 }
 
 .role-subtitle {
@@ -184,11 +190,25 @@
     background: #f8fafc;
 }
 
-.users-table th:nth-child(1) { width: 220px; }
-.users-table th:nth-child(2) { width: 120px; }
-.users-table th:nth-child(3) { width: 150px; }
-.users-table th:nth-child(4) { width: 100px; }
-.users-table th:nth-child(5) { width: 110px; }
+.users-table th:nth-child(1) {
+    width: 220px;
+}
+
+.users-table th:nth-child(2) {
+    width: 120px;
+}
+
+.users-table th:nth-child(3) {
+    width: 150px;
+}
+
+.users-table th:nth-child(4) {
+    width: 100px;
+}
+
+.users-table th:nth-child(5) {
+    width: 110px;
+}
 
 .users-table tbody tr {
     transition: all 0.2s ease;
@@ -571,9 +591,17 @@
     .form-row {
         grid-template-columns: 1fr;
     }
+    
+    .users-table-card {
+        width: 100%;
+        max-width: calc(100vw - 32px); /* strict bound based on screen minus padding */
+        display: block;
+        overflow-x: auto;
+    }
 
     .users-table {
         font-size: 13px;
+        min-width: 600px; /* Reduce slightly to improve mobile flow without squishing */
     }
 
     .users-table th,
@@ -695,6 +723,11 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }

@@ -3,6 +3,7 @@ import { adminApi } from '../../../API/adminApi';
 import { adminService } from '../../../services/adminService';
 import { HardDrive, Upload, FileText, Trash2, PieChart, File, Folder, RefreshCw } from 'lucide-react';
 import './Storage.css';
+import Pagination from '../../common/Pagination';
 
 function Storage() {
     const [stats, setStats] = useState(null);
@@ -10,26 +11,41 @@ function Storage() {
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
+    
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [isServerPaginated, setIsServerPaginated] = useState(false);
+    const pageSize = 10;
 
-    const fetchData = async (refresh = false) => {
+    const fetchData = async (pageNum = page, refresh = false) => {
         setLoading(true);
         setError(null);
         try {
-            const params = refresh ? { refresh: 'true' } : {};
+            const commonParams = refresh ? { refresh: 'true' } : {};
+            const filesParams = { ...commonParams, page: pageNum, page_size: pageSize };
 
-            // Re-fetch all data
-            const [statsRes, filesData] = await Promise.all([
-                adminApi.getSystemStats(params),
-                adminApi.getFiles(params)
+            // Fetch data
+            const statsPromise = adminApi.getSystemStats(commonParams);
+            const filesPromise = adminApi.getFiles(filesParams);
+            const storagePromise = adminApi.getStorageStats(commonParams);
+
+            const [statsRes, filesData, storageDataRes] = await Promise.allSettled([
+                statsPromise,
+                filesPromise,
+                storagePromise
             ]);
 
-            try {
-                // Fetch storage stats with refresh params
-                const storageData = await adminApi.getStorageStats(params);
-                setStats(storageData.data);
-            } catch (sErr) {
-                console.warn('Detailed storage stats fetch failed', sErr);
-                // Don't fail the whole page, just show zeros for this part
+            // Handle Stats
+            if (statsRes.status === 'fulfilled') {
+                // handle system stats if needed, currently not used in state
+            }
+
+            // Handle Storage Stats
+            if (storageDataRes.status === 'fulfilled') {
+                setStats(storageDataRes.value.data);
+            } else {
+                console.warn('Detailed storage stats fetch failed');
                 setStats({
                     used_storage_bytes: 0,
                     used_percentage: 0,
@@ -38,8 +54,25 @@ function Storage() {
                 });
             }
 
-            const filesList = filesData.data;
-            setFiles(Array.isArray(filesList) ? filesList : (filesList.results || []));
+            // Handle Files
+            if (filesData.status === 'fulfilled') {
+                const data = filesData.value.data;
+                if (data && data.results) {
+                    setFiles(data.results);
+                    setTotalCount(data.count || data.results.length);
+                    setIsServerPaginated(true);
+                } else if (Array.isArray(data)) {
+                    setFiles(data);
+                    setTotalCount(data.length);
+                    setIsServerPaginated(false);
+                } else {
+                    setFiles([]);
+                    setTotalCount(0);
+                    setIsServerPaginated(false);
+                }
+            } else {
+                throw filesData.reason;
+            }
         } catch (error) {
             console.error('Failed to load storage data', error);
             const msg = error.response ?
@@ -52,11 +85,12 @@ function Storage() {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchData(page);
+    }, [page]);
 
     const handleRefresh = () => {
-        fetchData(true);
+        setPage(1);
+        fetchData(1, true);
     };
 
     const handleFileUpload = async (e) => {
@@ -66,7 +100,8 @@ function Storage() {
         setUploading(true);
         try {
             await adminService.uploadFile({ file, name: file.name });
-            await fetchData(); // Refresh list
+            setPage(1);
+            await fetchData(1); // Refresh list
         } catch (error) {
             alert('Upload failed');
         } finally {
@@ -78,7 +113,7 @@ function Storage() {
         if (!window.confirm('Are you sure you want to delete this file?')) return;
         try {
             await adminService.deleteFile(id);
-            await fetchData();
+            await fetchData(page);
         } catch (error) {
             alert('Delete failed');
         }
@@ -226,10 +261,10 @@ function Storage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {files.length === 0 ? (
+                                {(isServerPaginated ? files : files.slice((page - 1) * pageSize, page * pageSize)).length === 0 ? (
                                     <tr><td colSpan="6" className="text-center">No files uploaded.</td></tr>
                                 ) : (
-                                    files.map(file => (
+                                    (isServerPaginated ? files : files.slice((page - 1) * pageSize, page * pageSize)).map(file => (
                                         <tr key={file.id}>
                                             <td>
                                                 <div className="file-name" title={file.name}>
@@ -256,6 +291,14 @@ function Storage() {
                             </tbody>
                         </table>
                     </div>
+                    
+                    <Pagination 
+                        currentPage={page}
+                        totalCount={totalCount}
+                        pageSize={pageSize}
+                        onPageChange={(p) => setPage(p)}
+                        loading={loading}
+                    />
                 </div>
             </div>
         </div>

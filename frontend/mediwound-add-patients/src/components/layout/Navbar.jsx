@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Search, HelpCircle, Bell, User, Menu } from 'lucide-react';
+import { Search, HelpCircle, Bell, User, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthAPI from '../../API/authApi';
 import './Navbar.css';
 
-function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick, toggleSidebar }) {
-  const [profilePic, setProfilePic] = useState(localStorage.getItem('profilePicture'));
+function Navbar({ userName, userJobTitle, profilePic: propProfilePic, notificationCount, onNotificationClick, toggleSidebar }) {
+  const [profilePic, setProfilePic] = useState(propProfilePic || localStorage.getItem('profilePicture'));
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [internalCount, setInternalCount] = useState(0);
+
+  // Sync with prop when it changes
+  useEffect(() => {
+    if (propProfilePic) {
+      setProfilePic(propProfilePic);
+    }
+  }, [propProfilePic]);
   const navigate = useNavigate();
+
+  const toggleProfileModal = (e) => {
+    if (e) e.stopPropagation();
+    setIsProfileModalOpen(!isProfileModalOpen);
+  };
 
   // Determine which count to use
   const isControlled = typeof notificationCount === 'number';
@@ -33,8 +46,6 @@ function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick
     window.addEventListener('storage', handleStorageChange);
 
     // Custom event check (Settings dispatches a generic Event('storage'))
-    // Some browsers don't trigger 'storage' event on the same window
-    // so we handle both.
     const handleCustomStorage = (e) => {
       if (e.type === 'storage') {
         handleStorageChange();
@@ -79,62 +90,87 @@ function Navbar({ userName, userJobTitle, notificationCount, onNotificationClick
   };
 
   return (
-    <nav className="navbar flex sticky top-0 z-40 bg-white border-b border-gray-100 px-4 py-2 h-16 items-center justify-between w-full shadow-sm">
-      <div className="flex items-center gap-3">
-        {toggleSidebar && (
-          <button
-            onClick={toggleSidebar}
-            className="sm:hidden p-2 text-gray-500 hover:text-blue-600 focus:outline-none rounded-md"
-            aria-label="Open sidebar"
-          >
-            <Menu size={24} />
-          </button>
-        )}
-        <div className="navbar-title text-xl font-bold text-gray-800 hidden sm:block">Dashboard Overview</div>
-      </div>
-
-      <div className="navbar-center hidden md:flex flex-1 justify-center px-4">
-        <div className="navbar-search">
-          <Search size={16} className="navbar-search-icon" />
-          <input
-            type="text"
-            placeholder="Search patient MRN..."
-            className="navbar-search-input"
-          />
-        </div>
-      </div>
-
-      <div className="navbar-right">
-        <button className="navbar-icon-btn" title="Help">
-          <HelpCircle size={20} />
-        </button>
-        <button
-          className="navbar-icon-btn navbar-notification"
-          title="Notifications"
-          onClick={handleClick}
-        >
-          <Bell size={20} />
-          {typeof displayCount === 'number' && displayCount > 0 && (
-            <span className="notification-badge">
-              {displayCount > 9 ? '9+' : displayCount}
-            </span>
+    <>
+      <nav className="navbar flex sticky top-0 z-40 bg-white border-b border-slate-200 px-4 h-16 items-center justify-between w-full shadow-sm">
+        <div className="flex items-center gap-3">
+          {toggleSidebar && (
+            <button
+              onClick={toggleSidebar}
+              className="navbar-toggle-btn sm:hidden"
+              aria-label="Open sidebar"
+            >
+              <Menu size={24} />
+            </button>
           )}
-        </button>
-        <div className="navbar-user pl-2 sm:pl-4">
-          <div className="navbar-user-info hidden sm:flex">
-            <div className="navbar-user-name text-xs sm:text-sm">{userName || "User"}</div>
-            <div className="navbar-user-role text-[10px] sm:text-xs">{userJobTitle || "Specialist"}</div>
-          </div>
-          <div className="navbar-user-avatar h-8 w-8 sm:h-10 sm:w-10">
-            {profilePic ? (
-              <img src={profilePic} alt="Profile" className="navbar-avatar-img" />
-            ) : (
-              <User size={20} />
-            )}
+          <div className="navbar-title text-gray-800 hidden sm:block">Dashboard Overview</div>
+        </div>
+
+        <div className="navbar-center hidden md:flex flex-1 justify-center px-4">
+          <div className="navbar-search">
+            <Search size={16} className="navbar-search-icon" />
+            <input
+              type="text"
+              placeholder="Search patient MRN..."
+              className="navbar-search-input"
+            />
           </div>
         </div>
-      </div>
-    </nav>
+
+        <div className="navbar-right">
+          <button className="navbar-icon-btn" aria-label="Help">
+            <Bell size={20} />
+          </button>
+          <div className="navbar-notification">
+            <button className="navbar-icon-btn" aria-label="Notifications" onClick={handleClick}>
+              <Bell size={20} />
+              {typeof displayCount === 'number' && displayCount > 0 && (
+                <span className="notification-badge">
+                  {displayCount > 9 ? '9+' : displayCount}
+                </span>
+              )}
+            </button>
+          </div>
+          
+          <div className="navbar-user">
+            <div className="navbar-user-info hidden sm:flex">
+              <div className="navbar-user-name text-xs sm:text-sm">{userName || "User"}</div>
+              <div className="navbar-user-role text-[10px] sm:text-xs">{userJobTitle || "Specialist"}</div>
+            </div>
+            <div className="navbar-user-avatar" onClick={toggleProfileModal}>
+              {profilePic ? (
+                <img src={profilePic} alt="Profile" className="navbar-avatar-img" />
+              ) : (
+                <User size={20} />
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Profile Picture Enlarged Modal */}
+      {isProfileModalOpen && (
+        <div className="profile-modal-overlay" onClick={toggleProfileModal}>
+          <div className="profile-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="profile-modal-close" onClick={toggleProfileModal}>
+              <X size={24} />
+            </button>
+            <div className="profile-modal-image-container">
+              {profilePic ? (
+                <img src={profilePic} alt="Enlarged Profile" className="profile-modal-img" />
+              ) : (
+                <div className="profile-modal-placeholder">
+                  <User size={120} />
+                </div>
+              )}
+            </div>
+            <div className="profile-modal-footer">
+              <h3 className="profile-modal-name">{userName || "User"}</h3>
+              <p className="profile-modal-role">{userJobTitle || "Specialist"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

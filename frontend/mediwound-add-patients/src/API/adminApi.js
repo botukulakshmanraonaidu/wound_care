@@ -60,7 +60,7 @@ AdminAPI.interceptors.response.use(
 
 export const adminApi = {
     // User Management
-    getUsers: () => AdminAPI.get("users/"),
+    getUsers: (params) => AdminAPI.get("users/", { params }),
     createUser: (userData) => {
         const adminEmail = localStorage.getItem("email") || "system";
         return AdminAPI.post("users/create/", { ...userData, admin_email: adminEmail });

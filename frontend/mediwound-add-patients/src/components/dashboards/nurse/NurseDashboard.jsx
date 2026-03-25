@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Users, FileText, Camera, CheckCircle2, Clock, Activity, CheckCircle, AlertCircle, Bell, RefreshCw, Plus } from 'lucide-react';
+import { User, Users, FileText, Camera, CircleCheck, Clock, Activity, CircleAlert, Bell, RefreshCw, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../../../services/patientService';
 import { nurseService } from '../../../services/nurseService';
@@ -71,7 +71,7 @@ const ShiftTaskList = ({ refreshTrigger }) => {
                     className={`task-checkbox ${isCompleted ? 'checked' : ''}`}
                     onClick={() => toggle(t.id, t.status)}
                   >
-                    {isCompleted && <CheckCircle size={14} />}
+                    {isCompleted && <CircleCheck size={14} />}
                   </div>
                 </td>
                 <td>
@@ -302,7 +302,7 @@ const StaffAnnouncements = ({ refreshTrigger }) => {
   return (
     <div className="nurse-card">
       <div className="nurse-card-header">
-        <AlertCircle size={14} className="header-icon-blue" />
+        <CircleAlert size={14} className="header-icon-blue" />
         <h3 className="nurse-section-title">STAFF ANNOUNCEMENTS</h3>
       </div>
       {!announcements.length
@@ -573,6 +573,17 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
             <span>ALERTS</span>
             {(stats.unread_count > 0 || notifications.length > 0) && <span className="alerts-count-dot" />}
           </button>
+          
+          {/* Nurse Profile Image */}
+          <div className="nurse-avatar-container hidden sm:block">
+            {user?.profile_picture ? (
+              <img src={user.profile_picture} alt="Nurse Profile" className="nurse-avatar-img" />
+            ) : (
+              <div className="nurse-avatar-placeholder">
+                <User size={24} color="#64748b" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

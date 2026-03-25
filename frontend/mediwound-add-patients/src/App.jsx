@@ -9,11 +9,9 @@ import {
 // =====================
 // Pages & Layout
 // =====================
-// =====================
-// Pages & Layout
-// =====================
 import Sidebar from "./components/layout/Sidebar";
 import Navbar from "./components/layout/Navbar";
+import Footer from "./components/layout/Footer";
 import Dashboard from "./components/dashboards/doctor/Dashboard";
 import AdminDashboard from "./components/dashboards/admin/AdminDashboard";
 import NurseDashboard from "./components/dashboards/nurse/NurseDashboard";
@@ -31,55 +29,61 @@ import SystemLogs from "./components/dashboards/admin/SystemLogs";
 import Storage from "./components/dashboards/admin/Storage";
 import LoadingScreen from "./components/common/LoadingScreen";
 
-import { logoutUser } from "./API/authApi";
+import { logoutUser, getProfile } from "./API/authApi";
 import "./App.css";
 
-
 function App() {
-  // 🔐 Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [userId, setUserId] = useState(null);
-  const [userRole, setUserRole] = useState(null);
-  const [accessLevel, setAccessLevel] = useState(null);
-  const [userName, setUserName] = useState("User");
-  const [userJobTitle, setUserJobTitle] = useState("");
-  const [isSuperuser, setIsSuperuser] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Disabled loading screen
+  // 🔐 Authentication state - Hydrate immediately from localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem("isAuthenticated") === "true");
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(() => localStorage.getItem("hasCompletedOnboarding") === "true");
+  const [userId, setUserId] = useState(() => localStorage.getItem("userId"));
+  const [userRole, setUserRole] = useState(() => localStorage.getItem("userRole")?.toLowerCase());
+  const [accessLevel, setAccessLevel] = useState(() => localStorage.getItem("accessLevel"));
+  const [userName, setUserName] = useState(() => localStorage.getItem("userName") || "User");
+  const [userJobTitle, setUserJobTitle] = useState(() => localStorage.getItem("userJobTitle") || "");
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem("profilePicture"));
+  const [isSuperuser, setIsSuperuser] = useState(() => localStorage.getItem("isSuperuser") === "true");
+  const [isLoading, setIsLoading] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // 🔄 Restore login state on refresh
   useEffect(() => {
-    const auth = localStorage.getItem("isAuthenticated") === "true";
-    const onboarded = localStorage.getItem("hasCompletedOnboarding") === "true";
-    const role = localStorage.getItem("userRole")?.toLowerCase();
-    const access = localStorage.getItem("accessLevel");
-    const name = localStorage.getItem("userName");
-    const id = localStorage.getItem("userId");
-    const job = localStorage.getItem("userJobTitle");
-    const superuser = localStorage.getItem("isSuperuser") === "true";
-
-    setIsAuthenticated(auth);
-    setHasCompletedOnboarding(onboarded);
-    setUserRole(role);
-    setAccessLevel(access);
-    setIsSuperuser(superuser);
-    if (id) setUserId(id);
-    if (name) setUserName(name);
-    if (job) setUserJobTitle(job);
+    // Fetch latest profile info if authenticated (background refresh)
+    if (isAuthenticated) {
+      getProfile().then(res => {
+        const { full_name, job_title, role: backendRole, profile_picture } = res.data;
+        if (full_name) {
+          setUserName(full_name);
+          localStorage.setItem("userName", full_name);
+        }
+        const finalJob = job_title || backendRole || "";
+        if (finalJob) {
+          setUserJobTitle(finalJob);
+          localStorage.setItem("userJobTitle", finalJob);
+        }
+        if (profile_picture) {
+          setProfilePic(profile_picture);
+          localStorage.setItem("profilePicture", profile_picture);
+        }
+      }).catch(err => console.error("App: Failed to fetch profile", err));
+    }
 
     // Superusers skip onboarding
-    if (superuser && auth) {
+    if (isSuperuser && isAuthenticated) {
       setHasCompletedOnboarding(true);
       localStorage.setItem("hasCompletedOnboarding", "true");
     }
-  }, []);
+  }, [isAuthenticated, isSuperuser]);
 
-  // Listen for profile updates
+  // Listen for profile updates (Settings changes)
   useEffect(() => {
     const handleStorageChange = () => {
       const name = localStorage.getItem("userName");
+      const job = localStorage.getItem("userJobTitle");
+      const pic = localStorage.getItem("profilePicture");
+      
       if (name) setUserName(name);
+      if (job) setUserJobTitle(job);
+      if (pic) setProfilePic(pic);
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -113,6 +117,10 @@ function App() {
     localStorage.setItem("userName", name);
     localStorage.setItem("userJobTitle", job);
     localStorage.setItem("isSuperuser", superuser);
+    if (userData.profile_picture) {
+      localStorage.setItem("profilePicture", userData.profile_picture);
+      setProfilePic(userData.profile_picture);
+    }
 
     // Superusers skip onboarding
     if (superuser) {
@@ -129,10 +137,6 @@ function App() {
   };
 
 
-  // ... imports
-
-  // 🚪 Logout (optional but useful)
-  // 🚪 Logout (optional but useful)
   const handleLogout = () => {
     // Attempt to log out on server (fire and forget)
     logoutUser().catch(err => console.error("Logout log failed:", err));
@@ -144,21 +148,27 @@ function App() {
     setUserId(null);
     setUserName("User");
     setUserJobTitle("");
+    setProfilePic(null);
     localStorage.clear();
   };
 
   // 🖥️ Helper to render dashboard based on role
   const renderDashboard = () => {
-    const user = { id: userId, full_name: userName };
+    const user = { 
+      id: userId, 
+      full_name: userName, 
+      job_title: userJobTitle, 
+      profile_picture: profilePic 
+    };
 
     // Superusers always get Admin Dashboard regardless of role_type
     if (isSuperuser) {
-      return <AdminDashboard />;
+      return <AdminDashboard user={user} />;
     }
 
     switch (userRole?.toLowerCase()) {
       case 'admin':
-        return <AdminDashboard />;
+        return <AdminDashboard user={user} />;
       case 'nurse':
         return <NurseDashboard user={user} />;
       case 'doctor':
@@ -220,6 +230,7 @@ function App() {
                       <Navbar 
                         userName={userName} 
                         userJobTitle={userJobTitle} 
+                        profilePic={profilePic}
                         toggleSidebar={() => setIsMobileSidebarOpen(true)} 
                       />
 
@@ -278,6 +289,7 @@ function App() {
                           {/* Catch-all for restricted routes → back to dashboard */}
                           <Route path="*" element={<Navigate to="/dashboard" replace />} />
                         </Routes>
+                        <Footer />
                       </main>
                     </div>
                   </div>

@@ -17,31 +17,59 @@ import {
 } from 'lucide-react';
 import './ChangeBoard.css';
 import { adminApi } from '../../../API/adminApi';
+import Pagination from '../../common/Pagination';
 
 const ChangeBoard = ({ limit = 10, showFilters = true }) => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterAction, setFilterAction] = useState('all');
+    
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [isServerPaginated, setIsServerPaginated] = useState(false);
+    const pageSize = limit || 10;
+
+    const fetchLogs = async (pageNum = page) => {
+        setLoading(true);
+        try {
+            const params = {
+                page: pageNum,
+                page_size: pageSize,
+                search: searchTerm,
+                action: filterAction !== 'all' ? filterAction : undefined
+            };
+            const response = await adminApi.getActivityLogs(params);
+            const fetchedData = response.data;
+            
+            if (fetchedData && fetchedData.results) {
+                setLogs(fetchedData.results);
+                setTotalCount(fetchedData.count || fetchedData.results.length);
+                setIsServerPaginated(true);
+            } else if (Array.isArray(fetchedData)) {
+                setLogs(fetchedData);
+                setTotalCount(fetchedData.length);
+                setIsServerPaginated(false);
+            } else {
+                setLogs([]);
+                setTotalCount(0);
+                setIsServerPaginated(false);
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching activity logs:', error);
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchLogs = async () => {
-            try {
-                const response = await adminApi.getActivityLogs({ limit });
-                const fetchedData = response.data;
-                const fetchedLogs = Array.isArray(fetchedData) ? fetchedData : (fetchedData.results || []);
+        setPage(1);
+    }, [searchTerm, filterAction, limit]);
 
-                // If limit is provided, slice the data
-                setLogs(limit ? fetchedLogs.slice(0, limit) : fetchedLogs);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching activity logs:', error);
-                setLoading(false);
-            }
-        };
-
-        fetchLogs();
-    }, [limit]);
+    useEffect(() => {
+        fetchLogs(page);
+    }, [page, searchTerm, filterAction, limit]);
 
     const getActionIcon = (action) => {
         switch (action) {
@@ -73,18 +101,8 @@ const ChangeBoard = ({ limit = 10, showFilters = true }) => {
         });
     };
 
-    const filteredLogs = logs.filter(log => {
-        const searchStr = searchTerm.toLowerCase();
-
-        const matchesSearch =
-            (log.user_email?.toLowerCase() || '').includes(searchStr) ||
-            (log.target_user?.toLowerCase() || '').includes(searchStr) ||
-            (log.description?.toLowerCase() || '').includes(searchStr);
-
-        const matchesAction = filterAction === 'all' || log.action === filterAction;
-
-        return matchesSearch && matchesAction;
-    });
+    // Filtering is now handled on the server side if supported
+    const displayedLogs = isServerPaginated ? logs : logs.slice((page - 1) * pageSize, page * pageSize);
 
     if (loading) {
         return <div className="loading-state">Loading activity logs...</div>;
@@ -134,12 +152,12 @@ const ChangeBoard = ({ limit = 10, showFilters = true }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredLogs.length === 0 ? (
+                        {displayedLogs.length === 0 ? (
                             <tr>
                                 <td colSpan="4" className="no-data">No activity logs found</td>
                             </tr>
                         ) : (
-                            filteredLogs.map((log) => (
+                            displayedLogs.map((log) => (
                                 <tr key={log.id}>
                                     <td>
                                         <div className={`action-badge ${getActionBadgeClass(log.action)}`}>
@@ -166,6 +184,16 @@ const ChangeBoard = ({ limit = 10, showFilters = true }) => {
                     </tbody>
                 </table>
             </div>
+
+            {showFilters && (
+                <Pagination 
+                    currentPage={page}
+                    totalCount={totalCount}
+                    pageSize={pageSize}
+                    onPageChange={(p) => setPage(p)}
+                    loading={loading}
+                />
+            )}
 
             {!showFilters && logs.length > 0 && (
                 <div className="board-footer">

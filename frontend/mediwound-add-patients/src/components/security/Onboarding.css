@@ -274,3 +274,94 @@
 .next-btn:active {
     transform: translateY(0);
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .onboarding-header {
+        padding: 12px 16px;
+    }
+
+    .onboarding-header-left {
+        gap: 8px;
+    }
+
+    .onboarding-header h1 {
+        font-size: 0.9rem;
+    }
+
+    .logo-box {
+        width: 32px;
+        height: 32px;
+    }
+
+    .logo-box svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .onboarding-content {
+        padding: 16px;
+    }
+
+    .onboarding-card {
+        flex-direction: column;
+        height: auto;
+        max-height: 85vh;
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .onboarding-image-section {
+        flex: none;
+        height: 180px;
+        padding: 16px;
+    }
+
+    .onboarding-text-section {
+        flex: none;
+        padding: 20px 24px;
+        height: auto;
+    }
+
+    .onboarding-scrollable-content {
+        justify-content: flex-start;
+        overflow-y: visible;
+    }
+
+    .onboarding-text-section h2 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+    }
+
+    .onboarding-text-section p {
+        font-size: 0.8rem;
+        margin-bottom: 12px;
+    }
+
+    .feature-list {
+        margin-bottom: 16px;
+    }
+
+    .feature-item {
+        font-size: 0.75rem;
+    }
+
+    .onboarding-footer {
+        margin-top: 16px;
+    }
+}
+
+/* Very small height screens */
+@media (max-height: 700px) and (max-width: 768px) {
+    .onboarding-card {
+        max-height: 95vh;
+    }
+    
+    .onboarding-image-section {
+        height: 140px;
+    }
+
+    .onboarding-text-section {
+        padding: 12px 20px;
+    }
+}
