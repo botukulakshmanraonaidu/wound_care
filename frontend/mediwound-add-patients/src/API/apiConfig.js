@@ -4,11 +4,14 @@
 // The choice is stored in localStorage so it persists across refreshes.
 // =============================================================
 
+// Dynamic hostname fallback to support testing on local network (e.g. mobile phones)
+const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+
 const SERVERS = {
-    local: "http://localhost:8000",
+    local: `http://${hostname}:8000`,
     live: import.meta.env.VITE_API_BASE_URL || "https://wound-care.onrender.com",
-    ml_local: "http://localhost:8001",
-    ml_live: import.meta.env.VITE_ML_API_URL || import.meta.env.VITE_FASTAPI_URL || "http://localhost:8001",
+    ml_local: `http://${hostname}:8001`,
+    ml_live: import.meta.env.VITE_ML_API_URL || import.meta.env.VITE_FASTAPI_URL || "https://wound-care-1.onrender.com",
 };
 
 // Key used in localStorage
@@ -21,12 +24,15 @@ export const getServerMode = () => {
     const savedMode = localStorage.getItem(STORAGE_KEY);
     if (savedMode) return savedMode;
 
-    // Default logic: If running on localhost, default to 'local'. 
+    // Default logic: If running on localhost or a local network IP, default to 'local'. 
     // If running on Netlify/Production, default to 'live'.
-    const isLocalhost = window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1";
+    const isLocal = hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("172.");
 
-    return isLocalhost ? "local" : "live";
+    return isLocal ? "local" : "live";
 };
 
 /**
