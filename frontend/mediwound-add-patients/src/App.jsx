@@ -217,16 +217,23 @@ function App() {
                   <Navigate to="/login" replace />
                 ) : (
                   //  Logged in and onboarded → show app layout
-                  <div className="flex h-screen bg-gray-50 overflow-hidden w-full relative">
-                    <Sidebar 
-                      onLogout={handleLogout} 
-                      userRole={userRole} 
-                      accessLevel={accessLevel} 
-                      isOpen={isMobileSidebarOpen} 
-                      onClose={() => setIsMobileSidebarOpen(false)} 
-                    />
+                    <div className="flex h-screen bg-gray-50 overflow-hidden w-full relative">
+                      {isMobileSidebarOpen && (
+                        <div 
+                          className="mobile-sidebar-overlay" 
+                          onClick={() => setIsMobileSidebarOpen(false)}
+                        />
+                      )}
+                      
+                      <Sidebar 
+                        onLogout={handleLogout} 
+                        userRole={userRole} 
+                        accessLevel={accessLevel} 
+                        isOpen={isMobileSidebarOpen} 
+                        onClose={() => setIsMobileSidebarOpen(false)} 
+                      />
 
-                    <div className="layout-content-wrapper flex-1 flex flex-col min-w-0 overflow-hidden">
+                      <div className="layout-content-wrapper flex-1 flex flex-col min-w-0 overflow-hidden">
                       <Navbar 
                         userName={userName} 
                         userJobTitle={userJobTitle} 
