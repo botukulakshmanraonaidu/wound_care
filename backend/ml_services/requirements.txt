@@ -1,5 +1,5 @@
 tensorflow-cpu>=2.18.0
-opencv-python>=4.5.0
+opencv-python-headless>=4.5.0
 numpy>=1.19.0
 pillow
 scikit-learn>=0.24.0
@@ -7,3 +7,4 @@ gdown>=4.0.0
 flask
 flask-cors
 gunicorn
+matplotlib>=3.3.0
