@@ -230,65 +230,68 @@ function App() {
                       <Navbar 
                         userName={userName} 
                         userJobTitle={userJobTitle} 
+                        userRole={userRole}
                         profilePic={profilePic}
                         toggleSidebar={() => setIsMobileSidebarOpen(true)} 
                       />
 
-                      <main className="main-content flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 bg-gray-50">
-                        <Routes>
-                          <Route path="/dashboard" element={renderDashboard()} />
+                      <main className="main-content flex-1 overflow-y-auto overflow-x-hidden pt-4 px-4 md:px-6 md:pt-6 bg-gray-50 flex flex-col">
+                        <div className="flex-grow">
+                          <Routes>
+                            <Route path="/dashboard" element={renderDashboard()} />
 
-                          {/* Nurse Specific Access Routes */}
-                          {userRole === 'nurse' && (
-                            <>
-                              <Route path="/patients" element={<PatientList />} />
-                              <Route path="/patients/profile/:id" element={<PatientProfileView />} />
-                              <Route path="/assessments" element={<Assessment />} />
-                              <Route path="/clinical-portal" element={<ClinicalPortal />} />
-                              <Route path="/reports" element={<ReportPreview />} />
-                              <Route path="/settings" element={<Settings />} />
-                            </>
-                          )}
+                            {/* Nurse Specific Access Routes */}
+                            {userRole === 'nurse' && (
+                              <>
+                                <Route path="/patients" element={<PatientList />} />
+                                <Route path="/patients/profile/:id" element={<PatientProfileView />} />
+                                <Route path="/assessments" element={<Assessment />} />
+                                <Route path="/clinical-portal" element={<ClinicalPortal />} />
+                                <Route path="/reports" element={<ReportPreview />} />
+                                <Route path="/settings" element={<Settings />} />
+                              </>
+                            )}
 
-                          {/* Doctor Specific Access Routes */}
-                          {(userRole === 'doctor' || !userRole) && (
-                            <>
-                              <Route path="/patients" element={<PatientList />} />
-                              <Route path="/patients/add" element={<AddPatient />} />
-                              <Route path="/patients/edit/:id" element={<AddPatient />} />
-                              <Route path="/patients/profile/:id" element={<PatientProfileView />} />
-                              <Route path="/assessments" element={<Assessment />} />
-                              <Route path="/clinical-portal" element={<ClinicalPortal />} />
-                              <Route path="/reports" element={<ReportPreview />} />
-                              <Route path="/settings" element={<Settings />} />
-                            </>
-                          )}
+                            {/* Doctor Specific Access Routes */}
+                            {(userRole === 'doctor' || !userRole) && (
+                              <>
+                                <Route path="/patients" element={<PatientList />} />
+                                <Route path="/patients/add" element={<AddPatient />} />
+                                <Route path="/patients/edit/:id" element={<AddPatient />} />
+                                <Route path="/patients/profile/:id" element={<PatientProfileView />} />
+                                <Route path="/assessments" element={<Assessment />} />
+                                <Route path="/clinical-portal" element={<ClinicalPortal />} />
+                                <Route path="/reports" element={<ReportPreview />} />
+                                <Route path="/settings" element={<Settings />} />
+                              </>
+                            )}
 
-                          {/* Admin Only Routes (Admin or Superuser) */}
-                          {(userRole === 'admin' || isSuperuser) && (
-                            <>
-                              <Route path="/patients" element={<PatientList />} />
-                              <Route path="/patients/add" element={<AddPatient />} />
-                              <Route path="/patients/edit/:id" element={<AddPatient />} />
-                              <Route path="/patients/profile/:id" element={<PatientProfileView />} />
-                              <Route path="/assessments" element={<Assessment />} />
-                              <Route path="/reports" element={<ReportPreview />} />
-                              <Route path="/roles" element={<RoleManagement accessLevel={accessLevel} />} />
-                              <Route path="/logs" element={<SystemLogs />} />
-                              <Route path="/storage" element={<Storage />} />
-                              <Route path="/settings" element={<Settings />} />
-                            </>
-                          )}
+                            {/* Admin Only Routes (Admin or Superuser) */}
+                            {(userRole === 'admin' || isSuperuser) && (
+                              <>
+                                <Route path="/patients" element={<PatientList />} />
+                                <Route path="/patients/add" element={<AddPatient />} />
+                                <Route path="/patients/edit/:id" element={<AddPatient />} />
+                                <Route path="/patients/profile/:id" element={<PatientProfileView />} />
+                                <Route path="/assessments" element={<Assessment />} />
+                                <Route path="/reports" element={<ReportPreview />} />
+                                <Route path="/roles" element={<RoleManagement accessLevel={accessLevel} />} />
+                                <Route path="/logs" element={<SystemLogs />} />
+                                <Route path="/storage" element={<Storage />} />
+                                <Route path="/settings" element={<Settings />} />
+                              </>
+                            )}
 
-                          {/* Default landing for auth'd users */}
-                          <Route
-                            path="/"
-                            element={<Navigate to="/dashboard" replace />}
-                          />
+                            {/* Default landing for auth'd users */}
+                            <Route
+                              path="/"
+                              element={<Navigate to="/dashboard" replace />}
+                            />
 
-                          {/* Catch-all for restricted routes → back to dashboard */}
-                          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                        </Routes>
+                            {/* Catch-all for restricted routes → back to dashboard */}
+                            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                          </Routes>
+                        </div>
                         <Footer />
                       </main>
                     </div>

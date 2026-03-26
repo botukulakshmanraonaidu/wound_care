@@ -159,31 +159,38 @@
 /* ==================== FORM CARDS ==================== */
 .form-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid #e2e8f0;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.form-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
 .card-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
     margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #334155;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
 }
 
 .card-title svg {
-    color: #64748b;
+    color: #2563eb;
 }
 
 .card-content {
-    padding: 12px 16px;
+    padding: 24px;
 }
 
 /* ==================== AI INDICATORS ==================== */
@@ -196,18 +203,154 @@
 
 .ai-indicator {
     position: absolute;
-    right: 48px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #16a34a;
-    color: white;
-    font-size: 9px;
-    font-weight: 800;
-    padding: 1px 4px;
-    border-radius: 3px;
-    text-transform: uppercase;
     z-index: 5;
     pointer-events: none;
+}
+
+/* ==================== AI SCAN RESULTS ==================== */
+.ai-scan-result-card {
+    margin-top: 16px;
+    padding: 24px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    border: 1px solid #bbf7d0;
+    border-radius: 16px;
+    box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-scan-result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #16a34a;
+}
+
+.scan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.scan-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-badge {
+    background: #16a34a;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.scan-status {
+    font-size: 16px;
+    font-weight: 700;
+    color: #166534;
+}
+
+/* Severity Badges */
+.severity-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.severity-low { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.severity-medium { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+.severity-high { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* Tissue Composition */
+.tissue-analysis-section {
+    margin-top: 20px;
+}
+
+.tissue-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.tissue-bars-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tissue-bar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tissue-bar-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tissue-bar-bg {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.tissue-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-out;
+}
+
+/* Tissue Colors */
+.bar-granulation { background: #ef4444; } /* Red/Pink */
+.bar-slough { background: #eab308; }       /* Yellow */
+.bar-necrotic { background: #1e293b; }     /* Dark/Black */
+.bar-epithelial { background: #f472b6; }   /* Pink */
+
+.scan-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dotted #bbf7d0;
+}
+
+.metric-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-label {
+    font-size: 11px;
+    color: #15803d;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.metric-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #166534;
 }
 
 @keyframes spin {
@@ -229,22 +372,23 @@
 
 .tab-btn {
     flex: 1;
-    padding: 8px 12px;
+    padding: 10px 16px;
     border: 1px solid #e2e8f0;
-    background: white;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
+    background: #f8fafc;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
     color: #64748b;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tab-btn.active {
     background: #2563eb;
     color: white;
     border-color: #2563eb;
-    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transform: translateY(-1px);
 }
 
 .tab-btn:not(.active):hover {
@@ -268,15 +412,15 @@
 .body-diagram {
     display: flex;
     justify-content: center;
-    padding: 12px;
-    background: #f8fafc;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    padding: 32px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
 }
 
 .body-svg {
-    width: 160px;
-    height: 360px;
+    width: 200px;
+    height: 400px;
 }
 
 .region {
@@ -286,34 +430,38 @@
 }
 
 .region:hover {
-    fill: rgba(37, 99, 235, 0.1);
+    fill: rgba(37, 99, 235, 0.08);
+    stroke: rgba(37, 99, 235, 0.3);
+    stroke-width: 0.5px;
 }
 
 .region.selected {
-    fill: rgba(37, 99, 235, 0.2);
+    fill: rgba(37, 99, 235, 0.15);
+    stroke: #2563eb;
+    stroke-width: 1.5px;
 }
 
 /* ==================== SELECTION BADGE ==================== */
 .selection-badge {
     display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 10px 12px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: #f0f7ff;
+    border: 1px solid #e0efff;
+    border-radius: 12px;
+    margin-bottom: 20px;
 }
 
 .badge-icon {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     background: #2563eb;
-    border-radius: 50%;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
 .badge-dot {
@@ -420,19 +568,21 @@
 }
 
 .form-field label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin-bottom: 6px;
 }
 
 .form-field input,
 .form-field select {
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 10px;
     border: 1px solid #e2e8f0;
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 500;
     color: #1e293b;
     outline: none;
     transition: all 0.2s;
@@ -447,78 +597,83 @@
 
 .input-with-unit {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .input-with-unit input {
     width: 100%;
-    padding-right: 40px;
+    padding-right: 48px;
 }
 
 .input-with-unit .unit {
     position: absolute;
     right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 14px;
-    color: #64748b;
-    font-weight: 600;
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 700;
+    pointer-events: none;
 }
 
 /* ==================== PAIN LEVEL SLIDER ==================== */
 .pain-level-section {
-    margin-top: 20px;
+    margin-top: 24px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
 }
 
 .pain-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .pain-header label {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 800;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .pain-value {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 800;
     color: #2563eb;
+    background: #ffffff;
+    padding: 4px 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .pain-slider {
     width: 100%;
-    height: 8px;
-    border-radius: 4px;
+    height: 10px;
+    border-radius: 5px;
     appearance: none;
     cursor: pointer;
     background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
     outline: none;
+    margin: 12px 0;
 }
 
 .pain-slider::-webkit-slider-thumb {
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: white;
     border: 3px solid #2563eb;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+    transition: transform 0.1s;
 }
 
-.pain-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: white;
-    border: 3px solid #2563eb;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+.pain-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
 }
 
 .pain-labels {
@@ -526,7 +681,8 @@
     justify-content: space-between;
     font-size: 11px;
     color: #94a3b8;
-    margin-top: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 /* ==================== UPLOAD ZONE ==================== */
@@ -841,16 +997,16 @@
 .marker-inner {
     width: 100%;
     height: 100%;
-    background: #ef4444;
+    background: #2563eb;
     border: 2px solid white;
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 10px rgba(37, 99, 235, 0.5);
 }
 
 .marker-ring {
     position: absolute;
     inset: -8px;
-    border: 2px solid #ef4444;
+    border: 2px solid #2563eb;
     border-radius: 50%;
     animation: marker-pulse 2s infinite;
 }
@@ -908,58 +1064,418 @@
 }
 
 @media (max-width: 640px) {
+    /* Container */
     .clinical-portal-container {
-        padding: 16px;
+        padding: 8px 10px;
+        padding-bottom: 24px;
     }
 
+    /* Header */
     .clinical-portal-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 10px;
+        margin-bottom: 10px;
     }
 
     .header-left {
         width: 100%;
-    }
-
-    .header-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-
-    .form-row-2,
-    .form-row-3 {
-        grid-template-columns: 1fr;
+        gap: 10px;
     }
 
     .header-left h1 {
-        font-size: 20px;
+        font-size: 15px;
     }
 
     .patient-breadcrumb {
         flex-wrap: wrap;
-    }
-}
-
-@media (max-width: 480px) {
-    .back-btn {
-        width: 40px;
-        height: 40px;
+        font-size: 11px;
     }
 
-    .btn-secondary,
+    .breadcrumb-mrn {
+        font-size: 11px;
+        padding: 1px 6px;
+    }
+
+    .header-actions {
+        width: 100%;
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-secondary {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 12px;
+        text-align: center;
+    }
+
     .btn-primary {
-        padding: 8px 16px;
-        font-size: 13px;
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 12px;
+        justify-content: center;
+    }
+
+    .back-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+    }
+
+    /* Grid layout */
+    .form-grid-layout {
+        gap: 10px;
+    }
+
+    .form-column-left,
+    .form-column-right {
+        gap: 10px;
+    }
+
+    /* Cards */
+    .form-card {
+        border-radius: 12px;
     }
 
     .card-title {
-        font-size: 14px;
-        padding: 14px 16px;
+        font-size: 12px;
+        padding: 10px 14px;
+        gap: 8px;
+        letter-spacing: 0.03em;
+    }
+
+    .card-title svg {
+        width: 15px;
+        height: 15px;
     }
 
     .card-content {
+        padding: 12px 14px;
+    }
+
+    /* Form fields */
+    .form-row-2,
+    .form-row-3 {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .form-field label {
+        font-size: 10px;
+        margin-bottom: 4px;
+    }
+
+    .form-field input,
+    .form-field select {
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+
+    .input-with-unit input {
+        padding-right: 40px;
+    }
+
+    .input-with-unit .unit {
+        font-size: 11px;
+        right: 12px;
+    }
+
+    /* Tabs */
+    .tab-buttons {
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+
+    .tab-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+        border-radius: 8px;
+    }
+
+    /* Body diagram */
+    .body-diagram {
         padding: 16px;
+    }
+
+    .body-svg {
+        width: 140px;
+        height: 300px;
+    }
+
+    .diagram-instruction {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    /* Selection badge */
+    .selection-badge {
+        padding: 10px 14px;
+        gap: 10px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+    }
+
+    .badge-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+    }
+
+    .badge-label {
+        font-size: 13px;
+    }
+
+    /* Pain section */
+    .pain-level-section {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    .pain-header label {
+        font-size: 11px;
+    }
+
+    .pain-value {
+        font-size: 13px;
+        padding: 3px 8px;
+    }
+
+    .pain-slider {
+        height: 8px;
+    }
+
+    .pain-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+        padding: 24px 16px;
+        border-radius: 10px;
+    }
+
+    .upload-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .upload-text {
+        font-size: 13px;
+    }
+
+    .upload-hint {
+        font-size: 11px;
+    }
+
+    /* Image grid */
+    .images-grid {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 8px;
+    }
+
+    /* Viewer */
+    .advanced-viewer {
+        margin-top: 12px;
+        border-radius: 10px;
+    }
+
+    .viewer-header {
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .viewer-controls {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .control-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+    }
+
+    .control-close {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+    }
+
+    .zoom-level {
+        font-size: 11px;
+        min-width: 36px;
+    }
+
+    .control-divider {
+        height: 16px;
+        margin: 0 2px;
+    }
+
+    .viewer-canvas {
+        padding: 12px;
+        min-height: 220px;
+    }
+
+    .canvas-constraint {
+        max-width: 100%;
+        height: 200px;
+        border-radius: 8px;
+    }
+
+    /* AI Scan Result */
+    .ai-scan-result-card {
+        padding: 14px;
+        border-radius: 12px;
+        margin-top: 12px;
+    }
+
+    .scan-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .scan-status {
+        font-size: 14px;
+    }
+
+    .severity-badge {
+        font-size: 11px;
+        padding: 3px 10px;
+    }
+
+    .tissue-title {
+        font-size: 12px;
+    }
+
+    .tissue-bar-info {
+        font-size: 11px;
+    }
+
+    .scan-metrics-grid {
+        gap: 10px;
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+
+    .metric-label {
+        font-size: 10px;
+    }
+
+    .metric-value {
+        font-size: 13px;
+    }
+
+    /* Wound Coordinates card */
+    .coords-grid-display {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 6px;
+    }
+
+    .coord-chip {
+        padding: 6px 8px;
+        gap: 6px;
+        border-radius: 6px;
+    }
+
+    .coord-chip-label {
+        width: 20px;
+        height: 18px;
+        font-size: 9px;
+    }
+
+    .coord-chip-val {
+        font-size: 10px;
+    }
+
+    .coords-image-group {
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .coords-img-badge {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+
+    .coords-empty-state {
+        padding: 20px 12px;
+    }
+
+    .coords-empty-text {
+        font-size: 13px;
+    }
+
+    .coords-empty-hint {
+        font-size: 11px;
+    }
+
+    /* Notes textarea */
+    .notes-textarea {
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+    }
+
+    /* Previous assessments */
+    .previous-assessments-card {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .assessment-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .assessment-title {
+        font-size: 13px;
+    }
+
+    .assessment-details {
+        font-size: 12px;
+    }
+
+    /* Editorial panel */
+    .editorial-panel {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .panel-section label {
+        min-width: 60px;
+        font-size: 10px;
+    }
+
+    .quick-filters {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .quick-filters button {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    /* Coordinates table inside viewer */
+    .coordinates-grid-panel {
+        padding: 10px 12px;
+    }
+
+    .coords-table thead th {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+
+    .coords-table tbody td {
+        padding: 6px 10px;
     }
 }
 
@@ -1060,11 +1576,11 @@
 }
 
 .wound-polygon {
-    fill: rgba(239, 68, 68, 0.25);
-    stroke: #ef4444;
-    stroke-width: 0.8;
-    stroke-dasharray: 2 2;
-    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.3));
+    fill: rgba(37, 99, 235, 0.15);
+    stroke: #2563eb;
+    stroke-width: 1.5;
+    stroke-dasharray: 4;
+    filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.3));
 }
 
 .grid-item img {
@@ -1076,10 +1592,10 @@
 }
 
 .mini-wound-polygon {
-    fill: rgba(239, 68, 68, 0.5);
-    stroke: #ef4444;
+    fill: rgba(37, 99, 235, 0.5);
+    stroke: #2563eb;
     stroke-width: 2;
-    filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.6));
+    filter: drop-shadow(0 0 3px rgba(37, 99, 235, 0.6));
 }
 
 .mini-area-overlay {
@@ -1138,4 +1654,301 @@
 .reset-lnk:hover {
     opacity: 1;
     background: none !important;
+}
+
+/* ==================== COORDINATES GRID ==================== */
+.coordinates-grid-panel {
+    margin-top: 0;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 20px;
+    animation: panel-slide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.coords-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.coords-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.coords-badge {
+    background: #2563eb;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.coords-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.coords-clear-btn {
+    background: none;
+    border: 1px solid #fee2e2;
+    color: #ef4444;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.coords-clear-btn:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.coords-table-wrapper {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+}
+
+.coords-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.coords-table thead th {
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.coords-table tbody tr {
+    transition: background 0.15s;
+}
+
+.coords-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.coords-table tbody td {
+    padding: 8px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+}
+
+.coord-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 22px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 5px;
+}
+
+.coord-val {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.coord-remove-btn {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    border-radius: 6px;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.coord-remove-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Status Messages */
+.coords-status {
+    margin-top: 12px;
+    padding: 8px 14px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.coords-status-warn {
+    background: #fffbeb;
+    border-color: #fef08a;
+    color: #854d0e;
+}
+
+.coords-status-icon {
+    font-size: 14px;
+}
+
+/* ==================== WOUND COORDINATES CARD ==================== */
+.coords-count-badge {
+    margin-left: auto;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+}
+
+.wound-coords-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.coords-image-group {
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+}
+
+.coords-image-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.coords-img-badge {
+    background: #2563eb;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+.coords-pt-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.coords-grid-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.coord-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.15s;
+}
+
+.coord-chip:hover {
+    border-color: #2563eb;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.coord-chip-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 20px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.coord-chip-val {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    font-variant-numeric: tabular-nums;
+}
+
+.coord-chip-remove {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: #94a3b8;
+    cursor: pointer;
+    margin-left: auto;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.coord-chip-remove:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Empty state */
+.coords-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+}
+
+.coords-empty-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.coords-empty-hint {
+    font-size: 12px;
+    color: #cbd5e1;
+    max-width: 240px;
 }

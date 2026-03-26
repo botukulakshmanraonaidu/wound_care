@@ -17,38 +17,21 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
     const [priorityPatients, setPriorityPatients] = useState([]);
     const [recentVisits, setRecentVisits] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(new Date());
 
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            // Optimization: Check session storage for recently fetched stats
-            const cacheKey = `dashboard_stats_${user?.id}`;
-            const cached = sessionStorage.getItem(cacheKey);
-            if (cached) {
-                const { data, timestamp } = JSON.parse(cached);
-                // 5 minute cache
-                if (Date.now() - timestamp < 5 * 60 * 1000) {
-                    setStats(data.stats);
-                    setPriorityPatients(data.priorityPatients);
-                    setRecentVisits(data.recentVisits || []);
-                    setLoading(false);
-                    return;
-                }
-            }
+        const fetchDashboardData = async (isPoll = false) => {
+            if (!isPoll) setLoading(true);
+            else setRefreshing(true);
 
-            setLoading(true);
             try {
-                // 1. Fetch all active patients in facility (was 'my' only)
                 const patients = await patientService.getPatients('all');
-
-                // 2. Fetch assessments to find critical cases and real healing rate
                 const assessmentsRes = await AuthAPI.get('api/assessments/');
                 const allAssessments = assessmentsRes.data || [];
-
-                // 3. Fetch newly assigned patients (last hour, no nurse)
                 const patientsRes = await AuthAPI.get('api/patients/?filter=doctor_new_patients&limit=5');
                 const newPatients = (patientsRes.data?.results || patientsRes.data || []);
 
-                // 4. Process Latest Assessments for each patient
                 const patientLatestAssessment = {};
                 const patientAssessments = {};
 
@@ -62,42 +45,31 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     }
                 });
 
-                // 5. Identify Critical Cases (Assessment-driven + Status-driven)
                 const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
                 const critical = patients.filter(p => {
                     const status = p.status?.toLowerCase();
                     const isStaticCritical = status === 'critical' || status === 'high risk' || status === 'emergency' || status === 'icu';
-
                     const latest = patientLatestAssessment[p.id];
                     const isAssessmentCritical = latest && (
                         latest.wound_stage === 'Stage III' ||
                         latest.wound_stage === 'Stage IV' ||
                         (latest.healing_index !== null && parseFloat(latest.healing_index) < 50)
                     );
-
-                    // User requested: only ICU ward patients should be considered as critical cases
                     const isICUWard = p.ward && p.ward.toLowerCase().includes('icu');
                     const qualifies = isICUWard && (isStaticCritical || isAssessmentCritical);
 
                     if (!qualifies) return false;
-
-                    // Last 24 hours check
                     const pUpdated = new Date(p.updated_at);
                     const aUpdated = latest ? new Date(latest.updated_at || latest.created_at) : new Date(0);
-                    const lastUpdated = pUpdated > aUpdated ? pUpdated : aUpdated;
-
-                    // Attach for UI rendering later
-                    p._lastUpdatedForPriority = lastUpdated;
-
-                    return lastUpdated >= twentyFourHoursAgo;
+                    const lastUpdatedVal = pUpdated > aUpdated ? pUpdated : aUpdated;
+                    p._lastUpdatedForPriority = lastUpdatedVal;
+                    return lastUpdatedVal >= twentyFourHoursAgo;
                 });
 
-                // 6. Calculate Healing Rate and Distribution
                 let improvingCount = 0;
                 let totalAssessed = 0;
                 const distribution = {};
-
                 allAssessments.forEach(a => {
                     const type = a.wound_type || 'Other';
                     distribution[type] = (distribution[type] || 0) + 1;
@@ -108,20 +80,13 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     if (assessments.length > 0) {
                         totalAssessed++;
                         const latest = assessments[0];
-
                         const hIndex = parseFloat(latest.healing_index || 0);
                         const redRate = parseFloat(latest.reduction_rate || 0);
-
-                        // Count as improving if index is healthy OR area has reduced (from reports)
-                        if (hIndex >= 50 || redRate > 0) {
-                            improvingCount++;
-                        }
+                        if (hIndex >= 50 || redRate > 0) improvingCount++;
                     }
                 });
 
                 const healingRate = totalAssessed > 0 ? Math.round((improvingCount / totalAssessed) * 100) : 0;
-
-                // Format distribution for UI
                 const totalWounds = allAssessments.length;
                 const formattedDist = Object.entries(distribution)
                     .map(([name, count]) => ({
@@ -132,12 +97,9 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     .sort((a, b) => b.percentage - a.percentage)
                     .slice(0, 3);
 
-                // Filter truly ACTIVE patients (exclude Discharged)
                 const trulyActivePatients = patients.filter(p => p.status !== 'Discharged');
-
-                // Calculate dynamic Avg. Assessment Time (Simulating AI efficiency improvement)
-                const baseTime = 4.5; // starting minutes
-                const improvementPerAssessment = 0.05; // 3 seconds per assessment
+                const baseTime = 4.5;
+                const improvementPerAssessment = 0.05;
                 const calculatedAvg = Math.max(2.8, baseTime - (allAssessments.length * improvementPerAssessment)).toFixed(1);
 
                 const result = {
@@ -155,21 +117,19 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                 setPriorityPatients(result.priorityPatients);
                 setRecentVisits(result.recentVisits);
                 setStats(result.stats);
-
-                // Save to session storage
-                sessionStorage.setItem(cacheKey, JSON.stringify({
-                    data: result,
-                    timestamp: Date.now()
-                }));
+                setLastUpdated(new Date());
 
             } catch (error) {
                 console.error("Dashboard data fetch failed", error);
             } finally {
                 setLoading(false);
+                setRefreshing(false);
             }
         };
 
         fetchDashboardData();
+        const pollInterval = setInterval(() => fetchDashboardData(true), 30000);
+        return () => clearInterval(pollInterval);
     }, [user]);
 
     const handlePatientClick = (patient) => {
@@ -181,17 +141,29 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
 
     return (
         <div className="dashboard-container">
-            {/* Header */}
-            <div className="dashboard-header">
-                <div>
-                    <div className="current-date">{currentDay}</div>
-                    <h1 className="welcome-text">Good Morning, {user?.full_name || 'Doctor'}</h1>
-                    <div className="status-text">
-                        <span className="status-icon">✓</span>
-                        You have {stats.criticalCases} critical cases to review.
+            {/* Admin-Style Header */}
+            <div className="admin-header-content">
+                <div className="admin-title-section">
+                    <div className="breadcrumbs">
+                        Home <span>&gt;</span> Doctor Dashboard
+                    </div>
+                    <div className="admin-title">
+                        <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+                            <h1>Clinical Oversight</h1>
+                            <div className={`live-indicator ${refreshing ? 'syncing' : ''}`}>
+                                <span className="dot"></span>
+                                <span className="label">Live Sync Active</span>
+                            </div>
+                        </div>
+                        <p className="admin-subtitle">
+                            Good Morning, {user?.full_name || 'Doctor'}. You have {stats.criticalCases} critical cases.
+                            <span style={{ marginLeft: '12px', fontSize: '11px', color: '#94A3B8' }}>
+                                Last updated: {lastUpdated.toLocaleTimeString()}
+                            </span>
+                        </p>
                     </div>
                 </div>
-                <div className="header-actions">
+                <div className="flex items-center gap-4">
                     <button
                         className="btn btn-primary btn-add-patient"
                         onClick={() => navigate('/patients/add')}
@@ -200,12 +172,11 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         <span>New Patient</span>
                     </button>
 
-                    {/* Doctor Profile Image */}
-                    <div className="dashboard-avatar-container hidden sm:block">
+                    <div className="admin-avatar-container hidden sm:block">
                         {user?.profile_picture ? (
-                            <img src={user.profile_picture} alt="Doctor Profile" className="dashboard-avatar-img" />
+                            <img src={user.profile_picture} alt="Doctor Profile" className="admin-avatar-img" />
                         ) : (
-                            <div className="dashboard-avatar-placeholder">
+                            <div className="admin-avatar-placeholder">
                                 <User size={26} color="#64748b" />
                             </div>
                         )}
@@ -226,8 +197,8 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         </div>
                     </div>
                     <div className="stat-value">{stats.activePatients}</div>
-                    <div className="stat-label">Active Patients</div>
-                    <div className="stat-subtext">Total across all units</div>
+                    <div className="stat-label">Total Inpatients</div>
+                    <div className="stat-subtext">Currently admitted for wound care</div>
                 </div>
 
                 <div className="stat-card">
@@ -241,8 +212,8 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         </div>
                     </div>
                     <div className="stat-value">{stats.criticalCases}</div>
-                    <div className="stat-label">Critical Cases</div>
-                    <div className="stat-subtext">Requires daily monitoring</div>
+                    <div className="stat-label">Priority Alerts</div>
+                    <div className="stat-subtext">Requires immediate clinical review</div>
                 </div>
 
                 <div className="stat-card">
@@ -256,8 +227,8 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         </div>
                     </div>
                     <div className="stat-value">{stats.healingRate}%</div>
-                    <div className="stat-label">Wound Healing Rate</div>
-                    <div className="stat-subtext">Patients improving this week</div>
+                    <div className="stat-label">Healing Velocity</div>
+                    <div className="stat-subtext">Aggregated wound reduction rate</div>
                 </div>
 
                 <div className="stat-card">
@@ -271,8 +242,8 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         </div>
                     </div>
                     <div className="stat-value">{stats.avgTime}</div>
-                    <div className="stat-label">Avg. Assessment Time</div>
-                    <div className="stat-subtext">AI-assisted speed</div>
+                    <div className="stat-label">Efficiency Index</div>
+                    <div className="stat-subtext">AI-assisted documentation speed</div>
                 </div>
             </div>
 
@@ -283,8 +254,8 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     <div className="content-card">
                         <div className="card-header">
                             <div>
-                                <h3 className="card-title">Healing Efficiency Trend</h3>
-                                <div className="card-subtitle">Average healing score improvement</div>
+                                <h3 className="card-title">Clinical Healing Index</h3>
+                                <div className="card-subtitle">Aggregate scoring of wound recovery progress</div>
                             </div>
                         </div>
                         <div className="chart-container">
@@ -313,59 +284,41 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                     <div className="content-card">
                         <div className="card-header">
                             <div>
-                                <h3 className="card-title">Newly Assigned Patients</h3>
-                                <div className="card-subtitle">Awaiting nurse assignment</div>
+                                <h3 className="card-title">New Admissions Oversight</h3>
+                                <div className="card-subtitle">Patients awaiting clinical nurse allocation</div>
                             </div>
+                            <button
+                                className="btn-link-blue"
+                                style={{ background: 'none', border: 'none', color: '#3B82F6', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
+                                onClick={() => navigate('/patients')}
+                            >
+                                View All
+                            </button>
                         </div>
-                        <div className="appointments-list overflow-x-auto w-full pt-1">
-                            {recentVisits.length > 0 ? (
-                                <table className="mini-table min-w-[400px] w-full">
-                                    <thead>
-                                        <tr>
-                                            <th>Patient</th>
-                                            <th>Admission</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {recentVisits.map((patient) => (
-                                            <tr key={patient.id}>
-                                                <td>
-                                                    <div className="patient-mini-info">
-                                                        <span className="p-name">{patient.first_name} {patient.last_name}</span>
-                                                        <span className="p-mrn">{patient.mrn}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    {(() => {
-                                                        const dateStr = patient.admission_date || patient.created_at;
-                                                        if (!dateStr) return "N/A";
-                                                        const date = new Date(dateStr);
-                                                        if (isNaN(date.getTime())) return "Invalid Date";
-                                                        
-                                                        return date.toLocaleString('en-US', {
-                                                            month: 'short',
-                                                            day: 'numeric',
-                                                            year: 'numeric',
-                                                            hour: 'numeric',
-                                                            minute: '2-digit',
-                                                            hour12: true
-                                                        }).replace(', 12:00 AM', ''); // Clean up if only it's a date without time
-                                                    })()}
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        className="btn-view-mini"
-                                                        onClick={() => navigate(`/patients/${patient.id}`)}
-                                                    >
-                                                        Review
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
+                        <div className="admin-patients-list pt-2">
+                            {recentVisits.length > 0 ? recentVisits.map((patient) => (
+                                <div key={patient.id} className="patient-row-mini">
+                                    <div className="p-info">
+                                        <div className="p-name">{patient.first_name} {patient.last_name}</div>
+                                        <div className="p-mrn">MRN: {patient.mrn}</div>
+                                    </div>
+                                    <div className="p-details hidden md:flex">
+                                        <div className="p-ward">{patient.ward || 'General'}</div>
+                                        <div className="p-status">{patient.status || 'Active'}</div>
+                                    </div>
+                                    <div className="p-actions">
+                                        <div className="p-date">
+                                            {new Date(patient.admission_date || patient.created_at).toLocaleDateString()}
+                                        </div>
+                                        <button
+                                            className="btn-view-small"
+                                            onClick={() => navigate(`/patients/${patient.id}`)}
+                                        >
+                                            Review
+                                        </button>
+                                    </div>
+                                </div>
+                            )) : (
                                 <div className="empty-state">All patients have assigned nurses.</div>
                             )}
                         </div>
@@ -377,7 +330,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
                         <div className="card-header">
                             <div className="card-title-wrapper">
                                 <CircleAlert size={20} className="text-red" />
-                                <h3 className="card-title text-red">Priority Attention</h3>
+                                <h3 className="card-title text-red">Critical Case Review</h3>
                             </div>
                         </div>
                         {priorityPatients.length > 0 ? priorityPatients.map((patient, i) => {
@@ -420,7 +373,7 @@ function Dashboard({ user, setActiveTab, setSelectedPatient }) {
 
                     <div className="content-card">
                         <div className="card-header">
-                            <h3 className="card-title">Wound Distribution</h3>
+                            <h3 className="card-title">Morbidity Distribution</h3>
                         </div>
                         <div className="distribution-list">
                             {(stats.distribution && stats.distribution.length > 0) ? stats.distribution.map((item, i) => (

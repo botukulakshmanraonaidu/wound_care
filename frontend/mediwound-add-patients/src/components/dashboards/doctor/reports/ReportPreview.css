@@ -297,3 +297,226 @@
     font-size: 11px;
     color: #94A3B8;
 }
+
+/* ==================== MOBILE RESPONSIVE ==================== */
+@media (max-width: 640px) {
+    .report-preview-container {
+        padding: 6px 6px;
+        padding-bottom: 24px;
+    }
+
+    /* Breadcrumbs */
+    .report-breadcrumbs {
+        font-size: 11px;
+        gap: 4px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Control Bar */
+    .report-control-bar {
+        padding: 8px 10px;
+        gap: 8px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .report-title {
+        font-size: 14px;
+    }
+
+    .report-controls {
+        gap: 10px;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .zoom-controls {
+        gap: 6px;
+    }
+
+    .pagination-controls {
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .action-buttons {
+        gap: 6px;
+    }
+
+    .action-buttons button,
+    .zoom-controls button,
+    .pagination-controls button {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    /* Report Document */
+    .report-document-wrapper {
+        padding-bottom: 16px;
+    }
+
+    .report-document {
+        width: 100%;
+        min-height: auto;
+        padding: 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+    }
+
+    /* Document Header */
+    .document-header {
+        flex-direction: column;
+        gap: 12px;
+        padding-bottom: 14px;
+        margin-bottom: 16px;
+    }
+
+    .brand-logo {
+        gap: 8px;
+    }
+
+    .logo-icon {
+        padding: 6px;
+        border-radius: 5px;
+    }
+
+    .logo-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .logo-text {
+        font-size: 15px;
+    }
+
+    .doc-title {
+        font-size: 16px;
+        margin: 0 0 3px 0;
+    }
+
+    .doc-meta {
+        font-size: 11px;
+    }
+
+    .report-status {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    /* Patient Details Grid */
+    .patient-details-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 12px;
+        margin-bottom: 16px;
+        row-gap: 10px;
+        column-gap: 12px;
+    }
+
+    .detail-item label {
+        font-size: 9px;
+        margin-bottom: 3px;
+        letter-spacing: 0.3px;
+    }
+
+    .detail-value {
+        font-size: 12px;
+    }
+
+    /* Assessment Grid */
+    .assessment-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        margin-bottom: 12px;
+        gap: 8px;
+    }
+
+    .section-number {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+
+    /* Visual Scan */
+    .visual-scan-placeholder {
+        height: 180px;
+        border-radius: 8px;
+    }
+
+    .scan-circle {
+        width: 80px;
+        height: 80px;
+    }
+
+    .scan-label {
+        font-size: 11px;
+        margin-top: 10px;
+    }
+
+    /* Wound image */
+    .wound-image-container img,
+    .assessment-section img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    /* Tissue Composition */
+    .composition-item {
+        margin-bottom: 10px;
+    }
+
+    .comp-label {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .progress-bar {
+        height: 6px;
+    }
+
+    /* Measurements Table */
+    .measurements-table th {
+        font-size: 10px;
+        padding: 6px 0;
+    }
+
+    .measurements-table td {
+        padding: 8px 0;
+        font-size: 12px;
+    }
+
+    /* Analysis Notes */
+    .analysis-notes {
+        padding: 12px;
+        border-left-width: 3px;
+    }
+
+    .note-group h4 {
+        font-size: 12px;
+    }
+
+    .note-group p {
+        font-size: 12px;
+        margin: 0 0 10px 0;
+    }
+
+    /* Document Footer */
+    .document-footer {
+        margin-top: 24px;
+        padding-top: 12px;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    /* Watermark */
+    .document-watermark {
+        font-size: 40px;
+    }
+}

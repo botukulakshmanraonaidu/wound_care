@@ -24,9 +24,9 @@
 
 .admin-stats-grid .stat-card {
     min-width: 0 !important;
-    padding: 20px 24px; /* Increased padding for more breathing room */
-    height: auto; /* Let content dictate height naturally */
-    min-height: 130px;
+    padding: 16px 20px; /* Reduced from 20px 24px */
+    height: auto;
+    min-height: 120px; /* Reduced from 130px */
     background: white;
     border-radius: 12px;
     border: 1px solid #E2E8F0;
@@ -34,7 +34,7 @@
     overflow: visible !important; 
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Center content vertically to prevent top/bottom edge hugging */
+    justify-content: center;
 }
 
 .admin-stats-grid .stat-label {
@@ -158,7 +158,7 @@
     background: white;
     border-radius: 12px;
     border: 1px solid #E2E8F0;
-    padding: 20px;
+    padding: 16px 20px; /* Reduced from 20px */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     margin-bottom: 24px;
 }

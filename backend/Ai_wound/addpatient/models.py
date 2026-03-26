@@ -144,6 +144,15 @@ class Assessment(models.Model):
     reduction_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     confidence_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     healing_index = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    # New Advanced ML Fields
+    severity = models.CharField(max_length=20, blank=True, null=True)
+    wound_area_cm2 = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    granulation_pct = models.IntegerField(null=True, blank=True)
+    slough_pct = models.IntegerField(null=True, blank=True)
+    necrotic_pct = models.IntegerField(null=True, blank=True)
+    epithelial_pct = models.IntegerField(null=True, blank=True)
+    
     algorithm_analysis = models.JSONField(null=True, blank=True)
     report_file = models.FileField(upload_to='assessment_reports/', null=True, blank=True)
     

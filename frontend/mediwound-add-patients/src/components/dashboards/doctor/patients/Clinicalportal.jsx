@@ -30,6 +30,7 @@ const WoundAssessmentDashboard = () => {
         length: '',
         width: '',
         depth: '',
+        woundArea: '',
         painLevel: 4,
         notes: ''
     });
@@ -77,6 +78,18 @@ const WoundAssessmentDashboard = () => {
             const uploadData = new FormData();
             uploadData.append('image', blob, 'wound.jpg');
 
+            // Send ROI if available
+            const points = imageAnnotations[0]; // Assuming first image for now
+            if (points && points.length >= 3) {
+                const editorMetadata = {
+                    boundary_coordinates: points.map(p => ({
+                        x: Math.round((p.x / 100) * 800), // Mapping to model's expected scale (approx 800px)
+                        y: Math.round((p.y / 100) * 800)
+                    }))
+                };
+                uploadData.append('editor_metadata', JSON.stringify(editorMetadata));
+            }
+
             const mlResponse = await fetch(`${getMlBaseUrl()}/api/predict`, {
                 method: 'POST',
                 body: uploadData
@@ -102,9 +115,10 @@ const WoundAssessmentDashboard = () => {
                 setFormData(prev => ({
                     ...prev,
                     woundType: result.wound_type || prev.woundType,
-                    length: result.dimensions?.length || prev.length,
-                    width: result.dimensions?.width || prev.width,
-                    depth: result.dimensions?.depth || prev.depth,
+                    length: result.wound_length_cm || result.dimensions?.length || prev.length,
+                    width: result.wound_width_cm || result.dimensions?.width || prev.width,
+                    depth: result.wound_depth_cm || result.dimensions?.depth || prev.depth,
+                    woundArea: result.wound_area_cm2 || prev.woundArea,
                     notes: prev.notes + `\n\n[AI SUGGESTION]: ${result.cure_recommendation}${reductionInfo}`
                 }));
             } else {
@@ -170,6 +184,7 @@ const WoundAssessmentDashboard = () => {
         if (!viewerState.isPointing || viewerState.index === null) return;
 
         const rect = e.currentTarget.getBoundingClientRect();
+        // Calculate coordinates relative to the image size (e.g. 800px scale as expected by ML)
         const x = ((e.clientX - rect.left) / rect.width) * 100;
         const y = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -178,6 +193,49 @@ const WoundAssessmentDashboard = () => {
             [viewerState.index]: [...(prev[viewerState.index] || []), { x, y }]
         }));
     };
+
+    const renderSeverityBadge = (severity) => {
+        const sev = (severity || 'Low').toLowerCase();
+        const icon = sev === 'high' ? <AlertCircle size={14} /> : <Info size={14} />;
+        return (
+            <div className={`severity-badge severity-${sev}`}>
+                {icon}
+                <span>{severity || 'Low'} Severity</span>
+            </div>
+        );
+    }
+
+    const renderTissueBars = (composition) => {
+        if (!composition) return null;
+        const tissues = [
+            { key: 'granulation', label: 'Granulation', color: 'bar-granulation' },
+            { key: 'slough', label: 'Slough', color: 'bar-slough' },
+            { key: 'necrotic', label: 'Necrotic', color: 'bar-necrotic' },
+            { key: 'epithelial', label: 'Epithelial', color: 'bar-epithelial' }
+        ];
+
+        return (
+            <div className="tissue-analysis-section">
+                <div className="tissue-title">Tissue Composition Analysis</div>
+                <div className="tissue-bars-container">
+                    {tissues.map(t => (
+                        <div key={t.key} className="tissue-bar-item">
+                            <div className="tissue-bar-info">
+                                <span>{t.label}</span>
+                                <span>{composition[t.key] || 0}%</span>
+                            </div>
+                            <div className="tissue-bar-bg">
+                                <div 
+                                    className={`tissue-bar-fill ${t.color}`} 
+                                    style={{ width: `${composition[t.key] || 0}%` }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -248,6 +306,18 @@ const WoundAssessmentDashboard = () => {
             return;
         }
 
+        // Validation: Body Area
+        if (!selectedRegion) {
+            alert("Please select a body area for the wound location before saving.");
+            return;
+        }
+
+        // Validation: Clinical Details
+        if (!formData.woundType || !formData.onsetDate || !formData.woundStage || !formData.exudateAmount) {
+            alert("Please fill in all Clinical Details (Wound Type, Onset Date, Stage, Exudate Amount) before saving.");
+            return;
+        }
+
         try {
             const uploadData = new FormData();
             uploadData.append('patient', patientData.id);
@@ -257,6 +327,15 @@ const WoundAssessmentDashboard = () => {
             if (formData.length && String(formData.length).trim() !== '') uploadData.append('length', formData.length);
             if (formData.width && String(formData.width).trim() !== '') uploadData.append('width', formData.width);
             if (formData.depth && String(formData.depth).trim() !== '') uploadData.append('depth', formData.depth);
+            if (formData.woundArea && String(formData.woundArea).trim() !== '') uploadData.append('wound_area_cm2', formData.woundArea);
+            uploadData.append('severity', aiAnalysis?.severity || 'Low');
+            // Adding tissue composition to notes or as separate fields if backend supports it (Backend models have them)
+            if (aiAnalysis?.tissue_composition) {
+                uploadData.append('granulation_pct', aiAnalysis.tissue_composition.granulation || 0);
+                uploadData.append('slough_pct', aiAnalysis.tissue_composition.slough || 0);
+                uploadData.append('necrotic_pct', aiAnalysis.tissue_composition.necrotic || 0);
+                uploadData.append('epithelial_pct', aiAnalysis.tissue_composition.epithelial || 0);
+            }
             uploadData.append('pain_level', formData.painLevel);
             uploadData.append('notes', formData.notes);
             uploadData.append('body_location', selectedRegion ? selectedRegion.label : '');
@@ -616,19 +695,19 @@ const WoundAssessmentDashboard = () => {
                                             </div>
                                         </div>
                                         <div className="form-field">
-                                            <label>Depth</label>
+                                            <label>Area</label>
                                             <div className="input-with-unit">
                                                 <input
                                                     type="number"
-                                                    step="0.1"
-                                                    name="depth"
-                                                    placeholder="0.0"
-                                                    value={formData.depth}
+                                                    step="0.01"
+                                                    name="woundArea"
+                                                    placeholder="0.00"
+                                                    value={formData.woundArea}
                                                     onChange={handleChange}
                                                     readOnly={!!aiAnalysis}
                                                     className={aiAnalysis ? 'ai-populated' : ''}
                                                 />
-                                                <span className="unit">cm</span>
+                                                <span className="unit">cm²</span>
                                                 {aiAnalysis && <div className="ai-indicator" title="AI Measured">AI</div>}
                                             </div>
                                         </div>
@@ -637,8 +716,15 @@ const WoundAssessmentDashboard = () => {
                                     {/* Pain Level */}
                                     <div className="pain-level-section">
                                         <div className="pain-header">
-                                            <label>Pain Level</label>
-                                            <span className="pain-value">{formData.painLevel} - Moderate</span>
+                                            <label>Pain Level Assessment</label>
+                                            <span className="pain-value">
+                                                {formData.painLevel} - {
+                                                    formData.painLevel === 0 ? 'No Pain' :
+                                                    formData.painLevel <= 3 ? 'Mild' :
+                                                    formData.painLevel <= 6 ? 'Moderate' :
+                                                    formData.painLevel <= 9 ? 'Severe' : 'Worst Pain'
+                                                }
+                                            </span>
                                         </div>
                                         <input
                                             type="range"
@@ -654,6 +740,80 @@ const WoundAssessmentDashboard = () => {
                                             <span>Severe Pain (10)</span>
                                         </div>
                                     </div>
+                                </div>
+                            </section>
+
+                            {/* Wound Coordinates */}
+                            <section className="form-card">
+                                <h3 className="card-title">
+                                    <ZoomIn size={18} />
+                                    <span>Wound Coordinates</span>
+                                    {Object.values(imageAnnotations).some(pts => pts?.length > 0) && (
+                                        <span className="coords-count-badge">
+                                            {Object.values(imageAnnotations).reduce((sum, pts) => sum + (pts?.length || 0), 0)} pts
+                                        </span>
+                                    )}
+                                </h3>
+                                <div className="card-content">
+                                    {Object.values(imageAnnotations).some(pts => pts?.length > 0) ? (
+                                        <div className="wound-coords-container">
+                                            {Object.entries(imageAnnotations).map(([imgIdx, points]) => (
+                                                points && points.length > 0 && (
+                                                    <div key={imgIdx} className="coords-image-group">
+                                                        <div className="coords-image-label">
+                                                            <span className="coords-img-badge">Image {parseInt(imgIdx) + 1}</span>
+                                                            <span className="coords-pt-count">{points.length} boundary points</span>
+                                                            <button
+                                                                type="button"
+                                                                className="coords-clear-btn"
+                                                                onClick={() => setImageAnnotations(prev => ({ ...prev, [imgIdx]: [] }))}
+                                                            >
+                                                                Clear
+                                                            </button>
+                                                        </div>
+                                                        <div className="coords-grid-display">
+                                                            {points.map((pt, i) => (
+                                                                <div key={i} className="coord-chip">
+                                                                    <span className="coord-chip-label">P{i + 1}</span>
+                                                                    <span className="coord-chip-val">X: {pt.x.toFixed(1)}%</span>
+                                                                    <span className="coord-chip-val">Y: {pt.y.toFixed(1)}%</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="coord-chip-remove"
+                                                                        onClick={() => {
+                                                                            setImageAnnotations(prev => ({
+                                                                                ...prev,
+                                                                                [imgIdx]: prev[imgIdx].filter((_, idx) => idx !== i)
+                                                                            }));
+                                                                        }}
+                                                                    >
+                                                                        <X size={10} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        {points.length >= 3 ? (
+                                                            <div className="coords-status" style={{ marginTop: '8px' }}>
+                                                                <span className="coords-status-icon">✓</span>
+                                                                <span>Valid ROI boundary — {points.length} vertices</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="coords-status coords-status-warn" style={{ marginTop: '8px' }}>
+                                                                <span className="coords-status-icon">⚠</span>
+                                                                <span>Need at least 3 points to form a boundary</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="coords-empty-state">
+                                            <ZoomIn size={28} style={{ color: '#cbd5e1', marginBottom: '8px' }} />
+                                            <div className="coords-empty-text">No coordinates captured yet</div>
+                                            <div className="coords-empty-hint">Upload an image and use the Point tool to mark wound boundaries</div>
+                                        </div>
+                                    )}
                                 </div>
                             </section>
 
@@ -701,78 +861,65 @@ const WoundAssessmentDashboard = () => {
                                         )}
 
                                         {aiAnalysis && !isAnalyzing && (
-                                            <div className="ai-insights-panel" style={{ marginTop: '12px', padding: '16px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                                                    <div style={{ background: '#16a34a', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px' }}>AI INSIGHTS</div>
-                                                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#166534' }}>Analysis Complete</span>
+                                            <div className="ai-scan-result-card">
+                                                <div className="scan-header">
+                                                    <div className="scan-title-group">
+                                                        <div className="ai-badge">AI Advanced Scan</div>
+                                                        <span className="scan-status">Analysis Complete</span>
+                                                    </div>
+                                                    {renderSeverityBadge(aiAnalysis.severity)}
                                                 </div>
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px' }}>
-                                                    <div>
-                                                        <div style={{ color: '#15803d', fontWeight: '500' }}>Detected Type</div>
-                                                        <div style={{ color: '#166534' }}>{aiAnalysis.wound_type || 'Unknown'}</div>
+
+                                                {renderTissueBars(aiAnalysis.tissue_composition)}
+
+                                                <div className="scan-metrics-grid">
+                                                    <div className="metric-item">
+                                                        <div className="metric-label">Detected Type</div>
+                                                        <div className="metric-value">{aiAnalysis.wound_type || 'Unknown'}</div>
                                                     </div>
-                                                    <div>
-                                                        <div style={{ color: '#15803d', fontWeight: '500' }}>Suggested Stage</div>
-                                                        <div style={{ color: '#166534' }}>{aiAnalysis.stage || 'N/A'}</div>
+                                                    <div className="metric-item">
+                                                        <div className="metric-label">Calculated Area</div>
+                                                        <div className="metric-value">{aiAnalysis.wound_area_cm2 || (aiAnalysis.dimensions?.length * aiAnalysis.dimensions?.width).toFixed(2) || 0} cm²</div>
                                                     </div>
-                                                    <div>
-                                                        <div style={{ color: '#15803d', fontWeight: '500' }}>Dimensions</div>
-                                                        <div style={{ color: '#166534' }}>{aiAnalysis.dimensions?.length || 0} x {aiAnalysis.dimensions?.width || 0} x {aiAnalysis.dimensions?.depth || 0} cm</div>
+                                                    <div className="metric-item">
+                                                        <div className="metric-label">Healing Index</div>
+                                                        <div className="metric-value">{aiAnalysis.healing_index || 0}%</div>
                                                     </div>
-                                                    <div>
-                                                        <div style={{ color: '#15803d', fontWeight: '500' }}>Tissue Health</div>
-                                                        <div style={{ color: '#166534' }}>{aiAnalysis.tissue_composition?.granulation || 0}% Granulation</div>
+                                                    <div className="metric-item">
+                                                        <div className="metric-label">Scan Confidence</div>
+                                                        <div className="metric-value">{aiAnalysis.confidence_score || 0}%</div>
                                                     </div>
-                                                    {reductionRate !== null && (
-                                                        <div>
-                                                            <div style={{ color: '#15803d', fontWeight: '500' }}>Healing Progress</div>
-                                                            <div style={{ color: reductionRate > 0 ? '#16a34a' : '#ef4444', fontWeight: '700' }}>
-                                                                {reductionRate}% Area Reduction
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {aiAnalysis.cure_recommendation && (
-                                                        <div style={{ gridColumn: '1 / span 2', marginTop: '4px', padding: '8px', background: 'white', borderRadius: '4px', border: '1px solid #dcfce7' }}>
-                                                            <div style={{ color: '#15803d', fontWeight: '500', fontSize: '12px' }}>Cure Recommendation</div>
-                                                            <div style={{ color: '#166534', fontSize: '13px', fontStyle: 'italic' }}>"{aiAnalysis.cure_recommendation}"</div>
-                                                        </div>
-                                                    )}
-                                                    {aiAnalysis.confidence_score !== undefined && (
-                                                        <div>
-                                                            <div style={{ color: '#15803d', fontWeight: '500' }}>AI Confidence</div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                <div style={{ flex: 1, height: '6px', background: '#dcfce7', borderRadius: '3px', overflow: 'hidden' }}>
-                                                                    <div style={{ width: `${aiAnalysis.confidence_score}%`, height: '100%', background: aiAnalysis.confidence_score > 80 ? '#16a34a' : '#eab308' }} />
-                                                                </div>
-                                                                <span style={{ fontWeight: '700', color: '#166534' }}>{aiAnalysis.confidence_score}%</span>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {aiAnalysis.healing_index !== undefined && (
-                                                        <div>
-                                                            <div style={{ color: '#15803d', fontWeight: '500' }}>Health Score</div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                <div style={{ flex: 1, height: '6px', background: '#dcfce7', borderRadius: '3px', overflow: 'hidden' }}>
-                                                                    <div style={{ width: `${aiAnalysis.healing_index || 0}%`, height: '100%', background: '#10b981' }} />
-                                                                </div>
-                                                                <span style={{ fontWeight: '700', color: '#166534' }}>{aiAnalysis.healing_index || 0}%</span>
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
+
+                                                {reductionRate !== null && (
+                                                    <div className="healing-progress-strip" style={{ marginTop: '16px', padding: '12px', background: reductionRate > 0 ? '#f0fdf4' : '#fff7ed', borderRadius: '8px', border: '1px solid', borderColor: reductionRate > 0 ? '#bbf7d0' : '#ffedd5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{ fontSize: '13px', fontWeight: '600', color: reductionRate > 0 ? '#166534' : '#9a3412' }}>Healing Progress</span>
+                                                        <span style={{ fontSize: '14px', fontWeight: '800', color: reductionRate > 0 ? '#16a34a' : '#ea580c' }}>
+                                                            {reductionRate > 0 ? '+' : ''}{reductionRate}% Reduction
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {aiAnalysis.cure_recommendation && (
+                                                    <div className="recommendation-panel" style={{ marginTop: '16px', padding: '12px', background: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid #2563eb' }}>
+                                                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>Clinical Recommendation</div>
+                                                        <div style={{ fontSize: '13px', color: '#334155', fontStyle: 'italic', lineHeight: '1.5' }}>"{aiAnalysis.cure_recommendation}"</div>
+                                                    </div>
+                                                )}
 
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowAnalysis(!showAnalysis)}
-                                                    style={{ marginTop: '16px', width: '100%', padding: '8px', background: 'white', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '12px', fontWeight: '600', color: '#15803d', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                                    className="btn-secondary"
+                                                    style={{ marginTop: '16px', width: '100%', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                                 >
-                                                    <Info size={14} />
-                                                    {showAnalysis ? 'Hide Algorithm Analysis' : 'Show Algorithm Analysis'}
+                                                    <ZoomIn size={14} />
+                                                    {showAnalysis ? 'Hide Algorithm Steps' : 'View AI Processing Steps'}
                                                 </button>
 
                                                 {showAnalysis && (
-                                                    <div style={{ marginTop: '12px', padding: '12px', background: 'white', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#475569', maxHeight: '150px', overflowY: 'auto' }}>
-                                                        <div style={{ fontWeight: '700', marginBottom: '8px', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ML Processing Steps:</div>
+                                                    <div className="algorithm-steps-panel" style={{ marginTop: '12px', padding: '12px', background: '#f1f5f9', borderRadius: '8px', fontSize: '11px', color: '#475569' }}>
+                                                        <div style={{ fontWeight: '700', marginBottom: '8px', color: '#334155' }}>MORPHOLOGICAL ANALYSIS STEPS:</div>
                                                         <ul style={{ paddingLeft: '16px', margin: 0 }}>
                                                             {aiAnalysis.algorithm_analysis?.map((step, i) => (
                                                                 <li key={i} style={{ marginBottom: '4px' }}>{step}</li>
@@ -826,6 +973,7 @@ const WoundAssessmentDashboard = () => {
 
                                                 {/* Advanced Image Viewer */}
                                                 {viewerState.index !== null && (
+                                                    <>
                                                     <div className="advanced-viewer">
                                                         <div className="viewer-header">
                                                             <div className="viewer-info">
@@ -957,7 +1105,75 @@ const WoundAssessmentDashboard = () => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                )}
+
+                                                    {/* Coordinates Storage Grid */}
+                                                    {imageAnnotations[viewerState.index]?.length > 0 && (
+                                                        <div className="coordinates-grid-panel">
+                                                            <div className="coords-header">
+                                                                <div className="coords-title-group">
+                                                                    <span className="coords-badge">ROI</span>
+                                                                    <span className="coords-title">Boundary Coordinates ({imageAnnotations[viewerState.index].length} points)</span>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="coords-clear-btn"
+                                                                    onClick={() => setImageAnnotations(prev => ({ ...prev, [viewerState.index]: [] }))}
+                                                                >
+                                                                    Clear All
+                                                                </button>
+                                                            </div>
+                                                            <div className="coords-table-wrapper">
+                                                                <table className="coords-table">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>#</th>
+                                                                            <th>X Coordinate</th>
+                                                                            <th>Y Coordinate</th>
+                                                                            <th>Action</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {imageAnnotations[viewerState.index].map((pt, i) => (
+                                                                            <tr key={i}>
+                                                                                <td><span className="coord-index">P{i + 1}</span></td>
+                                                                                <td><span className="coord-val">{pt.x.toFixed(1)}%</span></td>
+                                                                                <td><span className="coord-val">{pt.y.toFixed(1)}%</span></td>
+                                                                                <td>
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        className="coord-remove-btn"
+                                                                                        onClick={() => {
+                                                                                            setImageAnnotations(prev => ({
+                                                                                                ...prev,
+                                                                                                [viewerState.index]: prev[viewerState.index].filter((_, idx) => idx !== i)
+                                                                                            }));
+                                                                                        }}
+                                                                                        title="Remove point"
+                                                                                    >
+                                                                                        <X size={12} />
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            {imageAnnotations[viewerState.index].length >= 3 && (
+                                                                <div className="coords-status">
+                                                                    <span className="coords-status-icon">✓</span>
+                                                                    <span>Valid ROI boundary — {imageAnnotations[viewerState.index].length} vertices</span>
+                                                                </div>
+                                                            )}
+                                                            {imageAnnotations[viewerState.index].length > 0 && imageAnnotations[viewerState.index].length < 3 && (
+                                                                <div className="coords-status coords-status-warn">
+                                                                    <span className="coords-status-icon">⚠</span>
+                                                                    <span>Need at least 3 points to form a boundary</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
                                             </div>
                                         )}
                                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Users, FileText, Camera, CircleCheck, Clock, Activity, CircleAlert, Bell, RefreshCw, Plus } from 'lucide-react';
+import { User, Users, FileText, Camera, CircleCheck, Clock, Activity, CircleAlert, Bell, RefreshCw, Plus, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { patientService } from '../../../services/patientService';
 import { nurseService } from '../../../services/nurseService';
@@ -68,10 +68,10 @@ const ShiftTaskList = ({ refreshTrigger }) => {
               <tr key={t.id} className={isCompleted ? 'completed' : ''}>
                 <td style={{ textAlign: 'center' }}>
                   <div
-                    className={`task-checkbox ${isCompleted ? 'checked' : ''}`}
+                    className={`task-checkbox-new ${isCompleted ? 'checked' : ''}`}
                     onClick={() => toggle(t.id, t.status)}
                   >
-                    {isCompleted && <CircleCheck size={14} />}
+                    {isCompleted && <CheckCircle2 size={12} />}
                   </div>
                 </td>
                 <td>
@@ -128,14 +128,14 @@ const NewlyAssignedList = ({ refreshTrigger }) => {
   if (loading) return <div className="nurse-empty-state" style={{ padding: '20px' }}>Loading...</div>;
 
   return (
-    <div className="appointments-list overflow-x-auto w-full pt-2 sm:pt-0" style={{ padding: '0 20px 20px 20px' }}>
+    <div className="newly-assigned-container overflow-x-auto w-full">
       {patients.length > 0 ? (
-        <table className="mini-table min-w-[400px] w-full">
+        <table className="mini-table w-full">
           <thead>
             <tr>
-              <th>Patient</th>
-              <th>Admission</th>
-              <th>Action</th>
+              <th>Patient Details</th>
+              <th>Admission Time</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -160,12 +160,12 @@ const NewlyAssignedList = ({ refreshTrigger }) => {
                     }).replace(', 12:00 AM', '');
                   })()}
                 </td>
-                <td>
+                <td style={{ textAlign: 'right' }}>
                   <button 
-                    className="btn-view-mini"
+                    className="btn-review-primary"
                     onClick={() => handleReview(patient)}
                   >
-                    Review
+                    Review Patient
                   </button>
                 </td>
               </tr>
@@ -258,29 +258,28 @@ const MyPatientsList = ({ searchQuery, refreshTrigger }) => {
               {p.status?.toUpperCase()}
             </span>
             <button
-              className="nurse-view-report-btn"
+              className="btn-profile-secondary"
               onClick={() => {
                 localStorage.setItem(`nurse_viewed_patient_${p.id}`, Date.now().toString());
                 navigate(`/patients/profile/${p.id}`);
               }}
-              style={{ marginRight: '8px', borderColor: '#e2e8f0', color: '#64748b' }}
               title="View full patient profile"
             >
               <User size={13} />
-              <span>View Profile</span>
+              <span>Profile</span>
             </button>
             <button
-              className="nurse-view-report-btn"
+              className="btn-report-primary"
               onClick={(e) => handleViewReport(e, p)}
               disabled={loadingReportId === p.id}
               title="View latest assessment report"
             >
               {loadingReportId === p.id ? (
-                <span className="report-btn-loading">Loading…</span>
+                <span className="report-btn-loading">...</span>
               ) : (
                 <>
                   <FileText size={13} />
-                  <span>View Report</span>
+                  <span>Report</span>
                 </>
               )}
             </button>
@@ -547,11 +546,20 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
   return (
     <div className="nurse-dashboard">
 
+      {/* Breadcrumbs */}
+      <nav className="nurse-breadcrumb">
+        <span className="nurse-breadcrumb-item link" onClick={() => navigate('/')}>Home</span>
+        <span className="nurse-breadcrumb-separator">/</span>
+        <span className="nurse-breadcrumb-item active">Nurse Dashboard</span>
+      </nav>
+
       {/* Header */}
-      <div className="nurse-header">
-        <div>
-          <p className="nurse-date">{today}</p>
-          <h1 className="nurse-title">Nurse Dashboard</h1>
+      <div className="nurse-header mb-3">
+        <div className="nurse-header-left">
+          <div className="nurse-header-info">
+            <h1 className="nurse-title">Nurse Dashboard</h1>
+            <p className="nurse-date">{today}</p>
+          </div>
           <div className="nurse-status-row">
             <span className="nurse-badge">ACTIVE SHIFT</span>
             <span className="nurse-status-text">Standard Nursing Shift • Clinical Information Sync</span>
@@ -588,7 +596,7 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-6 w-full">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 w-full">
         {statCards.map((s, i) => (
           <div
             key={i}
@@ -599,10 +607,10 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
             }}
           >
             <div className="nurse-stat-top">
-              <span className="nurse-stat-label">{s.label}</span>
               <div className="nurse-stat-icon" style={{ background: s.bg }}>
-                <s.icon size={14} style={{ color: s.color }} />
+                <s.icon size={16} style={{ color: s.color }} />
               </div>
+              <span className="nurse-stat-label">{s.label}</span>
             </div>
             <p className="nurse-stat-value">{loading ? '—' : s.value}</p>
             <span className="nurse-stat-sub">{s.sub}</span>
@@ -611,17 +619,17 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="nurse-quick-actions">
-        <div className="nurse-action-primary" onClick={() => navigate('/assessments')}>
-          <div className="action-icon-box primary-icon-box"><Activity size={20} /></div>
-          <div>
+      <div className="nurse-quick-actions mb-4">
+        <div className="nurse-action-item action-blue" onClick={() => navigate('/assessments')}>
+          <div className="action-icon-box"><Activity size={22} /></div>
+          <div className="action-content">
             <p className="action-title">View Assessments</p>
             <p className="action-desc">Monitor wound healing progress and history</p>
           </div>
         </div>
-        <div className="nurse-action-secondary" onClick={() => { /* Add logic for vitals if needed */ }}>
-          <div className="action-icon-box secondary-icon-box"><Clock size={20} /></div>
-          <div>
+        <div className="nurse-action-item action-indigo" onClick={() => { /* Add logic for vitals if needed */ }}>
+          <div className="action-icon-box"><Clock size={22} /></div>
+          <div className="action-content">
             <p className="action-title">Record Vitals</p>
             <p className="action-desc">Log temperature, BP, and heart rate</p>
           </div>
@@ -629,8 +637,8 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full items-start">
-        <div className="xl:col-span-2 flex flex-col gap-6 w-full">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 w-full items-start">
+        <div className="xl:col-span-2 flex flex-col gap-4 w-full">
           <div className="nurse-card">
             <div className="nurse-card-header" style={{ justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -638,11 +646,10 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
                 <h3 className="nurse-section-title">TASKS &amp; RESPONSIBILITIES</h3>
               </div>
               <button
-                className="nurse-btn-outline"
-                style={{ padding: '4px 8px', fontSize: '10px' }}
+                className="btn-add-task-primary"
                 onClick={() => setIsTaskModalOpen(true)}
               >
-                <Plus size={12} />
+                <Plus size={14} />
                 <span>ADD TASK</span>
               </button>
             </div>
@@ -664,7 +671,7 @@ const NurseDashboard = ({ user, searchQuery: externalSearchQuery = '' }) => {
         </div>
 
         {/* Right: Patients + Announcements */}
-        <div className="xl:col-span-1 flex flex-col gap-6 w-full">
+        <div className="xl:col-span-1 flex flex-col gap-4 w-full">
           <div className="nurse-card">
             <div className="nurse-card-header">
               <User size={14} className="header-icon-blue" />

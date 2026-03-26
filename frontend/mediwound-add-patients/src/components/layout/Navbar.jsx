@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthAPI from '../../API/authApi';
 import './Navbar.css';
 
-function Navbar({ userName, userJobTitle, profilePic: propProfilePic, notificationCount, onNotificationClick, toggleSidebar }) {
+function Navbar({ userName, userJobTitle, userRole, profilePic: propProfilePic, notificationCount, onNotificationClick, toggleSidebar }) {
   const [profilePic, setProfilePic] = useState(propProfilePic || localStorage.getItem('profilePicture'));
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [internalCount, setInternalCount] = useState(0);
@@ -117,10 +117,10 @@ function Navbar({ userName, userJobTitle, profilePic: propProfilePic, notificati
         </div>
 
         <div className="navbar-right">
-          <button className="navbar-icon-btn" aria-label="Help">
-            <Bell size={20} />
+          <button className={`navbar-icon-btn ${(userRole === 'nurse' || userRole === 'doctor') ? 'nurse-desktop-hide' : ''}`} aria-label="Help">
+            <HelpCircle size={20} />
           </button>
-          <div className="navbar-notification">
+          <div className={`navbar-notification ${(userRole === 'nurse' || userRole === 'doctor') ? 'nurse-desktop-hide' : ''}`}>
             <button className="navbar-icon-btn" aria-label="Notifications" onClick={handleClick}>
               <Bell size={20} />
               {typeof displayCount === 'number' && displayCount > 0 && (

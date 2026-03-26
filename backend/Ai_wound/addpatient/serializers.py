@@ -225,12 +225,14 @@ class AssessmentSerializer(serializers.ModelSerializer):
             'pain_level', 'notes', 'body_location', 'images', 'created_at',
             'ml_analysis_result', 'tissue_composition', 'reduction_rate', 
             'confidence_score', 'healing_index', 'algorithm_analysis', 
-            'cure_recommendation', 'report_file'
+            'cure_recommendation', 'report_file',
+            'severity', 'wound_area_cm2', 'granulation_pct', 'slough_pct', 'necrotic_pct', 'epithelial_pct'
         ]
         read_only_fields = [
             'assessed_by', 'assessed_by_name', 'created_at', 'ml_analysis_result', 
             'tissue_composition', 'reduction_rate', 'confidence_score', 
-            'healing_index', 'algorithm_analysis', 'cure_recommendation', 'report_file'
+            'healing_index', 'algorithm_analysis', 'cure_recommendation', 'report_file',
+            'severity', 'wound_area_cm2', 'granulation_pct', 'slough_pct', 'necrotic_pct', 'epithelial_pct'
         ]
 
 class ChatMessageSerializer(serializers.ModelSerializer):

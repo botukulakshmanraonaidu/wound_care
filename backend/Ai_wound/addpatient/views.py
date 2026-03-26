@@ -567,11 +567,29 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                     # Ensure URL ends with the correct endpoint
                     if not ml_url.endswith("/api/predict"):
                         ml_url = f"{ml_url.rstrip('/')}/api/predict"
+                    
+                    # Check for ROI/Coordinates in annotations
+                    editor_metadata = None
+                    if first_image.annotations:
+                        # Extract points from polygons (assuming first image's first annotation set)
+                        try:
+                            # Format expected by ML service: {"boundary_coordinates": [{"x": 10, "y": 20}, ...]}
+                            # Adjusting based on how frontend sends annotations (usually a list of points/shapes)
+                            coords = first_image.annotations.get('points') or first_image.annotations
+                            if isinstance(coords, list):
+                                editor_metadata = json.dumps({"boundary_coordinates": coords})
+                        except Exception as ann_err:
+                            logger.warning(f"Failed to parse annotations for ROI: {ann_err}")
                         
                     with first_image.full_image.open('rb') as img_file:
                         # Use 'image' as the key to match Flask's request.files['image']
                         files = {'image': (first_image.full_image.name, img_file, 'image/jpeg')}
-                        response = requests.post(ml_url, files=files, timeout=15)
+                        data = {}
+                        if editor_metadata:
+                            data['editor_metadata'] = editor_metadata
+                            logger.info("Sending ROI coordinates to ML service")
+
+                        response = requests.post(ml_url, files=files, data=data, timeout=15)
                         
                         if response.status_code == 200:
                             result = response.json()
@@ -580,7 +598,17 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                             # Map Flask response fields to Django model fields
                             assessment.wound_type = result.get('wound_type', assessment.wound_type)
                             assessment.wound_stage = result.get('stage', assessment.wound_stage)
+                            assessment.severity = result.get('severity', assessment.severity)
+                            assessment.wound_area_cm2 = result.get('wound_area_cm2', assessment.wound_area_cm2)
                             
+                            # Tissue Composition Mapping
+                            tissue = result.get('tissue_composition', {})
+                            if tissue:
+                                assessment.granulation_pct = tissue.get('granulation', assessment.granulation_pct)
+                                assessment.slough_pct = tissue.get('slough', assessment.slough_pct)
+                                assessment.necrotic_pct = tissue.get('necrotic', assessment.necrotic_pct)
+                                assessment.epithelial_pct = tissue.get('epithelial', assessment.epithelial_pct)
+
                             dims = result.get('dimensions', {})
                             if dims:
                                 assessment.length = dims.get('length', assessment.length)
@@ -590,18 +618,13 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                             assessment.cure_recommendation = result.get('cure_recommendation', assessment.cure_recommendation)
                             
                             # Use confidence_score and healing_index directly from ML response
-                            # These are 0-100 values
                             assessment.confidence_score = result.get('confidence_score', assessment.confidence_score)
                             assessment.healing_index = result.get('healing_index', assessment.healing_index)
-                            
-                            # Fallback if specific scores missing but raw confidence exists
-                            if assessment.confidence_score is None and result.get('confidence') is not None:
-                                assessment.confidence_score = float(result['confidence']) * 100
                             
                             # Store processing steps
                             assessment.algorithm_analysis = result.get('algorithm_analysis')
                             
-                            logger.info(f"Populated AI fields for assessment {assessment.id}: Type={assessment.wound_type}, Stage={assessment.wound_stage}, Dims={assessment.length}x{assessment.width}, Conf={assessment.confidence_score}%")
+                            logger.info(f"Populated AI fields for assessment {assessment.id}: Type={assessment.wound_type}, Severity={assessment.severity}, Area={assessment.wound_area_cm2}cm²")
                             
                             # --- Reduction Rate Calculation ---
                             try:
@@ -621,7 +644,6 @@ class AssessmentViewSet(viewsets.ModelViewSet):
                                 logger.error(f"Failed to calculate reduction rate: {e}")
                             
                             assessment.save()
-                            logger.info(f"ML Analysis completed and fields populated for assessment {assessment.id}")
                         else:
                             logger.error(f"ML Service error: {response.status_code} - {response.text}")
             except Exception as e:
