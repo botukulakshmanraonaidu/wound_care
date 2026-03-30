@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, Bell, Monitor, ChevronRight, Camera, Mail, Smartphone, Lock, Key, Moon, Sun, Type, Contrast } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { User, Shield, Bell, Monitor, ChevronRight, Camera, Mail, Smartphone, Lock, Key, Moon, Sun, Type, Contrast, X } from 'lucide-react';
 import { getProfile, updateProfile } from '../../../../API/authApi';
 import './Settings.css';
 
 function Settings() {
-    const [activeTab, setActiveTab] = useState('profile');
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab');
+        return ['profile', 'security', 'notifications', 'display'].includes(tab) ? tab : 'profile';
+    });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [isProfilePreviewOpen, setIsProfilePreviewOpen] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -18,6 +25,10 @@ function Settings() {
         password: '',
         confirmPassword: ''
     });
+
+    const toggleProfilePreview = () => {
+        setIsProfilePreviewOpen(!isProfilePreviewOpen);
+    };
 
     // Notification preferences state
     const [notifications, setNotifications] = useState({
@@ -203,9 +214,9 @@ function Settings() {
                                 <div className="profile-avatar-section">
                                     <div className="avatar-preview-container">
                                         {previewUrl ? (
-                                            <img src={previewUrl} alt="Preview" className="avatar-image" />
+                                            <img src={previewUrl} alt="Preview" className="avatar-image clickable" onClick={toggleProfilePreview} />
                                         ) : existingPicture ? (
-                                            <img src={existingPicture} alt="Profile" className="avatar-image" />
+                                            <img src={existingPicture} alt="Profile" className="avatar-image clickable" onClick={toggleProfilePreview} />
                                         ) : (
                                             <div className="avatar-placeholder">
                                                 <User size={40} color="#64748b" />
@@ -546,6 +557,28 @@ function Settings() {
                     )}
                 </div>
             </div>
+
+            {/* Profile Photo Preview Modal */}
+            {isProfilePreviewOpen && (
+                <div className="settings-modal-overlay" onClick={toggleProfilePreview}>
+                    <div className="settings-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="settings-modal-close" onClick={toggleProfilePreview}>
+                            <X size={24} />
+                        </button>
+                        <div className="settings-modal-image-container">
+                            {previewUrl ? (
+                                <img src={previewUrl} alt="Enlarged Profile" className="settings-modal-img" />
+                            ) : existingPicture ? (
+                                <img src={existingPicture} alt="Enlarged Profile" className="settings-modal-img" />
+                            ) : (
+                                <div className="settings-modal-placeholder">
+                                    <User size={120} color="#64748B" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

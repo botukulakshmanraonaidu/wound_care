@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, HelpCircle, Bell, User, Menu, X } from 'lucide-react';
+import { Search, HelpCircle, Bell, User, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthAPI from '../../API/authApi';
 import './Navbar.css';
 
 function Navbar({ userName, userJobTitle, userRole, profilePic: propProfilePic, notificationCount, onNotificationClick, toggleSidebar }) {
   const [profilePic, setProfilePic] = useState(propProfilePic || localStorage.getItem('profilePicture'));
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [internalCount, setInternalCount] = useState(0);
 
   // Sync with prop when it changes
@@ -17,9 +16,8 @@ function Navbar({ userName, userJobTitle, userRole, profilePic: propProfilePic, 
   }, [propProfilePic]);
   const navigate = useNavigate();
 
-  const toggleProfileModal = (e) => {
-    if (e) e.stopPropagation();
-    setIsProfileModalOpen(!isProfileModalOpen);
+  const handleProfileClick = () => {
+    navigate('/settings?tab=profile');
   };
 
   // Determine which count to use
@@ -120,7 +118,7 @@ function Navbar({ userName, userJobTitle, userRole, profilePic: propProfilePic, 
           <button className={`navbar-icon-btn ${(userRole === 'nurse' || userRole === 'doctor') ? 'nurse-desktop-hide' : ''}`} aria-label="Help">
             <HelpCircle size={20} />
           </button>
-          <div className={`navbar-notification ${(userRole === 'nurse' || userRole === 'doctor') ? 'nurse-desktop-hide' : ''}`}>
+          <div className={`navbar-notification ${userRole === 'doctor' ? 'doctor-mobile-hide nurse-desktop-hide' : (userRole === 'nurse' ? 'nurse-desktop-hide' : '')}`}>
             <button className="navbar-icon-btn" aria-label="Notifications" onClick={handleClick}>
               <Bell size={20} />
               {typeof displayCount === 'number' && displayCount > 0 && (
@@ -136,7 +134,7 @@ function Navbar({ userName, userJobTitle, userRole, profilePic: propProfilePic, 
               <div className="navbar-user-name text-xs sm:text-sm">{userName || "User"}</div>
               <div className="navbar-user-role text-[10px] sm:text-xs">{userJobTitle || "Specialist"}</div>
             </div>
-            <div className="navbar-user-avatar" onClick={toggleProfileModal}>
+            <div className="navbar-user-avatar" onClick={handleProfileClick} title="View Profile" style={{ cursor: 'pointer' }}>
               {profilePic ? (
                 <img src={profilePic} alt="Profile" className="navbar-avatar-img" />
               ) : (
@@ -147,29 +145,6 @@ function Navbar({ userName, userJobTitle, userRole, profilePic: propProfilePic, 
         </div>
       </nav>
 
-      {/* Profile Picture Enlarged Modal */}
-      {isProfileModalOpen && (
-        <div className="profile-modal-overlay" onClick={toggleProfileModal}>
-          <div className="profile-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="profile-modal-close" onClick={toggleProfileModal}>
-              <X size={24} />
-            </button>
-            <div className="profile-modal-image-container">
-              {profilePic ? (
-                <img src={profilePic} alt="Enlarged Profile" className="profile-modal-img" />
-              ) : (
-                <div className="profile-modal-placeholder">
-                  <User size={120} />
-                </div>
-              )}
-            </div>
-            <div className="profile-modal-footer">
-              <h3 className="profile-modal-name">{userName || "User"}</h3>
-              <p className="profile-modal-role">{userJobTitle || "Specialist"}</p>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
