@@ -124,10 +124,11 @@ const WoundAssessmentDashboard = () => {
             } else {
                 setAnalysisError("ML Service responded with an error. Please ensure the service is running.");
             }
-        } catch (error) {
-            console.error("AI Analysis failed", error);
             const targetUrl = `${getMlBaseUrl()}/api/predict`;
-            setAnalysisError(`Could not connect to ML Service at ${targetUrl}. Error: ${error.message}. Please check if the service is running and CORS is allowed.`);
+            console.error("AI Analysis failed", error);
+            const isTimeout = error.message.includes('timeout') || error.message.includes('fetch');
+            const retryHint = isTimeout ? " This might be a 'Cold Start' on Render — the service is waking up. Please WAIT a moment and click RETRY below." : "";
+            setAnalysisError(`Connection failed to ${targetUrl}.${retryHint} (Error: ${error.message})`);
         } finally {
             setIsAnalyzing(false);
         }

@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+# Set environment variables BEFORE importing heavy libs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TF logging
+os.environ['MPLBACKEND'] = 'Agg'        # Headless matplotlib
 import cv2
 import numpy as np
 import json
@@ -170,6 +173,17 @@ def health_check():
         "status": "healthy",
         "analyzer_initialized": analyzer is not None
     }), 200
+
+# EAGER LOADING: Pre-initialize analyzer on startup (Module Level)
+# This is critical for Render! It ensures models load during deployment,
+# not when the first user clicks "Analyze" (preventing timeout).
+try:
+    print("🚀 STARTUP: Initializing AI Analyzer...")
+    get_analyzer()
+    print("✅ STARTUP: AI Analyzer initialized and ready.")
+except Exception as e:
+    print(f"⚠️ STARTUP WARNING: Could not initialize AI Analyzer during boot: {e}")
+    # We continue so the health check endpoint still works, allowing us to debug.
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8001))
