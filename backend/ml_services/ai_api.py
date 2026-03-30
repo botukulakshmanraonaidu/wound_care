@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+import gc  # Garbage Collection for RAM management
 # Set environment variables BEFORE importing heavy libs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TF logging
 os.environ['MPLBACKEND'] = 'Agg'        # Headless matplotlib
@@ -136,6 +137,10 @@ def predict():
         
         # Cleanup
         os.remove(tmp_path)
+        
+        # --- RAM MANAGEMENT: Force Garbage Collection ---
+        # This is critical for Render's 512MB limit to clear transient buffers
+        gc.collect()
         
         # Legacy compatibility: Map confidence to confidence_score
         results["confidence_score"] = int(results["confidence"] * 100)

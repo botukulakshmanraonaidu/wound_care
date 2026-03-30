@@ -30,5 +30,5 @@ EXPOSE 5000
 # Start the application using gunicorn
 # --timeout 300  : Allows slow cold-starts (TF model loading) without worker kill
 # --workers 1    : Single worker to avoid loading the model in multiple processes
-# --preload      : Load app (and models) before forking workers — faster first request
-CMD gunicorn --workers 1 --timeout 300 --preload --bind 0.0.0.0:$PORT ai_api:app
+# REMOVED --preload: This ensures the 512MB RAM is used only by the worker, not duplicated in the master.
+CMD gunicorn --workers 1 --timeout 300 --bind 0.0.0.0:$PORT ai_api:app

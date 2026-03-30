@@ -90,44 +90,59 @@ const WoundAssessmentDashboard = () => {
                 uploadData.append('editor_metadata', JSON.stringify(editorMetadata));
             }
 
-            const mlResponse = await fetch(`${getMlBaseUrl()}/api/predict`, {
-                method: 'POST',
-                body: uploadData
-            });
+            // --- TIMEOUT PROTECTION: 60 Second Limit ---
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-            if (mlResponse.ok) {
-                const result = await mlResponse.json();
-                setAiAnalysis(result);
+            try {
+                const mlResponse = await fetch(`${getMlBaseUrl()}/api/predict`, {
+                    method: 'POST',
+                    body: uploadData,
+                    signal: controller.signal
+                });
 
-                // Calculate estimated reduction rate
-                let reductionInfo = "";
-                let localReduction = null;
-                if (previousArea && result.dimensions?.length && result.dimensions?.width) {
-                    const currentArea = result.dimensions.length * result.dimensions.width;
-                    localReduction = ((previousArea - currentArea) / previousArea) * 100;
-                    setReductionRate(localReduction.toFixed(1));
-                    reductionInfo = `\n\n[AI HEALING PROGRESS]: Wound area has reduced by ${localReduction.toFixed(1)}% since last assessment.`;
+                clearTimeout(timeoutId);
+
+                if (mlResponse.ok) {
+                    const result = await mlResponse.json();
+                    setAiAnalysis(result);
+
+                    // Calculate estimated reduction rate
+                    let reductionInfo = "";
+                    let localReduction = null;
+                    if (previousArea && result.dimensions?.length && result.dimensions?.width) {
+                        const currentArea = result.dimensions.length * result.dimensions.width;
+                        localReduction = ((previousArea - currentArea) / previousArea) * 100;
+                        setReductionRate(localReduction.toFixed(1));
+                        reductionInfo = `\n\n[AI HEALING PROGRESS]: Wound area has reduced by ${localReduction.toFixed(1)}% since last assessment.`;
+                    } else {
+                        setReductionRate(null);
+                    }
+
+                    // Auto-fill form
+                    setFormData(prev => ({
+                        ...prev,
+                        woundType: result.wound_type || prev.woundType,
+                        length: result.wound_length_cm || result.dimensions?.length || prev.length,
+                        width: result.wound_width_cm || result.dimensions?.width || prev.width,
+                        depth: result.wound_depth_cm || result.dimensions?.depth || prev.depth,
+                        woundArea: result.wound_area_cm2 || prev.woundArea,
+                        notes: prev.notes + `\n\n[AI SUGGESTION]: ${result.cure_recommendation}${reductionInfo}`
+                    }));
                 } else {
-                    setReductionRate(null);
+                    setAnalysisError("ML Service responded with an error. Please ensure the service is running.");
                 }
-
-                // Auto-fill form
-                setFormData(prev => ({
-                    ...prev,
-                    woundType: result.wound_type || prev.woundType,
-                    length: result.wound_length_cm || result.dimensions?.length || prev.length,
-                    width: result.wound_width_cm || result.dimensions?.width || prev.width,
-                    depth: result.wound_depth_cm || result.dimensions?.depth || prev.depth,
-                    woundArea: result.wound_area_cm2 || prev.woundArea,
-                    notes: prev.notes + `\n\n[AI SUGGESTION]: ${result.cure_recommendation}${reductionInfo}`
-                }));
-            } else {
-                setAnalysisError("ML Service responded with an error. Please ensure the service is running.");
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    throw new Error("Request timed out after 60 seconds. The server might be slow or waking up.");
+                }
+                throw err;
             }
+        } catch (error) {
             const targetUrl = `${getMlBaseUrl()}/api/predict`;
             console.error("AI Analysis failed", error);
-            const isTimeout = error.message.includes('timeout') || error.message.includes('fetch');
-            const retryHint = isTimeout ? " This might be a 'Cold Start' on Render — the service is waking up. Please WAIT a moment and click RETRY below." : "";
+            const isTimeout = error.message.includes('timed out') || error.message.includes('fetch');
+            const retryHint = isTimeout ? " This might be a 'Cold Start' or 'RAM Throttling' on Render. Simply WAIT a few seconds and click RETRY below." : "";
             setAnalysisError(`Connection failed to ${targetUrl}.${retryHint} (Error: ${error.message})`);
         } finally {
             setIsAnalyzing(false);
