@@ -5,6 +5,8 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PORT 5000
+# Prevent matplotlib from trying to open a display on headless servers
+ENV MPLBACKEND Agg
 
 # Install system dependencies for OpenCV
 RUN apt-get update && apt-get install -y \
@@ -26,4 +28,7 @@ COPY . .
 EXPOSE 5000
 
 # Start the application using gunicorn
-CMD gunicorn --bind 0.0.0.0:$PORT ai_api:app
+# --timeout 300  : Allows slow cold-starts (TF model loading) without worker kill
+# --workers 1    : Single worker to avoid loading the model in multiple processes
+# --preload      : Load app (and models) before forking workers — faster first request
+CMD gunicorn --workers 1 --timeout 300 --preload --bind 0.0.0.0:$PORT ai_api:app

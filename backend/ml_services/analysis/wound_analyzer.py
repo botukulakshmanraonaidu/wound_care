@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
+# matplotlib is only needed for visualize_result(), imported lazily to avoid
+# crashing on headless servers (Render, Docker) that have no display backend.
 
 class WoundAnalyzer:
     def __init__(self, classifier_path="models/wound_classifier.keras", segmentation_path="models/wound_segmentation_model.h5"):
@@ -226,6 +227,10 @@ class WoundAnalyzer:
         
     def visualize_result(self, image_normalized, mask_binary, results, output_path='result_overlay.png'):
         """Displays original image, segmentation overlay, and prediction results."""
+        import matplotlib
+        matplotlib.use('Agg')  # Non-interactive backend — safe on headless servers
+        import matplotlib.pyplot as plt
+
         plt.figure(figsize=(15, 5))
         
         # Orig Image

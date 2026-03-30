@@ -8,7 +8,17 @@ import tempfile
 import traceback
 
 app = Flask(__name__)
-CORS(app)  # Allow frontend to call this API
+# Explicitly whitelist all origins and methods so CORS headers are sent even
+# on error responses (403 / 500) — browsers reject responses without the header.
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=False)
+
+@app.after_request
+def add_cors_headers(response):
+    """Ensure CORS headers are present on every response, including error pages."""
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 # Global Variables (Initialized on first request)
 classes = None
@@ -164,4 +174,4 @@ def health_check():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8001))
     print(f"🚀 Starting AI API on port {port}...")
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
