@@ -23,16 +23,25 @@ class WoundAnalyzer:
                 
         print("Models loaded successfully.")
         
-    def preprocess_image(self, image_path, target_size=(224, 224)):
-        """Reads image and prepares it for models."""
+    def preprocess_image(self, image_path, target_size=(224, 224), max_dimension=1024):
+        """Reads image, caps resolution for memory safety, and prepares it for models."""
         img = cv2.imread(image_path)
         if img is None:
             raise ValueError(f"Could not load image at {image_path}")
             
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # --- MEMORY SAFETY: Downscale massive images before high-res analysis ---
+        h, w = img.shape[:2]
+        if max(h, w) > max_dimension:
+            scale = max_dimension / max(h, w)
+            new_w, new_h = int(w * scale), int(h * scale)
+            print(f"📉 Resizing high-res image from {w}x{h} to {new_w}x{new_h} for memory safety...")
+            img = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
+
         original_img = img.copy()
         
-        # Resize for model input format
+        # Resize for model input format (standard 224x224 for most TF classifiers)
         img_resized = cv2.resize(img, target_size)
         
         # Normalize

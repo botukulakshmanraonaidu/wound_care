@@ -4,6 +4,22 @@ import os
 # Set environment variables BEFORE importing heavy libs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TF logging
 os.environ['MPLBACKEND'] = 'Agg'        # Headless matplotlib
+
+import tensorflow as tf
+# --- RESOURCE OPTIMIZATION: Limit TF to 1 thread for Render Free Tier ---
+# This prevents CPU thrashing and memory spikes on shared instances.
+tf.config.threading.set_intra_op_parallelism_threads(1)
+tf.config.threading.set_inter_op_parallelism_threads(1)
+
+# Enable memory growth to prevent TF from pre-allocating all RAM
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        print(f"⚠️ TF Memory Growth Error: {e}")
+
 import cv2
 import numpy as np
 import json
